@@ -73,7 +73,9 @@ public partial class ChapterLevelController : Node2D
         BroadcastObjective();
         Events.Instance?.EmitSignal(Events.SignalName.ZoneEntered, ChapterRuntime.Zones[0]);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-            ChapterId == 2 ? "第二章 · 霜骨海沟　靠近灯笼鱼·盏并按 E" : "第三章 · 断流灯塔　靠近迷途鱼群并按 E");
+            ChapterId == 2
+                ? "CHAPTER 2 · FROSTBOUND TRENCH   Find Lanternfish and press E"
+                : "CHAPTER 3 · THE SILENT LIGHTHOUSE   Find the Lost Shoal and press E");
 
         RestoreProgressIfSaved();
         _smokeMode = Array.IndexOf(OS.GetCmdlineUserArgs(), "--smoke-complete") >= 0;
@@ -196,9 +198,9 @@ public partial class ChapterLevelController : Node2D
         var sprite = new Sprite2D { Texture = AssetLoader.Texture(AssetLoader.NpcPortrait(ice ? "lantern" : "shoal")), ZIndex = 1 };
         if (sprite.Texture != null) PlaceholderArt.FitSprite(sprite, 152f);
         _guide.AddChild(sprite);
-        var name = WorldLabel(ice ? "灯笼鱼·盏  ·  解冻向导" : "迷途鱼群  ·  回路守望者", new Vector2(-145, 96), 290, UiTheme.Accent);
+        var name = WorldLabel(ice ? "Lanternfish  ·  Thaw Guide" : "Lost Shoal  ·  Circuit Guide", new Vector2(-145, 96), 290, UiTheme.Accent);
         _guide.AddChild(name);
-        _guidePrompt = WorldLabel("E  ·  交谈", new Vector2(-75, 132), 150, UiTheme.Ink);
+        _guidePrompt = WorldLabel("E  ·  TALK", new Vector2(-75, 132), 150, UiTheme.Ink);
         _guidePrompt.Visible = false;
         _guide.AddChild(_guidePrompt);
         StartBob(_guide, 8f, 1.7f);
@@ -221,8 +223,8 @@ public partial class ChapterLevelController : Node2D
             };
             PlaceholderArt.FitSprite(icon, 88f);
             node.AddChild(icon);
-            node.AddChild(WorldLabel(ChapterId == 2 ? $"解冻锚 {i + 1}" : $"潮汐继电器 {i + 1}", new Vector2(-110, 78), 220, UiTheme.InkDim));
-            var prompt = WorldLabel("E  ·  唤醒", new Vector2(-75, 112), 150, UiTheme.Ink);
+            node.AddChild(WorldLabel(ChapterId == 2 ? $"Thaw Anchor {i + 1}" : $"Tide Relay {i + 1}", new Vector2(-110, 78), 220, UiTheme.InkDim));
+            var prompt = WorldLabel("E  ·  RESTORE", new Vector2(-75, 112), 150, UiTheme.Ink);
             prompt.Visible = false;
             node.AddChild(prompt);
             _restoreNodes.Add(node);
@@ -368,8 +370,20 @@ public partial class ChapterLevelController : Node2D
                 .Finished += _shortcutGates[index].QueueFree;
         }
         SetZoneRestored(index);
-        Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-            ChapterId == 2 ? $"解冻锚 {index + 1} 已苏醒，冻结捷径正在融开。" : $"继电器 {index + 1} 已接通，安全回路向前延伸。" );
+        string[] chapterFacts = ChapterId == 2
+            ? new[]
+            {
+                "Runoff can carry fertilizer and wastewater from land into the sea.",
+                "Extra nutrients feed algal blooms. As the algae decay, oxygen drops.",
+                "Moving water carries oxygen through the nursery. The eggs can breathe again.",
+            }
+            : new[]
+            {
+                "The ocean absorbs most of the extra heat trapped by greenhouse gases.",
+                "Long heat stress can make coral bleach and lose its main source of food.",
+                "Cleaner energy and lower emissions reduce heat pressure on reefs.",
+            };
+        Events.Instance?.EmitSignal(Events.SignalName.StatusHint, chapterFacts[index]);
         AudioManager.Instance?.PlaySfx("objective_advance");
         if (index == 0) Advance(ObjectiveStage.TalkSeaweed);
         else if (_restoredNodes >= 3) Advance(ObjectiveStage.CollectShards);
@@ -413,7 +427,8 @@ public partial class ChapterLevelController : Node2D
     private void OnGuardianHealthChanged(int current, int max)
     {
         if (_stage == ObjectiveStage.DefeatBoss && current > 0 && current <= max / 2)
-            Events.Instance?.EmitSignal(Events.SignalName.StatusHint, "它的外壳正在松开；继续用正确元素引导污染离开。" );
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                "The shell is loosening. Keep using the right element to guide the pollution out." );
     }
 
     private void OnGuardianRestored()
@@ -432,8 +447,8 @@ public partial class ChapterLevelController : Node2D
         if (_smokeMode) return;
         PersistProgress();
         _settlement?.ShowResult(ChapterId == 2
-            ? "三座解冻锚重新推动潮水，霜壳守望者终于卸下冰甲。\n微光带着电元素的潮汐频率，继续前往断流灯塔。"
-            : "三段安全回路重新连成海底星河，废热炉心转为温暖的珊瑚孵化场。\n海洋不会因一次净化永远安全，但修复可以从每一次选择开始。" );
+            ? "The three Thaw Anchors are moving oxygen through the nursery again. The Frostshell Guardian has released its ice.\nRunoff begins on land. Restoring flow gives this habitat time to heal."
+            : "The safe circuit is running, and waste heat is no longer spilling into the nursery. Coral recovery will take time.\nProtecting the ocean means stopping pollution at its source, not only cleaning it up later." );
     }
 
     private void Advance(ObjectiveStage next)
@@ -471,7 +486,8 @@ public partial class ChapterLevelController : Node2D
         // Chapter interaction topology is short; resume safely at the start rather
         // than restoring half-removed runtime gates without their authored visuals.
         _player.RestoreState(state.CurrentHealth, state.CurrentForm);
-        Events.Instance?.EmitSignal(Events.SignalName.StatusHint, "已恢复本章角色状态；生态修复路线从入口重新确认。" );
+        Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+            "Progress restored. This chapter's restoration route begins at the entrance." );
     }
 
     private void RunSmokeComplete()

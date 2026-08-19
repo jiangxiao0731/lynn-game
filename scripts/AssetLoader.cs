@@ -64,8 +64,8 @@ public static class AssetLoader
     /// Background for a narrative zone ("浅滩" / "沉积带" / "巢母深处"); null when absent.
     public static string ZoneBackground(string zone) => zone switch
     {
-        "沉积带" => "res://assets/img/zone_sediment.png",
-        "巢母深处" => "res://assets/img/zone_depths.png",
+        NarrativeData.ZoneSediment => "res://assets/img/zone_sediment.png",
+        NarrativeData.ZoneDepths => "res://assets/img/zone_depths.png",
         _ => "res://assets/img/zone_shallows.png",
     };
 }

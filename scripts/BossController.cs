@@ -85,9 +85,9 @@ public partial class BossController : CharacterBody2D
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "霜壳正在替海沟承受污染；用冰元素共鸣，别把它击碎。"
+                ? "The Frostshell Guardian is holding back the pollution. Use Ice to release it without breaking the shell."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "炉心的热量已经失控；用电元素把能量导回安全回路。"
+                    ? "The core is overheating. Use Electric to guide the loose energy back into the safe circuit."
                     : GameStrings.Tr("STATUS_BOSS_GATE");
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint, hint);
         }

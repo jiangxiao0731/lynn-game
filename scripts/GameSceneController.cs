@@ -440,7 +440,7 @@ public partial class GameSceneController : Node2D
             {
                 Node = barrel,
                 Timeline = DialogueData.JellyfishBox,
-                Prompt = AddWorldPrompt(barrel, "E  ·  查看"),
+                Prompt = AddWorldPrompt(barrel, "E  ·  EXAMINE"),
             });
         }
     }
@@ -465,7 +465,7 @@ public partial class GameSceneController : Node2D
             OnFirstDone = onDone,
             FollowUp = followUp,
             Identity = identity,
-            Prompt = AddWorldPrompt(node, "E  ·  交谈"),
+            Prompt = AddWorldPrompt(node, "E  ·  TALK"),
         });
     }
 
@@ -485,7 +485,7 @@ public partial class GameSceneController : Node2D
             Node = node,
             Timeline = timeline,
             Identity = identity,
-            Prompt = AddWorldPrompt(node, "E  ·  交谈"),
+            Prompt = AddWorldPrompt(node, "E  ·  TALK"),
         });
     }
 
@@ -587,7 +587,7 @@ public partial class GameSceneController : Node2D
             {
                 Node = node,
                 Note = note,
-                Prompt = AddWorldPrompt(node, "E  ·  查看"),
+                Prompt = AddWorldPrompt(node, "E  ·  EXAMINE"),
             });
         }
     }
@@ -648,7 +648,7 @@ public partial class GameSceneController : Node2D
                 Events.Instance?.EmitSignal(Events.SignalName.LoreNoteFound, it.Note.Id);
                 Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                     string.Format(GameStrings.Tr("NOTE_FOUND_TEMPLATE"), it.Note.Title));
-                _dialogue.ShowVignette(it.Note.Title, it.Note.Lines, "残片");
+                _dialogue.ShowVignette(it.Note.Title, it.Note.Lines, "Fragment");
                 return;
             }
 
@@ -748,9 +748,9 @@ public partial class GameSceneController : Node2D
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
             zone switch
             {
-                0 => "浅滩重新透进了光，被缠住的珊瑚捷径打开了。",
-                1 => "沉积带的浊流正在退去，新的回游通道已经畅通。",
-                _ => "巢母深处恢复潮汐，通往出口的捷径重新开启。",
+                0 => "Plastic and lost gear can trap wildlife. The coral shortcut is clear.",
+                1 => "Runoff can feed algal blooms and lower oxygen. The migration route is open.",
+                _ => "Removing pollution helps. Stopping it upstream protects the nursery for longer.",
             });
     }
 

@@ -40,16 +40,16 @@ custom_minimum_size = Vector2(560, 0)
 
 [node name="GameTitle" type="Label" parent="Center/Menu"]
 layout_mode = 2
-text = "潮汐微光"
+text = "Shallow Sea Dream"
 
 [node name="BeginButton" type="Button" parent="Center/Menu"]
 layout_mode = 2
-text = "潜入海洋"
+text = "Start Game"
 
 [node name="NewGameButton" type="Button" parent="Center/Menu"]
 layout_mode = 2
-text = "开始游戏"
+text = "Start New Game"
 
 [node name="ExitButton" type="Button" parent="Center/Menu"]
 layout_mode = 2
-text = "返回岸上"
+text = "Exit Game"

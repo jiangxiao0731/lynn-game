@@ -31,22 +31,22 @@ public partial class BuildTitle : SceneBuilderBase
 
         var titleLabel = new Label();
         titleLabel.Name = "GameTitle";
-        titleLabel.Text = "潮汐微光";
+        titleLabel.Text = "Shallow Sea Dream";
         vbox.AddChild(titleLabel);
 
         var begin = new Button();
         begin.Name = "BeginButton";
-        begin.Text = "潜入海洋";
+        begin.Text = "Start Game";
         vbox.AddChild(begin);
 
         var newGame = new Button();
         newGame.Name = "NewGameButton";
-        newGame.Text = "开始游戏";
+        newGame.Text = "Start New Game";
         vbox.AddChild(newGame);
 
         var exit = new Button();
         exit.Name = "ExitButton";
-        exit.Text = "返回岸上";
+        exit.Text = "Exit Game";
         vbox.AddChild(exit);
 
         root.SetScript(GD.Load("res://scripts/TitleController.cs"));

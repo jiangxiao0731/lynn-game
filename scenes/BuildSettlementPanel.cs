@@ -31,7 +31,7 @@ public partial class BuildSettlementPanel : SceneBuilderBase
 
         var title = new Label();
         title.Name = "Title";
-        title.Text = "净化完成";
+        title.Text = "Area Restored";
         vbox.AddChild(title);
 
         var summary = new Label();
@@ -41,7 +41,7 @@ public partial class BuildSettlementPanel : SceneBuilderBase
 
         var button = new Button();
         button.Name = "ContinueButton";
-        button.Text = "继续";
+        button.Text = "Continue";
         vbox.AddChild(button);
 
         root.SetScript(GD.Load("res://scripts/SettlementPanel.cs"));

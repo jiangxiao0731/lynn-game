@@ -78,7 +78,7 @@ public partial class ElementSpawner : Node2D
                     if (_lockedHintCooldown <= 0f)
                     {
                         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                            "先听完浅滩居民的线索，再唤醒散落的潮汐记忆。");
+                            "Listen to the residents before you collect the scattered Tidal Memories.");
                         _lockedHintCooldown = 2f;
                     }
                     continue;

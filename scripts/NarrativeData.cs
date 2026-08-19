@@ -22,9 +22,9 @@ public sealed record CodexEntry(string Id, string Name, string Body, string Weak
 public static class NarrativeData
 {
     // --- Zone ids (item 7) ---
-    public const string ZoneShallows = "浅滩";       // 浅滩 — opening / tutorial-adjacent
-    public const string ZoneSediment = "沉积带";     // 沉积带 — middle, lore-dense
-    public const string ZoneDepths = "巢母深处";     // 巢母深处 — boss approach
+    public const string ZoneShallows = "The Shallows";
+    public const string ZoneSediment = "Silt Passage";
+    public const string ZoneDepths = "Brood Depths";
 
     // --- Extra timeline ids (string keys = log keys) ---
     public const string Opening = "opening";
@@ -62,137 +62,140 @@ public static class NarrativeData
         const string L = DialogueData.SpeakerLantern;
         const string Sh = DialogueData.SpeakerShoal;
         const string B = DialogueData.SpeakerBoss;
+        const string F = DialogueData.SpeakerFrostshell;
+        const string C = DialogueData.SpeakerCore;
 
         var d = new Dictionary<string, DialogueTimeline>();
 
         // --- Richer opening (plays on level start) ---
         d[Opening] = new DialogueTimeline(Opening, new List<DialogueLine>
         {
-            new(S, "潮湾苗圃……我出生的地方，曾经满是会发光的同伴。"),
-            new(S, "现在水是浑的，光一盏一盏地熄了。"),
-            new(S, "可我身上还亮着。也许，这点微光还能唤回些什么。"),
+            new(S, "Tidepool Nursery. I was born here, when every corner still glowed."),
+            new(S, "Now the water is cloudy, and one light after another has gone out."),
+            new(S, "Most of this pollution came from land, carried here through drains and rivers."),
+            new(S, "Mine is still here. Maybe it is enough to start bringing them back."),
         });
 
         // --- 岚婆婆 multi-stage: mid (during collecting) ---
         d[GrannyMid] = new DialogueTimeline(GrannyMid, new List<DialogueLine>
         {
-            new(G, "碎片在你掌心亮起来了，看见了吗？", "npc1giving"),
-            new(G, "每一片，都是一段被污染冲散的潮汐记忆。", "npc1giving"),
-            new(G, "收齐它们，你就听得懂巢母为何哭。", "npc1giving"),
+            new(G, "The shards are glowing in your hands. See?", "npc1giving"),
+            new(G, "Each one holds a memory scattered by the pollution.", "npc1giving"),
+            new(G, "Bring them together, and you will understand why the Brood Mother is crying.", "npc1giving"),
         });
 
         // --- 岚婆婆 after boss ---
         d[GrannyAfter] = new DialogueTimeline(GrannyAfter, new List<DialogueLine>
         {
-            new(G, "你没有杀死她。你把缠在她身上的脏东西，一点点解开了。", "npc1giving"),
-            new(G, "这才是净化。记住这条路——它通向更深更冷的海。", "npc1giving"),
-            new(S, "我会带着潮汐钥匙，去下一片海。", "npc1giving"),
+            new(G, "You treated her as a life to protect. You loosened the waste that trapped her.", "npc1giving"),
+            new(G, "That is what restoration means. Remember it as you enter colder water.", "npc1giving"),
+            new(S, "I will carry the Tidal Key into the next sea.", "npc1giving"),
         });
 
         // --- Deepened 海星 (optional follow-up) ---
         d[StarfishDeep] = new DialogueTimeline(StarfishDeep, new List<DialogueLine>
         {
-            new(St, "你回来了。我数着你唤醒的光，一盏、两盏……", "starfish"),
-            new(St, "我的兄妹被冲到了沉积带，再没回来。", "starfish"),
-            new(St, "若你去那边，替我看看……他们是不是还亮着。", "starfish"),
+            new(St, "You're back. I've been counting the lights you restored.", "starfish"),
+            new(St, "My family was swept into the Silt Passage. They never came back.", "starfish"),
+            new(St, "If you go there, please look for them. See if they still glow.", "starfish"),
         });
 
         // --- Deepened 海草 (optional follow-up) ---
         d[SeaweedDeep] = new DialogueTimeline(SeaweedDeep, new List<DialogueLine>
         {
-            new(Sw, "巢母的呼吸又重了一分。她不是恶意，她是疼。", "seaweed"),
-            new(Sw, "废液让她分不清自己和别人，于是把谁都缠进来。", "seaweed"),
-            new(Sw, "用水，轻一点。净化不是打碎，是松开。", "seaweed"),
+            new(Sw, "The Brood Mother's pulse is getting heavier. She is not angry. She is in pain.", "seaweed"),
+            new(Sw, "Wastewater blurred the line between her body and everyone else's.", "seaweed"),
+            new(Sw, "Use Water gently. Restoration is not about breaking things. It is about setting them free.", "seaweed"),
         });
 
         // --- NEW NPC: 寄居蟹老郑 (沉积带) — practical, weary, comic-melancholy ---
         d[Hermit] = new DialogueTimeline(Hermit, new List<DialogueLine>
         {
-            new(H, "小光仔，别踩我的壳——哦不，这只是个易拉罐。", "hermit"),
-            new(H, "我换了三个『家』了，全是人类丢下的硬壳。", "hermit"),
-            new(H, "这片沉积带底下，埋着说不完的旧事。", "hermit", new List<DialogueChoice>
+            new(H, "Watch the shell—actually, it is just an old can.", "hermit"),
+            new(H, "I have moved three times. Every home was something humans threw away.", "hermit"),
+            new(H, "The silt below us is full of stories nobody wanted to keep.", "hermit", new List<DialogueChoice>
             {
-                new("帮我指条路。", SetFlag: "hermit_route", GotoLabel: "hermit_route"),
-                new("你还好吗，老郑？", SetFlag: "hermit_care", GotoLabel: "hermit_care"),
+                new("Which way should I go?", SetFlag: "hermit_route", GotoLabel: "hermit_route"),
+                new("Are you okay, Old Zheng?", SetFlag: "hermit_care", GotoLabel: "hermit_care"),
             }),
-            new(H, "好不好的……活着就还得搬家。你这孩子，心是软的。", "hermit", Label: "hermit_care"),
-            new(H, "往深处走，膜最薄的地方就是巢母。别硬碰，用水。", "hermit", Label: "hermit_route"),
+            new(H, "I'm still here, so I keep moving. Thanks for asking.", "hermit", Label: "hermit_care"),
+            new(H, "Go deeper. The membrane is weakest near the Brood Mother. Use Water and do not force it.", "hermit", Label: "hermit_route"),
         });
 
         // --- NEW NPC: 灯笼鱼·盏 (巢母深处) — a dimming light, hopeful ---
         d[Lantern] = new DialogueTimeline(Lantern, new List<DialogueLine>
         {
-            new(L, "我这盏灯，是这片深处最后的亮了。", "lantern"),
-            new(L, "油糊住了我的灯囊，可我不敢灭——灭了，就再没人认得回家的路。", "lantern"),
-            new(L, "你身上的微光好暖。替我把路照下去，好吗？", "lantern"),
-            new(S, "我会的。你也别灭。", "lantern"),
+            new(L, "My light is the last one still burning down here.", "lantern"),
+            new(L, "Oil covers my light organ, but I cannot go dark. The others need it to find home.", "lantern"),
+            new(L, "Your glow feels warm. Will you carry it farther?", "lantern"),
+            new(S, "I will. Keep yours on too.", "lantern"),
         });
 
         // --- NEW NPC: 迷途鱼群 (optional, 沉积带) — chorus voice ---
         d[Shoal] = new DialogueTimeline(Shoal, new List<DialogueLine>
         {
-            new(Sh, "（许多细小的声音叠在一起）……出口在哪？出口在哪？", "shoal"),
-            new(Sh, "我们跟着浊流游，越游越深，再也找不到上面的光。", "shoal"),
-            new(Sh, "你发光……我们能跟着你吗？就一会儿也好。", "shoal"),
+            new(Sh, "(Many small voices) Where is the way out?", "shoal"),
+            new(Sh, "We followed the dirty current too far down. Now we cannot find the surface.", "shoal"),
+            new(Sh, "You glow. Can we follow you for a little while?", "shoal"),
         });
 
         // --- Boss pre / mid (post = existing BossDefeated + Ending) ---
         d[BossPre] = new DialogueTimeline(BossPre, new List<DialogueLine>
         {
-            new(B, "（低频的呜咽）……痛……谁……把我……缠住了……", "boss"),
-            new(S, "她在求救。海草说得对——她不是敌人。"),
-            new(S, "靠近她最薄的膜，用水，轻轻松开。"),
+            new(B, "(A low cry) It hurts... something has tied us together...", "boss"),
+            new(S, "She is asking for help. Seaweed was right. She is a creature in pain."),
+            new(S, "I need to reach the thin part of the membrane and release Water gently."),
         });
 
         d[BossMid] = new DialogueTimeline(BossMid, new List<DialogueLine>
         {
-            new(B, "（污浊从裂口里流走）……凉的……是水……", "boss"),
-            new(S, "再坚持一下，被你缠进来的孩子们，正一个个浮回水面。"),
+            new(B, "(Pollution drains through the crack) Cool... water...", "boss"),
+            new(S, "Hold on. The young lights caught inside you are rising back to the surface."),
         });
 
         // --- Ending beat: hand over the tidal key, tease next sea ---
         d[Ending] = new DialogueTimeline(Ending, new List<DialogueLine>
         {
-            new(G, "潮汐钥匙认了你。它会带你去冰封的『霜骨海沟』。", "npc1giving"),
-            new(G, "那里的污染是冷的，水救不了，要用冰。", "npc1giving"),
-            new(S, "潮湾苗圃的光，我留一半在这儿，照着回家的路。"),
-            new(S, "另一半，我带去下一片海。——第二章，待续。"),
+            new(G, "The Tidal Key chose you. It will lead you to Frostbound Trench.", "npc1giving"),
+            new(G, "The pollution there is locked in ice. Water alone will not be enough.", "npc1giving"),
+            new(S, "I will leave part of Tidepool Nursery's light here, so everyone can find home."),
+            new(S, "I will carry the rest into the next sea."),
         });
 
         d[Chapter2Opening] = new DialogueTimeline(Chapter2Opening, new List<DialogueLine>
         {
-            new(L, "微光！潮水在这里冻住了，鱼卵和海草都困在冰层下面。", "lantern"),
-            new(S, "冰不是敌人。失去流动的海，才会让寒冷变成牢笼。"),
-            new(L, "沿着冰脊唤醒三座解冻锚，让潮水重新找到路。", "lantern"),
+            new(L, "Shimmer! The current has stopped. Eggs and sea grass are trapped under polluted ice.", "lantern"),
+            new(S, "The cold is not the real threat. Runoff fed an algal bloom, and its decay used up the oxygen."),
+            new(L, "Wake the three Thaw Anchors along the ridge. Give the current a path.", "lantern"),
         });
         d[Chapter2Guardian] = new DialogueTimeline(Chapter2Guardian, new List<DialogueLine>
         {
-            new(B, "别靠近……我只能继续结冰，才能把污水挡在外面……", "boss"),
-            new(S, "你守得太久了。让我用冰的共鸣，替你松开外壳。"),
+            new(F, "Stay back... I have to keep freezing, or the polluted water will get through...", "boss"),
+            new(S, "You have guarded this place for too long. Let my Ice current loosen the shell."),
         });
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>
         {
-            new(B, "潮水……又在动了。原来守护，不一定要把一切冻住。", "boss"),
-            new(L, "霜骨海沟亮起来了！前面却还有一片完全断电的海。", "lantern"),
-            new(S, "那就把这片冰里的光，带去下一段回路。"),
+            new(F, "The tide is moving again. I thought protection meant freezing everything in place.", "boss"),
+            new(L, "Frostbound Trench is bright again. But the sea ahead has lost all power.", "lantern"),
+            new(S, "Then I will carry this light into the next circuit."),
         });
         d[Chapter3Opening] = new DialogueTimeline(Chapter3Opening, new List<DialogueLine>
         {
-            new(Sh, "光断了……我们看不见同伴，也找不到产卵的礁石。", "shoal"),
-            new(S, "这些旧电缆不该继续漏电，但安全的潮汐回路可以给生命指路。"),
-            new(Sh, "请接通三座继电器。让灯塔只照亮海，不再灼伤海。", "shoal"),
+            new(Sh, "The ocean carried the heat here. The coral turned pale, and the old grid failed.", "shoal"),
+            new(S, "Greenhouse gases trap extra heat. The ocean absorbs most of it."),
+            new(Sh, "Reconnect the three relays. Give the lighthouse clean, controlled power.", "shoal"),
         });
         d[Chapter3Guardian] = new DialogueTimeline(Chapter3Guardian, new List<DialogueLine>
         {
-            new(B, "热……停不下来……烟把回路和海都堵住了……", "boss"),
-            new(S, "我不会摧毁你。我会把失控的电导回灯塔，让你安静下来。"),
+            new(C, "Too hot... I cannot shut down... smoke is blocking the circuit and the water...", "boss"),
+            new(S, "I will not destroy you. I will guide the loose current back to the lighthouse."),
         });
         d[Chapter3Ending] = new DialogueTimeline(Chapter3Ending, new List<DialogueLine>
         {
-            new(B, "炉火降下来了。余温可以孵化珊瑚，不必再烧黑海水。", "boss"),
-            new(Sh, "看——每一盏灯都只照需要的地方，鱼群重新看见彼此了。", "shoal"),
-            new(S, "保护海洋，不是替海做一次英雄；是让每一次选择，都不再把代价沉到海底。"),
-            new(S, "只要还有人愿意修复，微光就会一盏一盏传下去。"),
+            new(C, "The furnace is cooling. Its warmth can help coral grow instead of burning the water.", "boss"),
+            new(Sh, "Look. Each light shines only where it is needed. The shoal can see itself again.", "shoal"),
+            new(S, "Protecting the ocean is not one heroic act. It is choosing not to hide our costs underwater."),
+            new(S, "As long as people keep repairing what was harmed, one light can lead to another."),
         });
 
         return d;
@@ -201,16 +204,16 @@ public static class NarrativeData
     // --- Memory vignettes (item 3): one per shard "memory" collected ---
     public static readonly IReadOnlyList<MemoryVignette> Memories = new List<MemoryVignette>
     {
-        new("mem_1", "潮汐记忆·初亮", new[] { "一群幼小的微光第一次睁眼，", "整片苗圃像被点亮的星海。" }, ZoneShallows),
-        new("mem_2", "潮汐记忆·暖流", new[] { "暖流穿过珊瑚，", "孩子们追着光影，笑出细小的气泡。" }, ZoneShallows),
-        new("mem_3", "潮汐记忆·第一只桶", new[] { "某天，一只铁桶沉了下来，", "水面上的影子，第一次盖住了光。" }, ZoneShallows),
-        new("mem_4", "潮汐记忆·浊流", new[] { "浊流来时，", "灯一盏盏地熄，谁也没来得及说再见。" }, ZoneSediment),
-        new("mem_5", "潮汐记忆·沉积", new[] { "被冲散的同伴落进沉积带，", "光被泥沙一层层盖住，像睡着了。" }, ZoneSediment),
-        new("mem_6", "潮汐记忆·岚婆婆的歌", new[] { "岚婆婆抱着最后几枚卵，", "用很轻的调子，把潮汐唱给它们听。" }, ZoneSediment),
-        new("mem_7", "潮汐记忆·缠绕", new[] { "废液让小水母们彼此粘连，", "分不清你我，痛也连成一片。" }, ZoneDepths),
-        new("mem_8", "潮汐记忆·呼吸", new[] { "那低频的呼吸，", "原来是无数被困的声音，在一起求救。" }, ZoneDepths),
-        new("mem_9", "潮汐记忆·松开", new[] { "水流过缝隙，", "第一缕被缠住的光，挣脱了出来。" }, ZoneDepths),
-        new("mem_10", "潮汐记忆·钥匙", new[] { "当最后一缕光归位，", "潮水深处，浮起一枚冷冷发亮的钥匙。" }, ZoneDepths),
+        new("mem_1", "Tidal Memory · First Light", new[] { "A group of young jellyfish opened their eyes.", "The whole nursery became a field of stars." }, ZoneShallows),
+        new("mem_2", "Tidal Memory · Warm Current", new[] { "A warm current moved through the coral.", "Young lights chased it and left bubbles behind." }, ZoneShallows),
+        new("mem_3", "Tidal Memory · The First Barrel", new[] { "One day, a metal barrel sank into the nursery.", "For the first time, a shadow from above covered the light." }, ZoneShallows),
+        new("mem_4", "Tidal Memory · Dirty Current", new[] { "The dirty current arrived without warning.", "The lights went out one by one. No one had time to say goodbye." }, ZoneSediment),
+        new("mem_5", "Tidal Memory · Buried Light", new[] { "The current scattered the young jellyfish into the silt.", "Layer after layer covered their light." }, ZoneSediment),
+        new("mem_6", "Tidal Memory · Granny Lan's Song", new[] { "Granny Lan held the last few eggs.", "She sang the rhythm of the tide to them." }, ZoneSediment),
+        new("mem_7", "Tidal Memory · Tangled", new[] { "Wastewater fused the young jellyfish together.", "Their bodies and their pain became hard to separate." }, ZoneDepths),
+        new("mem_8", "Tidal Memory · Breath", new[] { "The low pulse was not a threat.", "It was many trapped voices asking for help." }, ZoneDepths),
+        new("mem_9", "Tidal Memory · Release", new[] { "Water reached the gap in the membrane.", "The first trapped light pulled free." }, ZoneDepths),
+        new("mem_10", "Tidal Memory · The Key", new[] { "When the last light returned to its place,", "a cold Tidal Key rose from the deep." }, ZoneDepths),
     };
 
     public static MemoryVignette MemoryAt(int index) => Memories[index % Memories.Count];
@@ -237,14 +240,14 @@ public static class NarrativeData
     // --- Lore notes (item 5): examinable 残片笔记 / objects scattered across zones ---
     public static readonly IReadOnlyList<LoreNote> LoreNotes = new List<LoreNote>
     {
-        new("lore_barrel", "残片·汽油桶", new[] { "桶身印着褪色的厂标：", "「装填后请妥善回收」——没人照做。" }, ZoneShallows),
-        new("lore_net", "残片·断网", new[] { "一截被丢弃的渔网，", "缠着早已风干的、谁的鳞片。" }, ZoneShallows),
-        new("lore_bottle", "残片·漂流瓶", new[] { "瓶里有张人类小孩的画：", "蓝色的海，和一条会发光的鱼。" }, ZoneShallows),
-        new("lore_pipe", "残片·排污口", new[] { "锈蚀的管口仍在渗着浊液，", "苗圃的水，就是从这里开始变浑的。" }, ZoneSediment),
-        new("lore_shell", "残片·空壳堆", new[] { "层层叠叠的空贝壳，", "老郑说，这是『搬不动的旧家』。" }, ZoneSediment),
-        new("lore_log", "残片·观测日志", new[] { "一块刻字的石板：", "「浊流第七日，发光体数量减半。」" }, ZoneSediment),
-        new("lore_membrane", "残片·薄膜", new[] { "一片巢母蜕落的膜，", "凑近能听见极轻的、像哭的声音。" }, ZoneDepths),
-        new("lore_lantern", "残片·熄灯", new[] { "一盏沉底的灯笼鱼遗物，", "灯囊里凝固的油，黑得发亮。" }, ZoneDepths),
+        new("lore_barrel", "Fragment · Oil Barrel", new[] { "A faded factory label is still visible:", "Recycle safely after use. No one did." }, ZoneShallows),
+        new("lore_net", "Fragment · Abandoned Net", new[] { "A torn fishing net lies across the reef.", "Even without a fisher, lost gear can keep trapping animals for years." }, ZoneShallows),
+        new("lore_bottle", "Fragment · Message Bottle", new[] { "Inside is a child's drawing:", "a blue ocean and a fish that gives off light." }, ZoneShallows),
+        new("lore_pipe", "Fragment · Drain Pipe", new[] { "Runoff and wastewater still leak from the rusted pipe.", "The nursery became cloudy from pollution that began on land." }, ZoneSediment),
+        new("lore_shell", "Fragment · Empty Shells", new[] { "Empty shells are stacked in the silt.", "Old Zheng calls them homes too heavy to move." }, ZoneSediment),
+        new("lore_log", "Fragment · Survey Log", new[] { "Words are carved into a stone plate:", "Day seven of the dirty current. Half the lights are gone." }, ZoneSediment),
+        new("lore_membrane", "Fragment · Membrane", new[] { "A thin piece of the Brood Mother's membrane.", "Up close, it sounds almost like crying." }, ZoneDepths),
+        new("lore_lantern", "Fragment · Dark Lantern", new[] { "The remains of a lanternfish rest on the seabed.", "Oil has hardened inside its light organ." }, ZoneDepths),
     };
 
     public static int LoreCount => LoreNotes.Count;
@@ -252,14 +255,14 @@ public static class NarrativeData
     // --- Monster / creature codex entries (item 5 log) ---
     public static readonly IReadOnlyList<CodexEntry> CodexEntries = new List<CodexEntry>
     {
-        new("codex_boss", "潮涡巢母",
-            "由无数小水母被废液浸泡粘连而成。它并非凶兽，而是一团连在一起的疼痛与求救。",
-            "水（净化，非击杀）"),
-        new("codex_invader_plastic", "塑料漂物",
-            "随浊流漂荡的塑料污染体，会黯淡周围的光。", "水"),
-        new("codex_invader_oil", "油渍残影",
-            "油膜凝成的污染体，糊住灯囊与呼吸。", "水"),
-        new("codex_invader_foam", "化学泡沫",
-            "废液发酵的苍白泡沫，触之刺痛。", "水"),
+        new("codex_boss", "Brood Mother",
+            "Wastewater fused many young jellyfish into one body. She is not a predator. She is many lives trapped in the same pain.",
+            "Water — gentle restoration"),
+        new("codex_invader_plastic", "Plastic Drifter",
+            "A moving mass of plastic waste that dims nearby life.", "Water"),
+        new("codex_invader_oil", "Oil Shadow",
+            "A creature formed from an oil film. It blocks light and breathing.", "Water"),
+        new("codex_invader_foam", "Chemical Foam",
+            "Pale foam created by industrial waste. Contact causes pollution damage.", "Water"),
     };
 }

@@ -111,7 +111,7 @@ public partial class LogPanel : CanvasLayer
             foreach (var id in log.Codex)
             {
                 var e = NarrativeData.FindCodex(id);
-                if (e != null) AddEntry(e.Name, e.Body + "  弱点：" + e.Weakness, "");
+                if (e != null) AddEntry(e.Name, e.Body + "  Weakness: " + e.Weakness, "");
             }
 
         // --- Lore notes ---
@@ -134,7 +134,7 @@ public partial class LogPanel : CanvasLayer
 
     private void AddEntry(string title, string body, string zone)
     {
-        string head = string.IsNullOrEmpty(zone) ? $"· {title}" : $"· {title}  〔{zone}〕";
+        string head = string.IsNullOrEmpty(zone) ? $"· {title}" : $"· {title}  —  {zone}";
         _content.AddChild(MakeLabel(head, UiTheme.FontBody, UiTheme.Ink));
         if (!string.IsNullOrEmpty(body))
             _content.AddChild(MakeLabel("   " + body, UiTheme.FontSmall, UiTheme.InkDim));
@@ -142,22 +142,28 @@ public partial class LogPanel : CanvasLayer
 
     private static string ConversationTitle(string id) => id switch
     {
-        DialogueData.GrannyLan => DialogueData.SpeakerGranny + "（初遇）",
+        DialogueData.GrannyLan => DialogueData.SpeakerGranny + " (First Meeting)",
         DialogueData.Starfish => DialogueData.SpeakerStarfish,
         DialogueData.Seaweed => DialogueData.SpeakerSeaweed,
         DialogueData.JellyfishBox => DialogueData.SpeakerBox,
-        DialogueData.BossDefeated => "巢母·净化",
-        NarrativeData.Opening => "开场·潮湾苗圃",
-        NarrativeData.GrannyMid => DialogueData.SpeakerGranny + "（途中）",
-        NarrativeData.GrannyAfter => DialogueData.SpeakerGranny + "（净化后）",
-        NarrativeData.StarfishDeep => DialogueData.SpeakerStarfish + "（深谈）",
-        NarrativeData.SeaweedDeep => DialogueData.SpeakerSeaweed + "（深谈）",
+        DialogueData.BossDefeated => "Brood Mother · Restored",
+        NarrativeData.Opening => "Opening · Tidepool Nursery",
+        NarrativeData.GrannyMid => DialogueData.SpeakerGranny + " (On the Way)",
+        NarrativeData.GrannyAfter => DialogueData.SpeakerGranny + " (After Restoration)",
+        NarrativeData.StarfishDeep => DialogueData.SpeakerStarfish + " (More)",
+        NarrativeData.SeaweedDeep => DialogueData.SpeakerSeaweed + " (More)",
         NarrativeData.Hermit => DialogueData.SpeakerHermit,
         NarrativeData.Lantern => DialogueData.SpeakerLantern,
         NarrativeData.Shoal => DialogueData.SpeakerShoal,
-        NarrativeData.BossPre => "巢母·求救",
-        NarrativeData.BossMid => "巢母·松开",
-        NarrativeData.Ending => "结章·潮汐钥匙",
+        NarrativeData.BossPre => "Brood Mother · Cry for Help",
+        NarrativeData.BossMid => "Brood Mother · Release",
+        NarrativeData.Ending => "Finale · Tidal Key",
+        NarrativeData.Chapter2Opening => "Opening · Frostbound Trench",
+        NarrativeData.Chapter2Guardian => "Frostshell Guardian · First Contact",
+        NarrativeData.Chapter2Ending => "Frostbound Trench · Restored",
+        NarrativeData.Chapter3Opening => "Opening · The Silent Lighthouse",
+        NarrativeData.Chapter3Guardian => "Overheated Core · First Contact",
+        NarrativeData.Chapter3Ending => "The Silent Lighthouse · Restored",
         _ => id,
     };
 

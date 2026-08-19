@@ -1,6 +1,6 @@
 # Version restore guide
 
-The project keeps three named Git restore points in addition to the original physical
+The project keeps named Git restore points in addition to the original physical
 snapshot folders. No original folder was deleted, moved, or overwritten while these
 restore points were created.
 
@@ -9,6 +9,7 @@ restore points were created.
 - `restore/baseline-before-handpaint-20260818`: version before the hand-painted UI pass.
 - `restore/handpaint-ui-before-folder-assets-20260818`: hand-painted UI with the earlier runtime artwork.
 - `restore/folder-art-self-contained-20260818`: current all-hand-painted version, with source artwork inside the project.
+- `restore/english-ocean-learning-20260818`: English portfolio version with the three-chapter ocean learning arc.
 
 List them at any time:
 

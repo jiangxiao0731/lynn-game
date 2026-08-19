@@ -36,16 +36,16 @@ layout_mode = 2
 
 [node name="FailureLabel" type="Label" parent="Box/VBox"]
 layout_mode = 2
-text = "微光暗淡了…"
+text = "Shimmer Faded"
 
 [node name="RestartHint" type="Label" parent="Box/VBox"]
 layout_mode = 2
-text = "按 T 重新开始"
+text = "Press T to restart"
 
 [node name="RestartButton" type="Button" parent="Box/VBox"]
 layout_mode = 2
-text = "重新开始"
+text = "Restart Chapter"
 
 [node name="QuitToTitleButton" type="Button" parent="Box/VBox"]
 layout_mode = 2
-text = "返回标题"
+text = "Return to Title"

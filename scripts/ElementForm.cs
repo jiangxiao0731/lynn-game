@@ -50,5 +50,5 @@ public static class GameConstants
     // Exit sits deep in 巢母深处, past the purified brood mother (item 7).
     public static readonly Godot.Vector2 ExitPoint = new(3420, 540);
 
-    public const string MonsterBossName = "潮涡巢母";
+    public const string MonsterBossName = "Brood Mother";
 }

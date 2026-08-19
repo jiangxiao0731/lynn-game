@@ -46,7 +46,7 @@ limit_bottom = 1080
 [node name="BroodMother" type="CharacterBody2D" parent="." groups=["monster"]]
 position = Vector2(3160, 540)
 script = ExtResource("3")
-MonsterName = "废热炉心"
+MonsterName = "Overheated Core"
 EffectiveElement = 3
 SpritePath = "res://assets/sprites/legacy/factory_monster_idle_sheet.png"
 DisplaySize = 300.0

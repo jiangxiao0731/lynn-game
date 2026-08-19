@@ -22,12 +22,12 @@ public partial class TutorialController : Control
 
     private static readonly (string Title, string Body)[] Pages =
     {
-        ("第一章·潮湾苗圃",
-         "海洋把情绪化作微光潮汐，维持生态平衡。\n\n如今污染沉入深处，让原本的生命发生扭曲。这里没有真正的敌人——让水重新流动，它们便会回归自然。"),
-        ("操作指引",
-         "移动    ←  ↑  →  ↓\n互动    E\n元素    1 水  ·  2 冰  ·  3 电\n\nR 收回形态    T 返回检查点    Esc 暂停"),
-        ("潮汐赋予水元素",
-         "让水流过被污染的缝隙，唤醒沉睡的微光。\n\n你的旅程将从寻找岚婆婆开始。沿途收集潮汐碎片，最终净化深处的巢母。"),
+        ("Chapter 1 · Tidepool Nursery",
+         "The ocean carries memory through its currents.\n\nPollution has settled in the deep and changed the creatures living here. They are not enemies. Restore the flow, and they can recover."),
+        ("Controls",
+         "Move       ←  ↑  →  ↓\nInteract   E\nElements   1 Water  ·  2 Ice  ·  3 Electric\n\nR Base form    T Restart chapter    Esc Pause"),
+        ("Water Element",
+         "Guide Water through polluted gaps and wake the lights trapped inside.\n\nStart by finding Granny Lan. Listen to the residents, collect Tidal Shards, and restore the Brood Mother in the deep."),
     };
 
     public override void _Ready()
@@ -155,7 +155,7 @@ public partial class TutorialController : Control
         _page = Mathf.Clamp(page, 0, PageCount - 1);
         _title.Text = Pages[_page].Title;
         _body.Text = Pages[_page].Body;
-        _next.Text = _page < PageCount - 1 ? "下一页" : "化为水元素";
+        _next.Text = _page < PageCount - 1 ? "Next" : "Enter Water Form";
         if (_pageDots != null)
         {
             _pageDots.Text = $"{_page + 1:00}  /  {PageCount:00}";

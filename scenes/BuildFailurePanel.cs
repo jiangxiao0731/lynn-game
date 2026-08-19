@@ -31,22 +31,22 @@ public partial class BuildFailurePanel : SceneBuilderBase
 
         var label = new Label();
         label.Name = "FailureLabel";
-        label.Text = "微光暗淡了…";
+        label.Text = "Shimmer Faded";
         vbox.AddChild(label);
 
         var hint = new Label();
         hint.Name = "RestartHint";
-        hint.Text = "按 T 重新开始";
+        hint.Text = "Press T to restart";
         vbox.AddChild(hint);
 
         var restart = new Button();
         restart.Name = "RestartButton";
-        restart.Text = "重新开始";
+        restart.Text = "Restart Chapter";
         vbox.AddChild(restart);
 
         var quit = new Button();
         quit.Name = "QuitToTitleButton";
-        quit.Text = "返回标题";
+        quit.Text = "Return to Title";
         vbox.AddChild(quit);
 
         root.SetScript(GD.Load("res://scripts/FailurePanel.cs"));

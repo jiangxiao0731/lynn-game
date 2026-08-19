@@ -117,7 +117,7 @@ public partial class HudController : CanvasLayer
         var objectiveBox = new VBoxContainer();
         objectiveBox.AddThemeConstantOverride("separation", UiTheme.Space1);
         objectiveInset.AddChild(objectiveBox);
-        var eyebrow = Text("当前目标", UiTheme.FontTiny, UiTheme.Accent);
+        var eyebrow = Text("CURRENT OBJECTIVE", UiTheme.FontTiny, UiTheme.Accent);
         objectiveBox.AddChild(eyebrow);
         _objectiveLabel = Text("", 26, UiTheme.Ink, true);
         objectiveBox.AddChild(_objectiveLabel);
@@ -146,7 +146,7 @@ public partial class HudController : CanvasLayer
         _zoneLabel = Text(ChapterRuntime.Zones[0], UiTheme.FontSmall, UiTheme.Ink);
         _zoneLabel.HorizontalAlignment = HorizontalAlignment.Right;
         locationBox.AddChild(_zoneLabel);
-        var logHint = Text("J  ·  记忆日志", UiTheme.FontTiny, UiTheme.InkFaint);
+        var logHint = Text("J  ·  MEMORY JOURNAL", UiTheme.FontTiny, UiTheme.InkFaint);
         logHint.HorizontalAlignment = HorizontalAlignment.Right;
         locationBox.AddChild(logHint);
 
@@ -161,7 +161,7 @@ public partial class HudController : CanvasLayer
         healthInset.AddChild(healthBox);
         var healthTop = new HBoxContainer();
         healthBox.AddChild(healthTop);
-        healthTop.AddChild(Text("微光", UiTheme.FontTiny, UiTheme.InkDim));
+        healthTop.AddChild(Text("SHIMMER", UiTheme.FontTiny, UiTheme.InkDim));
         _hpLabel = Text("", UiTheme.FontTiny, UiTheme.Ink);
         _hpLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         _hpLabel.HorizontalAlignment = HorizontalAlignment.Right;
@@ -182,9 +182,9 @@ public partial class HudController : CanvasLayer
         skillInset.AddChild(skillRow);
         var skills = new[]
         {
-            ("1", "水", Palette.ElementWater),
-            ("2", "冰", Palette.ElementIce),
-            ("3", "电", Palette.ElementElectric),
+            ("1", "WATER", Palette.ElementWater),
+            ("2", "ICE", Palette.ElementIce),
+            ("3", "ELECTRIC", Palette.ElementElectric),
         };
         for (int i = 0; i < skills.Length; i++)
         {
@@ -225,12 +225,12 @@ public partial class HudController : CanvasLayer
         bossBox.AddChild(_bossBar);
 
         // A transient toast replaces the permanent full-width instruction strip.
-        _statusPanel = Track(Surface("StatusToast", new Vector2(660, 64), 0.90f));
+        _statusPanel = Track(Surface("StatusToast", new Vector2(780, 84), 0.90f));
         _statusPanel.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
-        _statusPanel.Position = new Vector2(-330, -232);
+        _statusPanel.Position = new Vector2(-390, -252);
         AddChild(_statusPanel);
         var statusInset = Inset(_statusPanel, UiTheme.Space6, UiTheme.Space3);
-        _statusLabel = Text("", UiTheme.FontSmall, UiTheme.Ink);
+        _statusLabel = Text("", UiTheme.FontSmall, UiTheme.Ink, true);
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _statusLabel.VerticalAlignment = VerticalAlignment.Center;
         statusInset.AddChild(_statusLabel);
@@ -241,7 +241,7 @@ public partial class HudController : CanvasLayer
         _pausePanel.Visible = false;
         _pausePanel.ProcessMode = ProcessModeEnum.Always;
         AddChild(_pausePanel);
-        var pauseLabel = Text("已暂停", UiTheme.FontH2, UiTheme.Ink);
+        var pauseLabel = Text("PAUSED", UiTheme.FontH2, UiTheme.Ink);
         pauseLabel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         pauseLabel.HorizontalAlignment = HorizontalAlignment.Center;
         pauseLabel.VerticalAlignment = VerticalAlignment.Center;

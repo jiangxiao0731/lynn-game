@@ -44,10 +44,10 @@ public partial class SettlementPanel : Control
         if (btn != null)
         {
             btn.Text = string.IsNullOrEmpty(NextScenePath)
-                ? "回到潮汐记录"
-                : ChapterRuntime.CurrentChapter == 1 ? "进入霜骨海沟"
-                : ChapterRuntime.CurrentChapter == 2 ? "前往断流灯塔"
-                : "回望复苏的海";
+                ? "Return to Title"
+                : ChapterRuntime.CurrentChapter == 1 ? "Enter Frostbound Trench"
+                : ChapterRuntime.CurrentChapter == 2 ? "Go to the Silent Lighthouse"
+                : "View the Restored Sea";
             btn.Pressed += OnContinuePressed;
             UiTheme.StyleButton(btn, UiTheme.FontBody);
         }

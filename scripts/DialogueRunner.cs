@@ -116,7 +116,7 @@ public partial class DialogueRunner : CanvasLayer
         _choiceBox.AddThemeConstantOverride("separation", 8);
         vbox.AddChild(_choiceBox);
 
-        _hintLabel = UiTheme.MakeLabel("空格 / 回车  ·  继续", UiTheme.FontTiny, UiTheme.InkFaint);
+        _hintLabel = UiTheme.MakeLabel("SPACE / ENTER  ·  CONTINUE", UiTheme.FontTiny, UiTheme.InkFaint);
         _hintLabel.HorizontalAlignment = HorizontalAlignment.Right;
         vbox.AddChild(_hintLabel);
     }
@@ -218,7 +218,7 @@ public partial class DialogueRunner : CanvasLayer
 
     private Node2D? ResolveSpeakerAnchor(string speaker)
     {
-        if (speaker == DialogueData.SpeakerShimmer || speaker == "残片" || string.IsNullOrEmpty(speaker))
+        if (speaker == DialogueData.SpeakerShimmer || speaker == "Fragment" || string.IsNullOrEmpty(speaker))
             return GetTree().GetFirstNodeInGroup("player") as Node2D;
 
         string? nodeName = speaker switch
@@ -231,6 +231,8 @@ public partial class DialogueRunner : CanvasLayer
             DialogueData.SpeakerLantern => "LanternNPC",
             DialogueData.SpeakerShoal => "ShoalNPC",
             DialogueData.SpeakerBoss => "BroodMother",
+            DialogueData.SpeakerFrostshell => "BroodMother",
+            DialogueData.SpeakerCore => "BroodMother",
             _ => null,
         };
         if (nodeName == null) return GetTree().GetFirstNodeInGroup("player") as Node2D;
@@ -295,6 +297,8 @@ public partial class DialogueRunner : CanvasLayer
         DialogueData.SpeakerLantern => "lantern",
         DialogueData.SpeakerShoal => "shoal",
         DialogueData.SpeakerBoss => "boss",
+        DialogueData.SpeakerFrostshell => "boss",
+        DialogueData.SpeakerCore => "boss",
         _ => null, // 微光 / 残片 narration: no portrait
     };
 

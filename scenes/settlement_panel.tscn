@@ -36,11 +36,11 @@ layout_mode = 2
 
 [node name="Title" type="Label" parent="Box/VBox"]
 layout_mode = 2
-text = "净化完成"
+text = "Area Restored"
 
 [node name="Summary" type="Label" parent="Box/VBox"]
 layout_mode = 2
 
 [node name="ContinueButton" type="Button" parent="Box/VBox"]
 layout_mode = 2
-text = "继续"
+text = "Continue"

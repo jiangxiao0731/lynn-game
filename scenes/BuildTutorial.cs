@@ -42,7 +42,7 @@ public partial class BuildTutorial : SceneBuilderBase
 
         var pageTitle = new Label();
         pageTitle.Name = "PageTitle";
-        pageTitle.Text = "第一章·潮湾苗圃";
+        pageTitle.Text = "Chapter 1 · Tidepool Nursery";
         vbox.AddChild(pageTitle);
 
         var pageBody = new Label();
@@ -52,7 +52,7 @@ public partial class BuildTutorial : SceneBuilderBase
 
         var next = new Button();
         next.Name = "NextButton";
-        next.Text = "下一页";
+        next.Text = "Next";
         vbox.AddChild(next);
 
         root.SetScript(GD.Load("res://scripts/TutorialController.cs"));

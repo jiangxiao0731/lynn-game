@@ -77,15 +77,15 @@ public partial class TitleController : Control
 
         var saved = SaveManager.Instance?.LoadState();
         int savedLevel = saved?.CurrentLevel ?? 1;
-        string chapterText = savedLevel == 2 ? "第二章  ·  霜骨海沟"
-            : savedLevel == 3 ? "第三章  ·  断流灯塔" : "第一章  ·  潮湾苗圃";
+        string chapterText = savedLevel == 2 ? "CHAPTER 2  ·  FROSTBOUND TRENCH"
+            : savedLevel == 3 ? "CHAPTER 3  ·  THE SILENT LIGHTHOUSE" : "CHAPTER 1  ·  TIDEPOOL NURSERY";
         var chapter = UiTheme.MakeLabel(chapterText, UiTheme.FontTiny, UiTheme.Accent);
         chapter.AddThemeConstantOverride("letter_spacing", 3);
         menu.AddChild(chapter);
 
         // Editorial, left-aligned title lockup. One restrained glow belongs to the
         // title only; buttons and supporting text remain quiet.
-        var title = UiTheme.MakeLabel("潮汐微光", UiTheme.FontDisplay, UiTheme.Accent);
+        var title = UiTheme.MakeLabel("Shallow Sea Dream", UiTheme.FontDisplay, UiTheme.Accent);
         title.HorizontalAlignment = HorizontalAlignment.Left;
         title.AddThemeColorOverride("font_outline_color",
             new Color(Palette.CoastalCyan.R, Palette.CoastalCyan.G, Palette.CoastalCyan.B, 0.18f));
@@ -93,11 +93,11 @@ public partial class TitleController : Control
         menu.AddChild(title);
         StartTitlePulse(title);
 
-        var subtitle = UiTheme.MakeLabel("SHALLOW SEA DREAM", UiTheme.FontSmall, UiTheme.InkDim);
+        var subtitle = UiTheme.MakeLabel("AN OCEAN RESTORATION STORY", UiTheme.FontSmall, UiTheme.InkDim);
         subtitle.HorizontalAlignment = HorizontalAlignment.Left;
         menu.AddChild(subtitle);
 
-        var premise = UiTheme.MakeLabel("守住微光，唤醒被浊流覆盖的海洋记忆。",
+        var premise = UiTheme.MakeLabel("Protect the last light. Help a polluted ocean recover.",
             UiTheme.FontBody, UiTheme.Ink, wrap: true);
         premise.CustomMinimumSize = new Vector2(520, 0);
         menu.AddChild(premise);
@@ -110,7 +110,7 @@ public partial class TitleController : Control
 
         bool hasSave = SaveManager.Instance?.HasSave() ?? false;
 
-        var begin = new Button { Text = hasSave ? "继续游戏" : "开始游戏", Name = "BeginButton" };
+        var begin = new Button { Text = hasSave ? "Continue Journey" : "Start Game", Name = "BeginButton" };
         begin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         UiTheme.StyleButton(begin, UiTheme.FontBody);
         begin.Pressed += OnBeginPressed;
@@ -118,14 +118,14 @@ public partial class TitleController : Control
 
         if (hasSave)
         {
-            var newGame = new Button { Text = "开始游戏", Name = "NewGameButton" };
+            var newGame = new Button { Text = "Start New Game", Name = "NewGameButton" };
             newGame.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             UiTheme.StyleButton(newGame, UiTheme.FontBody, primary: false);
             newGame.Pressed += OnNewGamePressed;
             actions.AddChild(newGame);
         }
 
-        var exit = new Button { Text = "返回岸上", Name = "ExitButton" };
+        var exit = new Button { Text = "Exit Game", Name = "ExitButton" };
         exit.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         UiTheme.StyleButton(exit, UiTheme.FontBody, primary: false);
         exit.Pressed += OnExitPressed;

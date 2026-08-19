@@ -49,7 +49,7 @@ limit_bottom = 1080
 [node name="BroodMother" type="CharacterBody2D" parent="." groups=["monster"]]
 position = Vector2(3160, 540)
 script = ExtResource("3")
-MonsterName = "霜壳守望者"
+MonsterName = "Frostshell Guardian"
 EffectiveElement = 2
 SpritePath = "res://assets/sprites/legacy/ice_monster_idle_sheet.png"
 DisplaySize = 290.0

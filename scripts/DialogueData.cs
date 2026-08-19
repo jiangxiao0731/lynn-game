@@ -34,16 +34,18 @@ public static class DialogueData
     public const string JellyfishBox = "jellyfish1Giving";
     public const string BossDefeated = "boss_defeated";
 
-    // Speaker display names (zh primary).
-    public const string SpeakerGranny = "岚婆婆";
-    public const string SpeakerStarfish = "海星";
-    public const string SpeakerSeaweed = "海草";
-    public const string SpeakerShimmer = "微光";
-    public const string SpeakerBox = "汽油桶";
-    public const string SpeakerHermit = "寄居蟹老郑";
-    public const string SpeakerLantern = "灯笼鱼·盏";
-    public const string SpeakerShoal = "迷途鱼群";
-    public const string SpeakerBoss = "潮涡巢母";
+    // Speaker display names.
+    public const string SpeakerGranny = "Granny Lan";
+    public const string SpeakerStarfish = "Starfish";
+    public const string SpeakerSeaweed = "Seaweed";
+    public const string SpeakerShimmer = "Shimmer";
+    public const string SpeakerBox = "Oil Barrel";
+    public const string SpeakerHermit = "Old Zheng";
+    public const string SpeakerLantern = "Lanternfish";
+    public const string SpeakerShoal = "Lost Shoal";
+    public const string SpeakerBoss = "Brood Mother";
+    public const string SpeakerFrostshell = "Frostshell Guardian";
+    public const string SpeakerCore = "Overheated Core";
 
     private static readonly Dictionary<string, DialogueTimeline> Timelines = Build();
 
@@ -67,48 +69,49 @@ public static class DialogueData
         // 岚婆婆 — first meeting (anchor lore verbatim, with a small branching choice).
         d[GrannyLan] = new DialogueTimeline(GrannyLan, new List<DialogueLine>
         {
-            new(SpeakerGranny, "孩子，你身上还留着没被污染的微光。", "npc1giving"),
-            new(SpeakerGranny, "不同的污染，需要不同的净化之力。", "npc1giving"),
-            new(SpeakerGranny, "第一章，我教你唤醒「水」的力量。", "npc1giving"),
-            new(SpeakerGranny, "你愿意承接这份潮汐的托付吗？", "npc1giving", new List<DialogueChoice>
+            new(SpeakerGranny, "Your light is still clean, Shimmer.", "npc1giving"),
+            new(SpeakerGranny, "Different kinds of pollution need different elements.", "npc1giving"),
+            new(SpeakerGranny, "First, I will teach you to use Water.", "npc1giving"),
+            new(SpeakerGranny, "Will you help me restore this nursery?", "npc1giving", new List<DialogueChoice>
             {
-                new("我愿意试试。", SetFlag: "granny_accept", GotoLabel: "granny_yes"),
-                new("我还有些害怕……", SetFlag: "granny_hesitate", GotoLabel: "granny_soft"),
+                new("I'll try.", SetFlag: "granny_accept", GotoLabel: "granny_yes"),
+                new("I'm still scared.", SetFlag: "granny_hesitate", GotoLabel: "granny_soft"),
             }),
-            new(SpeakerGranny, "害怕是对的。可海不会等怕的人。我陪你走第一段。", "npc1giving", Label: "granny_soft"),
-            new(SpeakerGranny, "吸收附近的水碎片，靠近巢母时按 1 释放水元素。", "npc1giving", Label: "granny_yes"),
-            new(SpeakerGranny, "更深的海里还有冰与电……但那是后话了。", "npc1giving"),
-            new(SpeakerShimmer, "我会记住每一片被我唤回的光。", "npc1giving"),
+            new(SpeakerGranny, "That makes sense. You do not have to be fearless. I will guide you through the first current.", "npc1giving", Label: "granny_soft"),
+            new(SpeakerGranny, "Collect the Water Shards nearby. At the Brood Mother, press 1 to release Water.", "npc1giving", Label: "granny_yes"),
+            new(SpeakerGranny, "Ice and Electric currents wait farther below. One step at a time.", "npc1giving"),
+            new(SpeakerShimmer, "I will remember every light we bring back.", "npc1giving"),
         });
 
         d[Starfish] = new DialogueTimeline(Starfish, new List<DialogueLine>
         {
-            new(SpeakerStarfish, "好久没有还会发光的同伴经过了。", "starfish"),
-            new(SpeakerStarfish, "塑料让我的族人黯淡下去……", "starfish"),
-            new(SpeakerStarfish, "深处有更暗的东西在脉动。", "starfish"),
+            new(SpeakerStarfish, "I have not seen another living light in a long time.", "starfish"),
+            new(SpeakerStarfish, "Plastic can trap animals or be mistaken for food.", "starfish"),
+            new(SpeakerStarfish, "Seaweed heard something moving below. Talk to them before you go deeper.", "starfish"),
         });
 
         d[Seaweed] = new DialogueTimeline(Seaweed, new List<DialogueLine>
         {
-            new(SpeakerSeaweed, "你听见了吗？那低频的「呼吸」。", "seaweed"),
-            new(SpeakerSeaweed, "它原本只是一群小水母，被废液浸泡得彼此粘连。", "seaweed"),
-            new(SpeakerSeaweed, "先收集碎片，再用水元素击打它最薄的膜。", "seaweed"),
+            new(SpeakerSeaweed, "Can you hear that low pulse?", "seaweed"),
+            new(SpeakerSeaweed, "It was once a group of young jellyfish. Wastewater fused them together.", "seaweed"),
+            new(SpeakerSeaweed, "Collect the shards, then use Water on the thinnest part of the membrane.", "seaweed"),
         });
 
         d[JellyfishBox] = new DialogueTimeline(JellyfishBox, new List<DialogueLine>
         {
-            new(SpeakerShimmer, "这是什么……一只生锈的桶？"),
-            new(SpeakerBox, "我原本是人类工厂里装汽油的容器……", "barrel"),
-            new(SpeakerBox, "他们说，把我直接扔进海里最省事。", "barrel"),
-            new(SpeakerBox, "我不想再漏了。求你，把我身上的油……带走。", "barrel"),
-            new(SpeakerShimmer, "我把它记进了潮汐记忆里。它也曾想做点别的。"),
+            new(SpeakerShimmer, "What is this... a rusted barrel?"),
+            new(SpeakerBox, "I once carried fuel for a factory on land.", "barrel"),
+            new(SpeakerBox, "They said dropping me into the sea was the easiest solution.", "barrel"),
+            new(SpeakerBox, "I do not want to leak anymore. Please take this oil away.", "barrel"),
+            new(SpeakerBox, "Oil can coat bodies, block light, and harm eggs before anyone sees the damage.", "barrel"),
+            new(SpeakerShimmer, "I will keep its story in the Tidal Memories. Even this barrel wanted another ending."),
         });
 
         d[BossDefeated] = new DialogueTimeline(BossDefeated, new List<DialogueLine>
         {
-            new(SpeakerShimmer, "巢母的外壳裂开了……"),
-            new(SpeakerShimmer, "被困的微光，回到了水里。"),
-            new(SpeakerShimmer, "一枚新的元素之球浮起——通往下一片海域的潮汐钥匙。"),
+            new(SpeakerShimmer, "The shell is opening."),
+            new(SpeakerShimmer, "The trapped lights are returning to the water."),
+            new(SpeakerShimmer, "A new element rises from the current. It will guide me to the next sea."),
         });
 
         return d;

@@ -49,11 +49,11 @@ layout_mode = 2
 
 [node name="PageTitle" type="Label" parent="Modal/VBox"]
 layout_mode = 2
-text = "第一章·潮湾苗圃"
+text = "Chapter 1 · Tidepool Nursery"
 
 [node name="PageBody" type="Label" parent="Modal/VBox"]
 layout_mode = 2
 
 [node name="NextButton" type="Button" parent="Modal/VBox"]
 layout_mode = 2
-text = "下一页"
+text = "Next"
