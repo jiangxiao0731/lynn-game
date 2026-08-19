@@ -1,0 +1,14 @@
+RALPH progress — 潮汐微光 ship-ready
+
+== Known state at ralph start (2026-06-25) ==
+- Game builds clean (C# Godot 4.7, .NET 8 TFM). Title/tutorial/dialogue/HUD redesigned to deep-sea glass theme (looks good). 26 Gemini art assets generated + cut out transparent.
+- OPEN BUG (US-001): in-level view shows a halftone/dot artifact (concentric dotted arcs) + too dark. Root cause NOT in source PNGs (all clean/opaque), NOT shaders/materials/lights/particles/compression. Decision: replace raster level backgrounds with a clean procedural deep-sea gradient backdrop (agent a9eba797 doing this).
+
+== Environment gotchas ==
+- Do NOT use `godot --headless --script` (hangs; _Initialize never fires). Author .tscn as text.
+- After `godot --headless --import`, .NET assemblies clear -> run `dotnet build` again before `--quit`.
+- Visual stories MUST be verified by launching in Godot editor + screenshot (computer-use). Self-check to OK before reporting (user directive).
+- Art gen needs GOOGLE_API_KEY with BILLING enabled (free tier = limit 0). Done already; 26 assets present.
+
+== Story log ==
+(pending)

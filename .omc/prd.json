@@ -1,0 +1,75 @@
+{
+  "project": "潮汐微光 / Shallow Sea Dream — ship-ready polished game",
+  "goal": "Complete, launchable, polished story-first eco-fable game. Fix all known visual/UX bugs, verify full playthrough, ship-quality polish.",
+  "repo": "/Users/shawj/Desktop/lynn/shallow-sea-dream-cs",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Level background is clean & bright (no dot/halftone artifact)",
+      "priority": 1,
+      "passes": false,
+      "acceptanceCriteria": [
+        "In a running game screenshot of game_scene1, there is NO halftone/dot/checkerboard artifact anywhere in the play field",
+        "The level scene is clearly bright and readable (not 'can't see anything') — background, player, entities all legible",
+        "dotnet build => 0 errors, 0 warnings; godot --headless --import then --quit => no ERROR/SCRIPT ERROR"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "All in-world sprites render correctly",
+      "priority": 2,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Player jellyfish is clearly visible, transparent-background, sensible size (~64-96px), animated",
+        "Shards, NPCs, boss, gasoline barrel render as their real art (transparent, correct scale), no leftover procedural placeholder blobs where real art exists",
+        "Verified by in-game screenshot showing recognizable sprites"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Full Level 1 playthrough works end-to-end",
+      "priority": 3,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Title -> Tutorial(3 pages) -> transform -> Level 1 loads with no errors",
+        "Player can move; collecting water shards advances the 5-shard counter and shows memory vignettes",
+        "Talking to NPCs advances objectives; boss purification triggers; settlement panel reachable",
+        "No crashes / no SCRIPT ERROR during a play session (verified via game Output panel)"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "All UI screens cohesive, polished, readable",
+      "priority": 4,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Title, Tutorial, Dialogue box, HUD (task/minimap/codex/HP/skill), Memory Log, Settlement, Failure all use the unified deep-sea glass theme and rounded font",
+        "All text is high-contrast and legible against its panel; no clipped/overflowing labels",
+        "Verified by screenshots of each screen"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Audio: ambient + key SFX present (or clean graceful silence)",
+      "priority": 5,
+      "passes": false,
+      "acceptanceCriteria": [
+        "AudioManager loads without errors whether or not OGG files exist",
+        "If audio assets are added, they play (ambient loop + shard pickup + purify); if absent, game runs silently with no errors",
+        "No missing-resource errors in Output"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Ship-readiness: clean project, no diagnostics, runnable build",
+      "priority": 6,
+      "passes": false,
+      "acceptanceCriteria": [
+        "lsp/dotnet diagnostics: 0 errors across scripts/",
+        "No leftover debug-only artifacts, dead code, or _raw backup folders shipped in the play path",
+        "project.godot has app name, icon, main scene set; game launches to title cleanly",
+        "STRUCTURE.md updated to reflect final state"
+      ]
+    }
+  ]
+}

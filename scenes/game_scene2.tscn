@@ -1,0 +1,68 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/ChapterLevelController.cs" id="1"]
+[ext_resource type="Script" path="res://scripts/Player.cs" id="2"]
+[ext_resource type="Script" path="res://scripts/BossController.cs" id="3"]
+[ext_resource type="Script" path="res://scripts/SkillSystem.cs" id="4"]
+[ext_resource type="Script" path="res://scripts/HudController.cs" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/settlement_panel.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/failure_panel.tscn" id="7"]
+
+[sub_resource type="CircleShape2D" id="PlayerShape"]
+radius = 36.0
+
+[node name="GameScene2" type="Node2D"]
+script = ExtResource("1")
+ChapterId = 2
+
+[node name="Map" type="Node2D" parent="."]
+
+[node name="Walls" type="StaticBody2D" parent="Map"]
+collision_layer = 32
+
+[node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
+position = Vector2(180, 540)
+collision_layer = 1
+collision_mask = 32
+script = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("PlayerShape")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player"]
+[node name="WaterSprite2D" type="AnimatedSprite2D" parent="Player"]
+visible = false
+[node name="IceSprite2D" type="AnimatedSprite2D" parent="Player"]
+visible = false
+[node name="ElectricSprite2D" type="AnimatedSprite2D" parent="Player"]
+visible = false
+[node name="InteractArea" type="Area2D" parent="Player"]
+[node name="Camera2D" type="Camera2D" parent="Player"]
+enabled = true
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+limit_left = 0
+limit_top = 0
+limit_right = 3600
+limit_bottom = 1080
+
+[node name="BroodMother" type="CharacterBody2D" parent="." groups=["monster"]]
+position = Vector2(3160, 540)
+script = ExtResource("3")
+MonsterName = "霜壳守望者"
+EffectiveElement = 2
+SpritePath = "res://assets/sprites/legacy/ice_monster_idle_sheet.png"
+DisplaySize = 290.0
+NextUnlockedElement = 3
+
+[node name="SkillSystem" type="Node" parent="."]
+script = ExtResource("4")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 10
+script = ExtResource("5")
+
+[node name="SettlementPanel" parent="HUD" instance=ExtResource("6")]
+NextScenePath = "res://scenes/game_scene3.tscn"
+
+[node name="FailurePanel" parent="HUD" instance=ExtResource("7")]

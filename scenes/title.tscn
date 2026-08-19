@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/TitleController.cs" id="1"]
+
+[node name="Title" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.12, 0.18, 1)
+
+[node name="Center" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 120
+theme_override_constants/margin_top = 104
+theme_override_constants/margin_right = 120
+theme_override_constants/margin_bottom = 88
+
+[node name="Menu" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+custom_minimum_size = Vector2(560, 0)
+
+[node name="GameTitle" type="Label" parent="Center/Menu"]
+layout_mode = 2
+text = "潮汐微光"
+
+[node name="BeginButton" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "潜入海洋"
+
+[node name="NewGameButton" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "开始游戏"
+
+[node name="ExitButton" type="Button" parent="Center/Menu"]
+layout_mode = 2
+text = "返回岸上"

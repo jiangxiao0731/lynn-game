@@ -1,0 +1,16 @@
+.claude
+CLAUDE.md
+screenshots
+.godot
+*.import
+bin/
+obj/
+.DS_Store
+.venv/
+__pycache__/
+assets/img/_raw/
+assets/sprites/_base_frames/
+assets/sprites/_electric_frames/
+assets/sprites/_ice_frames/
+assets/sprites/_water_frames/
+assets/sprites/_water_attack_frames/
