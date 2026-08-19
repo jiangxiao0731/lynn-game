@@ -36,9 +36,9 @@ public static class UiFx
             if (btn.Disabled) return;
             var tw = btn.CreateTween();
             tw.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
-            tw.TweenProperty(btn, "scale", new Vector2(1.06f, 1.06f), 0.12f);
+            tw.TweenProperty(btn, "scale", new Vector2(1.02f, 1.02f), 0.12f);
             tw.Parallel().TweenProperty(btn, "modulate",
-                new Color(1.18f, 1.18f, 1.18f, 1f), 0.12f);
+                new Color(1.06f, 1.06f, 1.02f, 1f), 0.12f);
         };
         btn.MouseExited += () =>
         {
@@ -55,7 +55,7 @@ public static class UiFx
             if (btn.Disabled) return;
             var tw = btn.CreateTween();
             tw.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
-            tw.TweenProperty(btn, "scale", new Vector2(1.06f, 1.06f), 0.12f);
+            tw.TweenProperty(btn, "scale", new Vector2(1.02f, 1.02f), 0.12f);
         };
         btn.FocusExited += () =>
         {
@@ -71,7 +71,7 @@ public static class UiFx
             if (btn.Disabled) return;
             var tw = btn.CreateTween();
             tw.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint);
-            tw.TweenProperty(btn, "scale", new Vector2(0.92f, 0.92f), 0.06f);
+            tw.TweenProperty(btn, "scale", new Vector2(0.98f, 0.98f), 0.06f);
             tw.Parallel().TweenProperty(btn, "modulate",
                 new Color(0.85f, 0.85f, 0.85f, 1f), 0.06f);
         };
@@ -81,12 +81,10 @@ public static class UiFx
         {
             if (btn.Disabled) return;
             var tw = btn.CreateTween();
-            // Slight overshoot then settle.
             tw.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint);
             tw.TweenProperty(btn, "scale", Vector2.One, 0.14f);
-            // Brief brightness flash then back to white.
             tw.Parallel().TweenProperty(btn, "modulate",
-                new Color(1.3f, 1.3f, 1.3f, 1f), 0.07f);
+                new Color(1.08f, 1.08f, 1.02f, 1f), 0.07f);
             tw.TweenProperty(btn, "modulate", Colors.White, 0.07f);
         };
     }

@@ -43,7 +43,7 @@ public partial class TitleController : Control
             var readingField = new ColorRect
             {
                 Name = "ReadingField",
-                Color = new Color(0.018f, 0.065f, 0.09f, 0.64f),
+                Color = new Color(0.018f, 0.065f, 0.09f, 0.16f),
                 MouseFilter = MouseFilterEnum.Ignore,
             };
             readingField.AnchorRight = 0.50f;
@@ -51,6 +51,16 @@ public partial class TitleController : Control
             AddChild(readingField);
             MoveChild(readingField, 3);
         }
+
+        // A single irregular watercolor folio replaces the old full-height glass
+        // reading field. It gives the title a memorable illustrated-book cover.
+        var folio = new Panel { Name = "TitleFolio", MouseFilter = MouseFilterEnum.Ignore };
+        folio.AnchorLeft = .045f; folio.AnchorTop = .075f;
+        folio.AnchorRight = .47f; folio.AnchorBottom = .925f;
+        folio.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 7, pad: 0));
+        AddChild(folio);
+        var center = GetNodeOrNull<Control>("Center");
+        if (center != null) MoveChild(folio, center.GetIndex());
 
         BuildMenu();
     }

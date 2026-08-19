@@ -1,14 +1,17 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace ShallowSeaDream;
 
-/// Restrained UI system for the hand-painted underwater storybook. Controls use a
-/// small number of editorial surfaces and a 4pt spatial scale; the scenery remains
-/// the visual hero instead of every HUD element competing with a glowing outline.
+/// Hand-painted underwater storybook UI. Every visible surface is rendered from a
+/// small deterministic watercolor texture with fibrous variation and imperfect ink
+/// edges. No image assets are generated or written: the textures live in memory.
 public static class UiTheme
 {
     public const string FontPath = "res://assets/fonts/AaShuiyu.ttf";
     private static FontFile? _font;
+    private static readonly Dictionary<string, Texture2D> PaintedTextures = new();
+    private static readonly Dictionary<string, Texture2D> BrushTextures = new();
 
     public static FontFile? Font
     {
@@ -36,81 +39,109 @@ public static class UiTheme
     public const int Space12 = 48;
     public const int SafeArea = 72;
 
-    public static readonly Color Ink = new(0.86f, 0.96f, 1.0f);
-    public static readonly Color InkDim = new(0.62f, 0.78f, 0.86f);
-    public static readonly Color InkFaint = new(0.52f, 0.68f, 0.76f, 0.7f);
-    public static readonly Color Accent = Palette.CoastalCyan;
+    public static readonly Color Ink = new(0.88f, 0.96f, 0.89f);
+    public static readonly Color InkDim = new(0.66f, 0.82f, 0.76f);
+    public static readonly Color InkFaint = new(0.54f, 0.70f, 0.66f, 0.76f);
+    public static readonly Color Accent = new(0.58f, 0.91f, 0.76f);
     public static readonly Color Teal = Palette.PollutedTeal;
-    public static readonly Color Hairline = new(0.52f, 0.94f, 1.0f, 0.26f);
-    public static readonly Color GlassBg = new(0.025f, 0.075f, 0.105f, 0.88f);
-    public static readonly Color GlassBgDeep = new(0.03f, 0.09f, 0.14f, 0.94f);
+    public static readonly Color Hairline = new(0.46f, 0.74f, 0.64f, 0.88f);
+    public static readonly Color GlassBg = new(0.045f, 0.12f, 0.14f, 0.94f);
+    public static readonly Color GlassBgDeep = new(0.035f, 0.09f, 0.11f, 0.98f);
     public static readonly Color Shadow = new(0.0f, 0.02f, 0.04f, 0.38f);
+
+    private static float Hash01(int x, int y, int seed)
+    {
+        uint h = unchecked((uint)(x * 374761393 + y * 668265263 + seed * 69069));
+        h = (h ^ (h >> 13)) * 1274126177u;
+        return (h & 0xffffu) / 65535f;
+    }
+
+    private static float Wobble(float value, int seed) =>
+        Mathf.Sin(value * 0.117f + seed * 0.73f) * 1.9f
+        + Mathf.Sin(value * 0.041f + seed * 1.31f) * 1.25f;
+
+    private static Texture2D PaintedTexture(Color wash, Color edge, int seed)
+    {
+        string key = $"{wash.ToHtml()}_{edge.ToHtml()}_{seed}";
+        if (PaintedTextures.TryGetValue(key, out var cached)) return cached;
+
+        const int size = 128;
+        var image = Image.CreateEmpty(size, size, false, Image.Format.Rgba8);
+        for (int y = 0; y < size; y++)
+        for (int x = 0; x < size; x++)
+        {
+            float left = 7f + Wobble(y, seed);
+            float right = 120f + Wobble(y, seed + 17);
+            float top = 7f + Wobble(x, seed + 31);
+            float bottom = 120f + Wobble(x, seed + 53);
+            if (x < left || x > right || y < top || y > bottom)
+            {
+                image.SetPixel(x, y, Colors.Transparent);
+                continue;
+            }
+
+            float edgeDistance = Mathf.Min(Mathf.Min(x - left, right - x), Mathf.Min(y - top, bottom - y));
+            float grain = (Hash01(x / 3, y / 3, seed + 91) - .5f) * .16f
+                        + Mathf.Sin((x + y) * .071f + seed) * .025f;
+            float factor = 1f + grain;
+            var paper = new Color(
+                Mathf.Clamp(wash.R * factor, 0f, 1f), Mathf.Clamp(wash.G * factor, 0f, 1f),
+                Mathf.Clamp(wash.B * factor, 0f, 1f), wash.A * (.92f + Hash01(x, y, seed + 7) * .08f));
+            float edgeMix = 1f - Mathf.SmoothStep(.5f, 4.5f, edgeDistance);
+            if (Hash01(x, y, seed + 111) > .965f) paper = paper.Lightened(.08f);
+            image.SetPixel(x, y, paper.Lerp(edge, edgeMix * .92f));
+        }
+        var texture = ImageTexture.CreateFromImage(image);
+        PaintedTextures[key] = texture;
+        return texture;
+    }
+
+    private static StyleBoxTexture PaintedStyle(Color wash, Color edge, int pad, int seed)
+    {
+        var style = new StyleBoxTexture
+        {
+            Texture = PaintedTexture(wash, edge, seed),
+            TextureMarginLeft = 28, TextureMarginTop = 28,
+            TextureMarginRight = 28, TextureMarginBottom = 28,
+            AxisStretchHorizontal = StyleBoxTexture.AxisStretchMode.Stretch,
+            AxisStretchVertical = StyleBoxTexture.AxisStretchMode.Stretch,
+            DrawCenter = true,
+        };
+        style.SetContentMarginAll(pad);
+        return style;
+    }
 
     /// Quiet storybook surface. The legacy method name is retained so older panels
     /// inherit the refined treatment without bespoke style code.
-    public static StyleBoxFlat GlassPanel(int radius = 10, float bgAlpha = 0.82f, int pad = 20)
+    public static StyleBoxTexture GlassPanel(int radius = 10, float bgAlpha = 0.82f, int pad = 20)
     {
-        var sb = new StyleBoxFlat
-        {
-            BgColor = new Color(GlassBg.R, GlassBg.G, GlassBg.B, bgAlpha),
-            BorderColor = Hairline,
-            ShadowColor = Shadow,
-            ShadowSize = 6,
-            ShadowOffset = new Vector2(0, 3),
-            AntiAliasing = true,
-        };
-        sb.SetCornerRadiusAll(radius);
-        sb.SetBorderWidthAll(1);
-        sb.SetContentMarginAll(pad);
-        return sb;
+        var wash = new Color(GlassBg.R, GlassBg.G, GlassBg.B, Mathf.Clamp(bgAlpha + .08f, 0f, .98f));
+        return PaintedStyle(wash, Hairline, pad, 19 + radius);
     }
 
-    public static StyleBoxFlat OverlayPanel(int radius = 12, int pad = 32)
-    {
-        var sb = GlassPanel(radius, 0.94f, pad);
-        sb.BgColor = GlassBgDeep;
-        sb.ShadowSize = 12;
-        return sb;
-    }
+    public static StyleBoxTexture OverlayPanel(int radius = 12, int pad = 32) =>
+        PaintedStyle(GlassBgDeep, new Color(.62f,.82f,.69f,.96f), pad, 71 + radius);
 
     public static StyleBoxFlat Scrim(float alpha = 0.72f) =>
         new() { BgColor = new Color(0.02f, 0.06f, 0.10f, alpha) };
 
-    private static StyleBoxFlat ButtonBase(Color bg, Color border)
-    {
-        var sb = new StyleBoxFlat { BgColor = bg, BorderColor = border, AntiAliasing = true };
-        sb.SetCornerRadiusAll(9);
-        sb.SetBorderWidthAll(1);
-        sb.ContentMarginLeft = 24;
-        sb.ContentMarginRight = 24;
-        sb.ContentMarginTop = 14;
-        sb.ContentMarginBottom = 14;
-        return sb;
-    }
+    private static StyleBoxTexture ButtonBase(Color bg, Color border, int seed) =>
+        PaintedStyle(bg, border, 14, seed);
 
-    public static StyleBoxFlat PillNormal() =>
-        ButtonBase(new Color(Accent.R, Accent.G, Accent.B, 0.92f),
-                   new Color(Accent.R, Accent.G, Accent.B, 0.75f));
+    public static StyleBoxTexture PillNormal() =>
+        ButtonBase(new Color(.64f,.84f,.68f,.98f), new Color(.07f,.25f,.24f,1f), 103);
 
-    public static StyleBoxFlat PillHover()
-    {
-        var sb = ButtonBase(new Color(0.72f, 0.96f, 0.96f, 1f),
-                            new Color(0.82f, 1f, 1f, 0.9f));
-        sb.ShadowColor = new Color(0f, 0.03f, 0.05f, 0.28f);
-        sb.ShadowSize = 6;
-        return sb;
-    }
+    public static StyleBoxTexture PillHover() =>
+        ButtonBase(new Color(.76f,.91f,.72f,1f), new Color(.12f,.34f,.28f,1f), 107);
 
-    public static StyleBoxFlat PillPressed() =>
-        ButtonBase(new Color(0.56f, 0.85f, 0.86f, 1f), Accent);
+    public static StyleBoxTexture PillPressed() =>
+        ButtonBase(new Color(.50f,.73f,.58f,1f), new Color(.04f,.19f,.18f,1f), 109);
 
-    public static StyleBoxFlat PillDisabled() =>
-        ButtonBase(new Color(0.3f, 0.4f, 0.45f, 0.10f),
-                   new Color(0.4f, 0.5f, 0.55f, 0.25f));
+    public static StyleBoxTexture PillDisabled() =>
+        ButtonBase(new Color(.16f,.25f,.24f,.42f), new Color(.35f,.48f,.43f,.42f), 113);
 
-    private static StyleBoxFlat SecondaryNormal() =>
-        ButtonBase(new Color(0.02f, 0.08f, 0.11f, 0.46f),
-                   new Color(Accent.R, Accent.G, Accent.B, 0.30f));
+    private static StyleBoxTexture SecondaryNormal() =>
+        ButtonBase(new Color(.055f,.14f,.15f,.94f), new Color(.43f,.67f,.57f,.92f), 127);
 
     public static Button StyleButton(Button btn, int fontSize = FontBody, bool primary = true)
     {
@@ -120,10 +151,10 @@ public static class UiTheme
         btn.AddThemeStyleboxOverride("pressed", PillPressed());
         btn.AddThemeStyleboxOverride("focus", PillHover());
         btn.AddThemeStyleboxOverride("disabled", PillDisabled());
-        btn.AddThemeColorOverride("font_color", primary ? new Color(0.03f, 0.13f, 0.16f) : Ink);
-        btn.AddThemeColorOverride("font_hover_color", new Color(0.02f, 0.10f, 0.13f));
-        btn.AddThemeColorOverride("font_pressed_color", new Color(0.02f, 0.10f, 0.13f));
-        btn.AddThemeColorOverride("font_focus_color", new Color(0.02f, 0.10f, 0.13f));
+        btn.AddThemeColorOverride("font_color", primary ? new Color(.045f,.18f,.18f) : Ink);
+        btn.AddThemeColorOverride("font_hover_color", new Color(.035f,.15f,.15f));
+        btn.AddThemeColorOverride("font_pressed_color", new Color(.03f,.12f,.13f));
+        btn.AddThemeColorOverride("font_focus_color", new Color(.035f,.15f,.15f));
         btn.AddThemeColorOverride("font_disabled_color", InkFaint);
         ApplyFont(btn, fontSize);
         UiFx.AnimateButton(btn);
@@ -155,6 +186,39 @@ public static class UiTheme
         };
         r.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         return r;
+    }
+
+    public static StyleBoxTexture BrushBar(Color color, bool track = false)
+    {
+        string key = $"{color.ToHtml()}_{track}";
+        if (!BrushTextures.TryGetValue(key, out var texture))
+        {
+            const int width = 96, height = 16;
+            var image = Image.CreateEmpty(width, height, false, Image.Format.Rgba8);
+            for (int x = 0; x < width; x++)
+            {
+                float top = 2.5f + Wobble(x, track ? 211 : 223) * .45f;
+                float bottom = 13f + Wobble(x, track ? 229 : 233) * .38f;
+                for (int y = 0; y < height; y++)
+                {
+                    if (y < top || y > bottom) { image.SetPixel(x,y,Colors.Transparent); continue; }
+                    float alpha = color.A * (.72f + Hash01(x,y,241) * .28f);
+                    float grain = .90f + Hash01(x/3,y/2,251) * .14f;
+                    image.SetPixel(x,y,new Color(color.R*grain,color.G*grain,color.B*grain,alpha));
+                }
+            }
+            texture = ImageTexture.CreateFromImage(image);
+            BrushTextures[key] = texture;
+        }
+        var style = new StyleBoxTexture
+        {
+            Texture = texture, TextureMarginLeft = 8, TextureMarginRight = 8,
+            TextureMarginTop = 5, TextureMarginBottom = 5,
+            AxisStretchHorizontal = StyleBoxTexture.AxisStretchMode.Stretch,
+            AxisStretchVertical = StyleBoxTexture.AxisStretchMode.Stretch,
+        };
+        style.SetContentMarginAll(0);
+        return style;
     }
 
     public static Panel MakeGlassPanel(string name, int radius = 10, float bgAlpha = 0.82f, int pad = 20)

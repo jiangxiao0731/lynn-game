@@ -129,7 +129,7 @@ public partial class ChapterLevelController : Node2D
             _veils.Add(veil);
 
             var zoneName = UiTheme.MakeLabel(ChapterRuntime.Zones[i], 34,
-                ChapterId == 2 ? new Color(0.72f, 0.92f, 1f, 0.72f) : new Color(1f, 0.78f, 0.38f, 0.72f));
+                ChapterId == 2 ? new Color(0.72f, 0.92f, 1f, 0.72f) : new Color(0.46f, 0.94f, 0.78f, 0.72f));
             zoneName.Position = new Vector2(x0 + 76, 930);
             zoneName.ZIndex = -10;
             map.AddChild(zoneName);
@@ -137,12 +137,13 @@ public partial class ChapterLevelController : Node2D
             var flow = new Line2D
             {
                 Name = $"RestorationCurrent{i + 1}", Width = ChapterId == 2 ? 14f : 8f,
-                DefaultColor = ChapterId == 2 ? new Color(0.55f, 0.96f, 1f, 0.08f) : new Color(1f, 0.78f, 0.25f, 0.08f),
+                DefaultColor = ChapterId == 2 ? new Color(0.55f, 0.96f, 1f, 0.08f) : new Color(0.42f, 0.92f, 0.74f, 0.08f),
                 ZIndex = -20, Antialiased = true,
             };
-            flow.Points = ChapterId == 2
+            var anchors = ChapterId == 2
                 ? new[] { new Vector2(x0 + 80, 820), new Vector2(x0 + 360, 710), new Vector2(x0 + 640, 790), new Vector2(x0 + 1110, 650) }
                 : new[] { new Vector2(x0 + 90, 230), new Vector2(x0 + 390, 420), new Vector2(x0 + 710, 280), new Vector2(x0 + 1110, 510) };
+            flow.Points = HandDrawnPath(anchors, ChapterId * 17 + i);
             map.AddChild(flow);
             _energyLines.Add(flow);
         }
@@ -191,7 +192,7 @@ public partial class ChapterLevelController : Node2D
         bool ice = ChapterId == 2;
         _guide = new Node2D { Name = ice ? "LanternNPC" : "ShoalNPC", Position = ice ? new Vector2(330, 530) : new Vector2(340, 650) };
         AddChild(_guide);
-        var halo = CircleLine(82f, ice ? new Color(0.52f, 0.94f, 1f, 0.72f) : new Color(1f, 0.76f, 0.32f, 0.78f), 5f);
+        var halo = CircleLine(82f, ice ? new Color(0.52f, 0.94f, 1f, 0.72f) : new Color(0.42f, 0.94f, 0.76f, 0.78f), 5f);
         _guide.AddChild(halo);
         var sprite = new Sprite2D { Texture = AssetLoader.Texture(AssetLoader.NpcPortrait(ice ? "lantern" : "shoal")), ZIndex = 1 };
         if (sprite.Texture != null) PlaceholderArt.FitSprite(sprite, 152f);
@@ -213,11 +214,11 @@ public partial class ChapterLevelController : Node2D
         {
             var node = new Node2D { Name = ChapterId == 2 ? $"ThawAnchor{i + 1}" : $"Relay{i + 1}", Position = positions[i] };
             map.AddChild(node);
-            node.AddChild(CircleLine(64f, ChapterId == 2 ? new Color(0.62f, 0.90f, 1f, 0.62f) : new Color(1f, 0.60f, 0.16f, 0.72f), 6f));
+            node.AddChild(CircleLine(64f, ChapterId == 2 ? new Color(0.62f, 0.90f, 1f, 0.62f) : new Color(0.38f, 0.90f, 0.70f, 0.72f), 6f));
             var icon = new Sprite2D
             {
                 Texture = AssetLoader.Texture(AssetLoader.MemoryIcon) ?? PlaceholderArt.RoundBlob(64, Palette.ForForm(RequiredForm)),
-                Modulate = ChapterId == 2 ? new Color(0.65f, 0.88f, 1f, 0.62f) : new Color(0.92f, 0.42f, 0.18f, 0.62f),
+                Modulate = ChapterId == 2 ? new Color(0.65f, 0.88f, 1f, 0.62f) : new Color(0.44f, 0.82f, 0.68f, 0.62f),
             };
             PlaceholderArt.FitSprite(icon, 88f);
             node.AddChild(icon);
@@ -357,7 +358,7 @@ public partial class ChapterLevelController : Node2D
         var icon = _restoreNodes[index].GetChildOrNull<Sprite2D>(1);
         if (icon != null)
         {
-            icon.Modulate = ChapterId == 2 ? new Color(0.74f, 1f, 1f, 1f) : new Color(1f, 0.88f, 0.28f, 1f);
+            icon.Modulate = ChapterId == 2 ? new Color(0.74f, 1f, 1f, 1f) : new Color(0.60f, 1f, 0.82f, 1f);
             icon.CreateTween().TweenProperty(icon, "scale", icon.Scale * 1.22f, 0.22f)
                 .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         }
@@ -595,9 +596,32 @@ public partial class ChapterLevelController : Node2D
     {
         var line = new Line2D { Width = width, DefaultColor = color, Closed = true, Antialiased = true, ZIndex = 0 };
         var points = new Vector2[32];
-        for (int i = 0; i < points.Length; i++) points[i] = Vector2.FromAngle(Mathf.Tau * i / points.Length) * radius;
+        for (int i = 0; i < points.Length; i++)
+        {
+            float angle = Mathf.Tau * i / points.Length;
+            float wobble = Mathf.Sin(angle * 5f + radius) * 2.8f + Mathf.Sin(angle * 9f) * 1.4f;
+            points[i] = Vector2.FromAngle(angle) * (radius + wobble);
+        }
         line.Points = points;
         return line;
+    }
+
+    private static Vector2[] HandDrawnPath(Vector2[] anchors, int seed)
+    {
+        var points = new List<Vector2> { anchors[0] };
+        for (int a = 0; a < anchors.Length - 1; a++)
+        {
+            Vector2 from = anchors[a], to = anchors[a + 1];
+            Vector2 normal = (to - from).Normalized().Orthogonal();
+            for (int step = 1; step <= 5; step++)
+            {
+                float t = step / 5f;
+                float inkWobble = Mathf.Sin((a * 5 + step) * 1.73f + seed) * 7f
+                                  + Mathf.Sin((a + step) * .91f + seed * .4f) * 3f;
+                points.Add(from.Lerp(to, t) + normal * inkWobble * Mathf.Sin(Mathf.Pi * t));
+            }
+        }
+        return points.ToArray();
     }
 
     private static Label WorldLabel(string text, Vector2 position, float width, Color color)

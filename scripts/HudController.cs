@@ -94,19 +94,10 @@ public partial class HudController : CanvasLayer
         return inset;
     }
 
-    private static StyleBoxFlat BarTrack()
-    {
-        var sb = new StyleBoxFlat { BgColor = new Color(0.01f, 0.05f, 0.07f, 0.76f) };
-        sb.SetCornerRadiusAll(3);
-        return sb;
-    }
+    private static StyleBox BarTrack() =>
+        UiTheme.BrushBar(new Color(.025f,.075f,.085f,.88f), track: true);
 
-    private static StyleBoxFlat BarFill(Color color)
-    {
-        var sb = new StyleBoxFlat { BgColor = color };
-        sb.SetCornerRadiusAll(3);
-        return sb;
-    }
+    private static StyleBox BarFill(Color color) => UiTheme.BrushBar(color);
 
     private static void StyleBar(ProgressBar bar, Color fill)
     {

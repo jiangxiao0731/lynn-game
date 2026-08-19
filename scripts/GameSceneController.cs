@@ -500,7 +500,9 @@ public partial class GameSceneController : Node2D
         for (int i = 0; i < points.Length; i++)
         {
             float angle = Mathf.Tau * i / (points.Length - 1);
-            points[i] = Vector2.FromAngle(angle) * 70f;
+            float inkWobble = Mathf.Sin(angle * 5f + node.GetInstanceId() % 11) * 2.8f
+                            + Mathf.Sin(angle * 9f) * 1.2f;
+            points[i] = Vector2.FromAngle(angle) * (70f + inkWobble);
         }
         var halo = new Line2D
         {
