@@ -129,7 +129,7 @@ public partial class ChapterLevelController : Node2D
             map.AddChild(veil);
             _veils.Add(veil);
 
-            var zoneName = UiTheme.MakeLabel(ChapterRuntime.Zones[i], 34,
+            var zoneName = UiTheme.MakeStrongLabel(ChapterRuntime.Zones[i], 34,
                 ChapterId == 2 ? new Color(0.72f, 0.92f, 1f, 0.72f) : new Color(0.46f, 0.94f, 0.78f, 0.72f));
             zoneName.Position = new Vector2(x0 + 76, 930);
             zoneName.ZIndex = -10;

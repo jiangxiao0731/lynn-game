@@ -43,8 +43,8 @@ public partial class LogPanel : CanvasLayer
         outer.AddThemeConstantOverride("separation", 14);
         _panel.AddChild(outer);
 
-        outer.AddChild(MakeLabel(GameStrings.Tr("LOG_TITLE"), UiTheme.FontH1, Palette.CoastalCyan));
-        outer.AddChild(MakeLabel(GameStrings.Tr("LOG_HINT"), UiTheme.FontSmall, UiTheme.InkDim));
+        outer.AddChild(UiTheme.MakeDisplayLabel(GameStrings.Tr("LOG_TITLE"), UiTheme.FontH1, Palette.CoastalCyan));
+        outer.AddChild(UiTheme.MakeStrongLabel(GameStrings.Tr("LOG_HINT"), UiTheme.FontSmall, UiTheme.InkDim));
         outer.AddChild(UiTheme.Divider());
 
         var scroll = new ScrollContainer();
@@ -128,14 +128,14 @@ public partial class LogPanel : CanvasLayer
     private void AddSection(string text)
     {
         _content.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
-        _content.AddChild(MakeLabel(text, UiTheme.FontH2, Palette.CoastalCyan));
+        _content.AddChild(UiTheme.MakeDisplayLabel(text, UiTheme.FontH2, Palette.CoastalCyan, wrap: true));
         _content.AddChild(UiTheme.Divider(0.18f));
     }
 
     private void AddEntry(string title, string body, string zone)
     {
         string head = string.IsNullOrEmpty(zone) ? $"· {title}" : $"· {title}  —  {zone}";
-        _content.AddChild(MakeLabel(head, UiTheme.FontBody, UiTheme.Ink));
+        _content.AddChild(UiTheme.MakeStrongLabel(head, UiTheme.FontBody, UiTheme.Ink, wrap: true));
         if (!string.IsNullOrEmpty(body))
             _content.AddChild(MakeLabel("   " + body, UiTheme.FontSmall, UiTheme.InkDim));
     }

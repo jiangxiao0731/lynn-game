@@ -19,15 +19,23 @@ public partial class SettlementPanel : Control
         // ── Deep-sea glass panel background ──────────────────────────────────
         var box = GetNodeOrNull<Panel>("Box");
         if (box != null)
+        {
+            box.CustomMinimumSize = new Vector2(840, 440);
             box.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: 36));
+        }
+
+        var layout = GetNodeOrNull<VBoxContainer>("Box/VBox");
+        if (layout != null)
+            layout.AddThemeConstantOverride("separation", UiTheme.Space6);
 
         // ── Title label ───────────────────────────────────────────────────────
         var title = GetNodeOrNull<Label>("Box/VBox/Title");
         if (title != null)
         {
             title.Text = GameStrings.Tr("SETTLEMENT_TITLE");
-            UiTheme.ApplyFont(title, UiTheme.FontH1);
+            UiTheme.ApplyDisplayFont(title, UiTheme.FontH1);
             title.AddThemeColorOverride("font_color", UiTheme.Accent);
+            title.HorizontalAlignment = HorizontalAlignment.Center;
         }
 
         // ── Summary label ─────────────────────────────────────────────────────
@@ -37,6 +45,10 @@ public partial class SettlementPanel : Control
             UiTheme.ApplyFont(_summary, UiTheme.FontBody);
             _summary.AddThemeColorOverride("font_color", UiTheme.Ink);
             _summary.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            _summary.CustomMinimumSize = new Vector2(744, 150);
+            _summary.HorizontalAlignment = HorizontalAlignment.Center;
+            _summary.VerticalAlignment = VerticalAlignment.Center;
+            _summary.AddThemeConstantOverride("line_spacing", 10);
         }
 
         // ── Continue button ───────────────────────────────────────────────────

@@ -88,17 +88,19 @@ public partial class TutorialController : Control
             vb.Alignment = BoxContainer.AlignmentMode.Begin;
         }
 
-        UiTheme.ApplyFont(_title, UiTheme.FontH1);
+        UiTheme.ApplyDisplayFont(_title, UiTheme.FontH1);
         _title.AddThemeColorOverride("font_color", UiTheme.Accent);
         _title.HorizontalAlignment = HorizontalAlignment.Left;
+        _title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _title.CustomMinimumSize = new Vector2(0, 112);
 
         UiTheme.ApplyFont(_body, UiTheme.FontBody);
         _body.AddThemeColorOverride("font_color", UiTheme.Ink);
-        _body.AddThemeConstantOverride("line_spacing", 14);
+        _body.AddThemeConstantOverride("line_spacing", 10);
         _body.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _body.HorizontalAlignment = HorizontalAlignment.Left;
         _body.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        _body.CustomMinimumSize = new Vector2(0, 260);
+        _body.CustomMinimumSize = new Vector2(0, 290);
 
         // Page indicator dots under the body.
         _pageDots = UiTheme.MakeLabel("", UiTheme.FontTiny, UiTheme.InkDim);

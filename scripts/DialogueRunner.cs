@@ -25,8 +25,8 @@ public partial class DialogueRunner : CanvasLayer
     private Polygon2D _tail = null!;
     private Node2D? _speakerAnchor;
 
-    private static readonly Vector2 BubbleSize = new(600, 180);
-    private static readonly Vector2 ChoiceBubbleSize = new(680, 320);
+    private static readonly Vector2 BubbleSize = new(700, 214);
+    private static readonly Vector2 ChoiceBubbleSize = new(780, 374);
 
     private DialogueTimeline? _timeline;
     private int _lineIndex;
@@ -79,7 +79,7 @@ public partial class DialogueRunner : CanvasLayer
         inset.AddChild(hbox);
 
         _portraitFrame = UiTheme.MakeGlassPanel("PortraitFrame", radius: 8, bgAlpha: 0.28f, pad: 6);
-        _portraitFrame.CustomMinimumSize = new Vector2(104, 104);
+        _portraitFrame.CustomMinimumSize = new Vector2(96, 96);
         _portraitFrame.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
         hbox.AddChild(_portraitFrame);
 
@@ -104,12 +104,13 @@ public partial class DialogueRunner : CanvasLayer
         _speakerTab.SizeFlagsHorizontal = Control.SizeFlags.ShrinkBegin;
         vbox.AddChild(_speakerTab);
 
-        _speakerLabel = UiTheme.MakeLabel("", UiTheme.FontSmall, UiTheme.Accent);
+        _speakerLabel = UiTheme.MakeDisplayLabel("", UiTheme.FontSmall, UiTheme.Accent);
         _speakerTab.AddChild(_speakerLabel);
 
-        _textLabel = UiTheme.MakeLabel("", 24, UiTheme.Ink, wrap: true);
+        _textLabel = UiTheme.MakeLabel("", UiTheme.FontBody, UiTheme.Ink, wrap: true);
         _textLabel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        _textLabel.AddThemeConstantOverride("line_spacing", 10);
+        _textLabel.AddThemeConstantOverride("line_spacing", 9);
+        _textLabel.CustomMinimumSize = new Vector2(0, 112);
         vbox.AddChild(_textLabel);
 
         _choiceBox = new VBoxContainer { Name = "Choices" };

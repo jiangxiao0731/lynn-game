@@ -17,15 +17,23 @@ public partial class FailurePanel : Control
         // ── Deep-sea glass panel background ──────────────────────────────────
         var box = GetNodeOrNull<Panel>("Box");
         if (box != null)
+        {
+            box.CustomMinimumSize = new Vector2(640, 390);
             box.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: 36));
+        }
+
+        var layout = GetNodeOrNull<VBoxContainer>("Box/VBox");
+        if (layout != null)
+            layout.AddThemeConstantOverride("separation", UiTheme.Space6);
 
         // ── Failure title label ───────────────────────────────────────────────
         var label = GetNodeOrNull<Label>("Box/VBox/FailureLabel");
         if (label != null)
         {
             label.Text = GameStrings.Tr("FAILURE_LABEL");
-            UiTheme.ApplyFont(label, UiTheme.FontH1);
+            UiTheme.ApplyDisplayFont(label, UiTheme.FontH1);
             label.AddThemeColorOverride("font_color", UiTheme.Accent);
+            label.HorizontalAlignment = HorizontalAlignment.Center;
         }
 
         // ── Restart hint label ────────────────────────────────────────────────
@@ -35,6 +43,8 @@ public partial class FailurePanel : Control
             hint.Text = GameStrings.Tr("RESTART_HINT");
             UiTheme.ApplyFont(hint, UiTheme.FontSmall);
             hint.AddThemeColorOverride("font_color", UiTheme.InkDim);
+            hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            hint.HorizontalAlignment = HorizontalAlignment.Center;
         }
 
         // ── Restart button ────────────────────────────────────────────────────

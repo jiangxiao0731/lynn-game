@@ -9,26 +9,43 @@ namespace ShallowSeaDream;
 public static class UiTheme
 {
     public const string FontPath = "res://assets/fonts/AaShuiyu.ttf";
-    private static FontFile? _font;
+    private static FontFile? _displayFont;
+    private static SystemFont? _bodyFont;
+    private static SystemFont? _strongFont;
     private static readonly Dictionary<string, Texture2D> PaintedTextures = new();
     private static readonly Dictionary<string, Texture2D> BrushTextures = new();
 
-    public static FontFile? Font
+    /// The supplied hand-drawn face is reserved for expressive display text.
+    public static FontFile? DisplayFont
     {
         get
         {
-            if (_font == null && ResourceLoader.Exists(FontPath))
-                _font = GD.Load<FontFile>(FontPath);
-            return _font;
+            if (_displayFont == null && ResourceLoader.Exists(FontPath))
+                _displayFont = GD.Load<FontFile>(FontPath);
+            return _displayFont;
         }
     }
 
-    public const int FontDisplay = 104;
-    public const int FontH1 = 48;
+    /// A calm, highly legible editorial face for paragraphs, HUD data and controls.
+    /// It uses fonts already installed on the viewing system and falls back safely.
+    public static SystemFont BodyFont => _bodyFont ??= MakeSystemFont(450);
+    public static SystemFont StrongFont => _strongFont ??= MakeSystemFont(650);
+
+    // A deliberately contrasted type scale: display / heading / lead / body / meta.
+    public const int FontDisplay = 92;
+    public const int FontH1 = 46;
     public const int FontH2 = 30;
-    public const int FontBody = 24;
-    public const int FontSmall = 18;
-    public const int FontTiny = 15;
+    public const int FontBody = 21;
+    public const int FontSmall = 17;
+    public const int FontTiny = 13;
+
+    private static SystemFont MakeSystemFont(int weight) => new()
+    {
+        FontNames = new[] { "Avenir Next", "Avenir", "Helvetica Neue", "Arial" },
+        FontWeight = weight,
+        AllowSystemFallback = true,
+        MultichannelSignedDistanceField = true,
+    };
 
     public const int Space1 = 4;
     public const int Space2 = 8;
@@ -156,25 +173,56 @@ public static class UiTheme
         btn.AddThemeColorOverride("font_pressed_color", new Color(.03f,.12f,.13f));
         btn.AddThemeColorOverride("font_focus_color", new Color(.035f,.15f,.15f));
         btn.AddThemeColorOverride("font_disabled_color", InkFaint);
-        ApplyFont(btn, fontSize);
+        ApplyStrongFont(btn, fontSize);
         UiFx.AnimateButton(btn);
         return btn;
     }
 
     public static void ApplyFont(Control c, int size)
     {
-        if (Font != null) c.AddThemeFontOverride("font", Font);
+        c.AddThemeFontOverride("font", BodyFont);
+        c.AddThemeFontSizeOverride("font_size", size);
+    }
+
+    public static void ApplyStrongFont(Control c, int size)
+    {
+        c.AddThemeFontOverride("font", StrongFont);
+        c.AddThemeFontSizeOverride("font_size", size);
+    }
+
+    public static void ApplyDisplayFont(Control c, int size)
+    {
+        Font display = DisplayFont != null ? DisplayFont : StrongFont;
+        c.AddThemeFontOverride("font", display);
         c.AddThemeFontSizeOverride("font_size", size);
     }
 
     public static Label MakeLabel(string text, int size, Color color, bool wrap = false)
     {
         var l = new Label { Text = text };
-        if (wrap) l.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        if (wrap)
+        {
+            l.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            l.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        }
         l.AddThemeColorOverride("font_color", color);
-        l.AddThemeConstantOverride("line_spacing", Mathf.RoundToInt(size * 0.32f));
+        l.AddThemeConstantOverride("line_spacing", Mathf.RoundToInt(size * 0.38f));
         ApplyFont(l, size);
         return l;
+    }
+
+    public static Label MakeStrongLabel(string text, int size, Color color, bool wrap = false)
+    {
+        var label = MakeLabel(text, size, color, wrap);
+        ApplyStrongFont(label, size);
+        return label;
+    }
+
+    public static Label MakeDisplayLabel(string text, int size, Color color, bool wrap = false)
+    {
+        var label = MakeLabel(text, size, color, wrap);
+        ApplyDisplayFont(label, size);
+        return label;
     }
 
     public static ColorRect Divider(float alpha = 0.18f)
@@ -231,7 +279,7 @@ public static class UiTheme
     public static Theme BuildTheme()
     {
         var theme = new Theme();
-        if (Font != null) theme.DefaultFont = Font;
+        theme.DefaultFont = BodyFont;
         theme.DefaultFontSize = FontBody;
         theme.SetColor("font_color", "Label", Ink);
         theme.SetColor("font_color", "Button", Ink);

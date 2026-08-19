@@ -109,7 +109,7 @@ public partial class HudController : CanvasLayer
     private void BuildHud()
     {
         // Current objective: one readable instruction, never the full quest chain.
-        var objective = Track(Surface("ObjectivePanel", new Vector2(470, 116)));
+        var objective = Track(Surface("ObjectivePanel", new Vector2(560, 142)));
         objective.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
         objective.Position = new Vector2(UiTheme.SafeArea, UiTheme.SafeArea);
         AddChild(objective);
@@ -117,9 +117,10 @@ public partial class HudController : CanvasLayer
         var objectiveBox = new VBoxContainer();
         objectiveBox.AddThemeConstantOverride("separation", UiTheme.Space1);
         objectiveInset.AddChild(objectiveBox);
-        var eyebrow = Text("CURRENT OBJECTIVE", UiTheme.FontTiny, UiTheme.Accent);
+        var eyebrow = UiTheme.MakeStrongLabel("CURRENT OBJECTIVE", UiTheme.FontTiny, UiTheme.Accent);
+        eyebrow.AddThemeConstantOverride("letter_spacing", 2);
         objectiveBox.AddChild(eyebrow);
-        _objectiveLabel = Text("", 26, UiTheme.Ink, true);
+        _objectiveLabel = UiTheme.MakeStrongLabel("", 23, UiTheme.Ink, true);
         objectiveBox.AddChild(_objectiveLabel);
         _objectiveMeta = Text("", UiTheme.FontTiny, UiTheme.InkDim);
         _objectiveMeta.Visible = false;
@@ -135,15 +136,15 @@ public partial class HudController : CanvasLayer
         objectiveBox.AddChild(_objectiveProgress);
 
         // Location is orientation, not a faux minimap. The log shortcut is secondary.
-        var location = Track(Surface("LocationPanel", new Vector2(250, 72), 0.66f));
+        var location = Track(Surface("LocationPanel", new Vector2(310, 80), 0.66f));
         location.SetAnchorsPreset(Control.LayoutPreset.TopRight);
-        location.Position = new Vector2(-322, UiTheme.SafeArea);
+        location.Position = new Vector2(-382, UiTheme.SafeArea);
         AddChild(location);
         var locationInset = Inset(location, UiTheme.Space4, UiTheme.Space3);
         var locationBox = new VBoxContainer();
         locationBox.AddThemeConstantOverride("separation", 0);
         locationInset.AddChild(locationBox);
-        _zoneLabel = Text(ChapterRuntime.Zones[0], UiTheme.FontSmall, UiTheme.Ink);
+        _zoneLabel = UiTheme.MakeStrongLabel(ChapterRuntime.Zones[0], UiTheme.FontSmall, UiTheme.Ink);
         _zoneLabel.HorizontalAlignment = HorizontalAlignment.Right;
         locationBox.AddChild(_zoneLabel);
         var logHint = Text("J  ·  MEMORY JOURNAL", UiTheme.FontTiny, UiTheme.InkFaint);
@@ -161,7 +162,7 @@ public partial class HudController : CanvasLayer
         healthInset.AddChild(healthBox);
         var healthTop = new HBoxContainer();
         healthBox.AddChild(healthTop);
-        healthTop.AddChild(Text("SHIMMER", UiTheme.FontTiny, UiTheme.InkDim));
+        healthTop.AddChild(UiTheme.MakeStrongLabel("SHIMMER", UiTheme.FontTiny, UiTheme.InkDim));
         _hpLabel = Text("", UiTheme.FontTiny, UiTheme.Ink);
         _hpLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         _hpLabel.HorizontalAlignment = HorizontalAlignment.Right;
@@ -171,9 +172,9 @@ public partial class HudController : CanvasLayer
         healthBox.AddChild(_hpBar);
 
         // Ability charges appear only after the mechanic is unlocked.
-        _skillDock = Track(Surface("SkillDock", new Vector2(340, 76), 0.72f));
+        _skillDock = Track(Surface("SkillDock", new Vector2(430, 80), 0.72f));
         _skillDock.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
-        _skillDock.Position = new Vector2(-170, -148);
+        _skillDock.Position = new Vector2(-215, -152);
         _skillDock.Visible = false;
         AddChild(_skillDock);
         var skillInset = Inset(_skillDock, UiTheme.Space3, UiTheme.Space3);
@@ -188,11 +189,12 @@ public partial class HudController : CanvasLayer
         };
         for (int i = 0; i < skills.Length; i++)
         {
-            var slot = new HBoxContainer { CustomMinimumSize = new Vector2(96, 0) };
+            var slot = new HBoxContainer { CustomMinimumSize = new Vector2(126, 0) };
+            slot.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             slot.AddThemeConstantOverride("separation", UiTheme.Space2);
             var key = Text(skills[i].Item1, UiTheme.FontTiny, skills[i].Item3);
             slot.AddChild(key);
-            var name = Text(skills[i].Item2, UiTheme.FontSmall, UiTheme.Ink);
+            var name = UiTheme.MakeStrongLabel(skills[i].Item2, UiTheme.FontSmall, UiTheme.Ink);
             slot.AddChild(name);
             var count = Text("0", UiTheme.FontSmall, UiTheme.InkDim);
             count.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -203,9 +205,9 @@ public partial class HudController : CanvasLayer
         }
 
         // Boss name and health get the conventional top-centre focal position.
-        _bossPanel = Track(Surface("BossPanel", new Vector2(720, 88), 0.86f));
+        _bossPanel = Track(Surface("BossPanel", new Vector2(760, 96), 0.86f));
         _bossPanel.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
-        _bossPanel.Position = new Vector2(-360, UiTheme.SafeArea);
+        _bossPanel.Position = new Vector2(-380, UiTheme.SafeArea);
         _bossPanel.Visible = false;
         AddChild(_bossPanel);
         var bossInset = Inset(_bossPanel, UiTheme.Space6, UiTheme.Space3);
@@ -214,7 +216,7 @@ public partial class HudController : CanvasLayer
         bossInset.AddChild(bossBox);
         var bossTop = new HBoxContainer();
         bossBox.AddChild(bossTop);
-        _bossNameLabel = Text(ChapterRuntime.BossName, UiTheme.FontSmall, UiTheme.Ink);
+        _bossNameLabel = UiTheme.MakeStrongLabel(ChapterRuntime.BossName, UiTheme.FontSmall, UiTheme.Ink);
         bossTop.AddChild(_bossNameLabel);
         _bossHpLabel = Text("", UiTheme.FontTiny, UiTheme.InkDim);
         _bossHpLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -225,9 +227,9 @@ public partial class HudController : CanvasLayer
         bossBox.AddChild(_bossBar);
 
         // A transient toast replaces the permanent full-width instruction strip.
-        _statusPanel = Track(Surface("StatusToast", new Vector2(780, 84), 0.90f));
+        _statusPanel = Track(Surface("StatusToast", new Vector2(880, 96), 0.90f));
         _statusPanel.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
-        _statusPanel.Position = new Vector2(-390, -252);
+        _statusPanel.Position = new Vector2(-440, -264);
         AddChild(_statusPanel);
         var statusInset = Inset(_statusPanel, UiTheme.Space6, UiTheme.Space3);
         _statusLabel = Text("", UiTheme.FontSmall, UiTheme.Ink, true);
@@ -241,7 +243,7 @@ public partial class HudController : CanvasLayer
         _pausePanel.Visible = false;
         _pausePanel.ProcessMode = ProcessModeEnum.Always;
         AddChild(_pausePanel);
-        var pauseLabel = Text("PAUSED", UiTheme.FontH2, UiTheme.Ink);
+        var pauseLabel = UiTheme.MakeDisplayLabel("PAUSED", UiTheme.FontH2, UiTheme.Ink);
         pauseLabel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         pauseLabel.HorizontalAlignment = HorizontalAlignment.Center;
         pauseLabel.VerticalAlignment = VerticalAlignment.Center;
