@@ -5,7 +5,7 @@ using Godot;
 namespace ShallowSeaDream;
 
 /// res://scripts/PlaceholderArt.cs
-/// Procedural placeholder visuals used until generated art lands. Produces simple
+/// Procedural fallback visuals used when a supplied painting is unavailable. Produces simple
 /// solid/round textures and 2-frame SpriteFrames so AnimatedSprite2D nodes animate
 /// even with no PNG present. When the real sheet exists, callers slice it instead.
 public static class PlaceholderArt
@@ -91,8 +91,23 @@ public static class PlaceholderArt
             image = image.GetRegion(new Rect2I(mx, my,
                 image.GetWidth() - mx * 2, image.GetHeight() - my * 2));
         }
-        SoftKeyPresentationBackground(image);
+        if (image.GetFormat() != Image.Format.Rgba8) image.Convert(Image.Format.Rgba8);
+        // Most hand-painted character files supplied by the project owner already
+        // have a transparent border. Preserve that authored alpha instead of trying
+        // to key dark ink out as if it were a presentation-sheet background.
+        if (!HasTransparentCorners(image))
+            SoftKeyPresentationBackground(image);
         return ImageTexture.CreateFromImage(image);
+    }
+
+    private static bool HasTransparentCorners(Image image)
+    {
+        int inset = Mathf.Min(8, Mathf.Min(image.GetWidth(), image.GetHeight()) / 10);
+        if (inset < 0) return false;
+        return image.GetPixel(inset, inset).A < 0.18f
+            && image.GetPixel(image.GetWidth() - inset - 1, inset).A < 0.18f
+            && image.GetPixel(inset, image.GetHeight() - inset - 1).A < 0.18f
+            && image.GetPixel(image.GetWidth() - inset - 1, image.GetHeight() - inset - 1).A < 0.18f;
     }
 
     private static void SoftKeyPresentationBackground(Image cell)
@@ -128,16 +143,12 @@ public static class PlaceholderArt
         }
     }
 
-    /// Form sheet from the real PNG if present, else a tinted placeholder.
+    /// Form sheet from the selected supplied PNG if present, else a tinted fallback.
     public static SpriteFrames FormFrames(ElementForm form)
     {
         var tex = AssetLoader.Texture(AssetLoader.RawFormSheet(form));
         if (tex != null)
-        {
-            int cols = form == ElementForm.Water ? 3 : 2;
-            int rows = form == ElementForm.Water ? 2 : 3;
-            return SliceFormSheet(tex, cols, rows);
-        }
+            return SliceFormSheet(tex, 3, 2);
         return BlobFrames(Palette.ForForm(form));
     }
 

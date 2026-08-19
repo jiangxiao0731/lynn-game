@@ -3,9 +3,9 @@ using Godot;
 namespace ShallowSeaDream;
 
 /// res://scripts/AssetLoader.cs
-/// Graceful asset loading: code references the FINAL asset paths
-/// (res://assets/img/..., res://assets/sprites/...) but the game keeps running
-/// with procedural placeholders until the art is generated. Every loader returns
+/// Graceful asset loading: code references the FINAL asset paths selected from the
+/// owner's supplied artwork folders. The game keeps running with procedural fallbacks
+/// if an optional painting is unavailable. Every loader returns
 /// null instead of throwing when a file is missing, so callers can fall back.
 public static class AssetLoader
 {
@@ -26,7 +26,7 @@ public static class AssetLoader
     /// True when the file is present in the project / export.
     public static bool Has(string resPath) => !string.IsNullOrEmpty(resPath) && ResourceLoader.Exists(resPath);
 
-    // --- Canonical final asset paths (single source of truth, mirrored in ASSET_MANIFEST.md) ---
+    // --- Canonical runtime paths (source provenance is mirrored in ASSET_MANIFEST.md) ---
 
     public static string FormSheet(ElementForm form) => form switch
     {
@@ -36,9 +36,8 @@ public static class AssetLoader
         _ => "res://assets/sprites/jellyfish_base.png",
     };
 
-    /// Source sheets are intentionally kept because the earlier background-removal
-    /// pass erased most of the translucent jellyfish. Player animation now keys the
-    /// dark teal paper out at runtime, preserving the existing painted frames.
+    /// The selected source-folder sheets are kept intact. Player animation softly
+    /// keys their presentation paper at runtime without rewriting the paintings.
     public static string RawFormSheet(ElementForm form) => form switch
     {
         ElementForm.Water => "res://assets/sprites/_raw/jellyfish_water.png",

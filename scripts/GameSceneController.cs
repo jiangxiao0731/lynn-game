@@ -192,9 +192,9 @@ public partial class GameSceneController : Node2D
 
     private static Color ReefTint(int zone) => zone switch
     {
-        0 => new Color(0.64f, 0.94f, 0.92f, 1f),
-        1 => new Color(0.32f, 0.58f, 0.60f, 1f),
-        _ => new Color(0.20f, 0.42f, 0.46f, 1f),
+        0 => new Color(0.38f, 0.66f, 0.64f, 0.94f),
+        1 => new Color(0.26f, 0.48f, 0.51f, 0.96f),
+        _ => new Color(0.18f, 0.35f, 0.40f, 0.98f),
     };
 
     private static void AddReefVisual(Node2D parent, Vector2 center, Vector2 size,
@@ -246,7 +246,7 @@ public partial class GameSceneController : Node2D
                 UV = uv,
                 Texture = AssetLoader.Texture(AssetLoader.WallTile),
                 TextureRepeat = CanvasItem.TextureRepeatEnum.Enabled,
-                Color = polluted ? new Color(0.24f, 0.67f, 0.62f, 1f) : ReefTint(zone),
+                Color = polluted ? new Color(0.18f, 0.48f, 0.44f, 0.96f) : ReefTint(zone),
                 ZIndex = WallZ,
             };
             parent.AddChild(fill);

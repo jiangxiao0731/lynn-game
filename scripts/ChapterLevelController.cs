@@ -41,7 +41,6 @@ public partial class ChapterLevelController : Node2D
     private readonly Dictionary<Sprite2D, Vector2> _fragmentOrigins = new();
     private readonly List<ColorRect> _veils = new();
     private readonly List<Line2D> _energyLines = new();
-    private Texture2D? _reefCutout;
 
     private ElementForm RequiredForm => ChapterId == 2 ? ElementForm.Ice : ElementForm.Electric;
     private string GuideTimeline => ChapterId == 2 ? NarrativeData.Chapter2Opening : NarrativeData.Chapter3Opening;
@@ -519,40 +518,20 @@ public partial class ChapterLevelController : Node2D
             rect.End - new Vector2(j * .3f, 0), rect.Position + new Vector2(rect.Size.X * .58f, rect.Size.Y - j * .45f),
             rect.End - new Vector2(rect.Size.X - j * .3f, 0), rect.Position + new Vector2(0, rect.Size.Y * .58f),
         };
+        var source = AssetLoader.Texture(AssetLoader.WallTile);
+        var uv = new Vector2[points.Length];
+        var uvOffset = new Vector2((seed * 83) % 420, (seed * 47) % 380);
+        for (int i = 0; i < points.Length; i++) uv[i] = points[i] + uvOffset;
         var poly = new Polygon2D
         {
             Polygon = points,
-            Color = ChapterId == 2 ? new Color(0.16f, 0.35f, 0.48f, 0.48f) : new Color(0.10f, 0.20f, 0.22f, 0.56f),
+            UV = uv,
+            Texture = source,
+            TextureRepeat = CanvasItem.TextureRepeatEnum.Enabled,
+            Color = ChapterId == 2 ? new Color(0.62f, 0.78f, 0.88f, 0.88f) : new Color(0.48f, 0.66f, 0.62f, 0.92f),
             ZIndex = -40,
         };
         map.AddChild(poly);
-
-        if (_reefCutout == null)
-        {
-            var source = AssetLoader.Texture(AssetLoader.WallTile);
-            if (source != null) _reefCutout = PlaceholderArt.KeyPresentationTexture(source, .08f);
-        }
-        if (_reefCutout != null)
-        {
-            bool horizontal = rect.Size.X >= rect.Size.Y;
-            float length = horizontal ? rect.Size.X : rect.Size.Y;
-            int count = Mathf.Max(1, Mathf.CeilToInt(length / 150f));
-            for (int i = 0; i < count; i++)
-            {
-                float t = (i + .5f) / count;
-                var sprite = new Sprite2D
-                {
-                    Texture = _reefCutout,
-                    Position = horizontal
-                        ? new Vector2(Mathf.Lerp(rect.Position.X, rect.End.X, t), rect.GetCenter().Y)
-                        : new Vector2(rect.GetCenter().X, Mathf.Lerp(rect.Position.Y, rect.End.Y, t)),
-                    Rotation = Mathf.DegToRad(((seed + i * 7) % 13) - 6), ZIndex = -39,
-                    Modulate = ChapterId == 2 ? new Color(.56f,.82f,1f,.78f) : new Color(.38f,.64f,.60f,.72f),
-                };
-                PlaceholderArt.FitSprite(sprite, 185f);
-                map.AddChild(sprite);
-            }
-        }
     }
 
     private StaticBody2D MakeGate(Node2D map, Rect2 rect, string name, Color color)

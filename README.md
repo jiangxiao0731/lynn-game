@@ -11,7 +11,7 @@ Godot 4.7 Mono / C# 的三章节海洋保护作品集 Demo。玩家扮演微光�
 - 三位守护者各需要 4 次对应元素引导：水 → 冰 → 电；第一章解锁冰，第二章解锁电，第三章点亮海底灯塔。
 - 修复日志遮罩常驻、HUD 锚点警告、碎片累计漂移、精灵图集网格错误、过冲/弹跳动效和全屏暗化。
 - 标题、教程、HUD、角色气泡、日志与结算现已统一为纸张纤维、手绘墨边和笔刷进度条；地图能量线与目标环也采用非规则笔触。
-- 现有水母原始图集在运行时做非破坏式柔和色键；没有生成或改写新素材。
+- 当前 50 张运行时图片全部来自项目内 `source_art/` 保存的用户手绘素材副本，或由这些原图做可复现的裁切、组合和调色；没有保留旧 Gemini 运行时图片，也不再依赖其他项目目录。
 
 目标完整游玩约 12–18 分钟；建议剪成 2–3 分钟作品集视频。录制时依次展示第一章水净化、第二章解冻锚、第三章回路点亮、三种水母形态、角色附近气泡与最终海底星河。
 
@@ -36,17 +36,18 @@ dotnet build
 
 | 类别 | 已使用素材 | 用途 |
 |---|---|---|
-| 世界 | `zone_shallows.png`, `zone_sediment.png`, `zone_depths.png` | 三段海域主背景与净化前后对比 |
-| 玩家 | `_raw/jellyfish_base.png`, `_raw/jellyfish_water.png`, `_raw/jellyfish_ice.png`, `_raw/jellyfish_electric.png` | 正确网格切片后的四形态动画 |
-| 污染 | `invader_1.png`, `invader_2.png`, `invader_3.png` | 三海域污染残影，净化后淡出 |
-| 巢母 | `brood_mother.png` | 最终净化对象 |
-| 后续守护者 | `legacy/ice_monster_idle_sheet.png`, `legacy/factory_monster_idle_sheet.png` | 第二章霜壳守望者、第三章废热炉心；3×2 原画在运行时柔和色键并切片 |
-| 复苏生物 | `legacy/electric_jellyfish_idle_sheet.png`, `legacy/tar_monster_idle_sheet.png` | 已迁入的旧项目绘本素材，为第三章生态/污染视觉储备 |
-| 角色 | `npc_npc1giving.png`, `npc_starfish.png`, `npc_seaweed.png`, `npc_hermit.png`, `npc_shoal.png`, `npc_lantern.png` | 世界角色与对话肖像 |
-| 叙事物件 | `npc_barrel.png`, `icon_memory.png`, `icon_note.png`, `water_shard.png` | 汽油桶、记忆、残片、净化弹体与潮汐出口 |
-| 界面 | `title_bg.png`, `AaShuiyu.ttf` | 标题背景与全局中文字体 |
+| 世界 | `zone_shallows.png`, `zone_sediment.png`, `zone_depths.png`, `wall_tile.png` | 从 `资源/IMG_2030.PNG` 连续裁切的三段海域与手绘礁石纹理 |
+| 玩家 | `_raw/jellyfish_base.png`, `_raw/jellyfish_water.png`, `_raw/jellyfish_ice.png`, `_raw/jellyfish_electric.png` | `游戏素材库` 与旧项目手绘 3×2 动画序列 |
+| 污染 | `invader_1.png`, `invader_2.png`, `invader_3.png` | `游戏人物` 中塑料瓶、化学气、汽油小怪 |
+| 第一章守护者 | `brood_mother.png` | 旧项目手绘焦油怪序列，作为需净化的污染守护者 |
+| 后续守护者 | `legacy/ice_monster_idle_sheet.png`, `legacy/factory_monster_idle_sheet.png` | 第二章霜壳守望者、第三章废热炉心原始 3×2 手绘序列 |
+| 角色 | `npc_npc1giving.png`, `npc_starfish.png`, `npc_seaweed.png`, `npc_hermit.png`, `npc_shoal.png`, `npc_lantern.png` | 从 `资源` 与 `游戏人物` 选择、裁切或组合的手绘角色 |
+| 叙事物件 | `npc_barrel.png`, `icon_memory.png`, `icon_note.png`, `water_shard.png` | 原文件夹汽油桶、水元素球与沙水雕刻残片 |
+| 界面 | `title_bg.png`, `AaShuiyu.ttf` | `IMG_2030.PNG` 手绘主视觉裁切与全局中文字体 |
 
-后续章节只迁入旧项目已有的手绘怪物原画，没有生成新素材，也没有混入旧版像素洞穴砖块。当前没有音频文件；`AudioManager` 会安全跳过缺失音效，因此录制阶段可后期配乐，不影响游戏流程。
+所有运行时图片均可通过 `./tools/sync_folder_art.sh` 从项目内 `source_art/` 重新构建；脚本只做本地复制、裁切、缩放、组合和调色，不调用生成服务、不删除项目文件，也没有混入像素洞穴砖块。当前没有音频文件；`AudioManager` 会安全跳过缺失音效，因此录制阶段可后期配乐，不影响游戏流程。
+
+三个版本恢复点及无覆盖回退方法见 [RESTORE_GUIDE.md](RESTORE_GUIDE.md)。
 
 ## 尚可继续
 
