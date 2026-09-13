@@ -664,6 +664,8 @@ public partial class GameSceneController : Node2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        // While paused the PauseInput autoload owns Escape (this node is Pausable and
+        // would never see the event), so only the pause-entering half runs here.
         if (@event.IsActionPressed("pause_game")) TogglePause();
         else if (@event.IsActionPressed("restart_level")) RestartLevel();
     }
@@ -682,7 +684,7 @@ public partial class GameSceneController : Node2D
 
     private void TogglePause()
     {
-        _paused = !_paused;
+        _paused = !GetTree().Paused;
         GetTree().Paused = _paused;
         AudioManager.Instance?.PlaySfx("pause_toggle");
         Events.Instance?.EmitSignal(Events.SignalName.GamePaused, _paused);

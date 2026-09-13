@@ -20,13 +20,15 @@ Events="*res://scripts/Events.cs"
 AudioManager="*res://scripts/AudioManager.cs"
 SaveManager="*res://scripts/SaveManager.cs"
 MemoryLog="*res://scripts/MemoryLog.cs"
+WindowManager="*res://scripts/WindowManager.cs"
+PauseInput="*res://scripts/PauseInput.cs"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/stretch/mode="viewport"
-window/stretch/aspect="expand"
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep_height"
 
 [dotnet]
 
@@ -130,4 +132,5 @@ toggle_log={
 
 [rendering]
 
+textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.04, 0.12, 0.18, 1)
