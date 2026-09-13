@@ -11,6 +11,18 @@ public partial class WindowManager : Node
 {
     public override void _Ready() => ProcessMode = ProcessModeEnum.Always;
 
+    /// Stretch aspect is "expand", so the screen is always filled with no bars. On a
+    /// screen taller than 16:9 (a 16:10 MacBook) that shows more than 1080 world
+    /// pixels vertically, past the painted map, so the camera zooms in just enough
+    /// to keep the map filling the height. The HUD uses the whole screen either way.
+    public override void _Process(double delta)
+    {
+        var camera = GetViewport().GetCamera2D();
+        if (camera == null) return;
+        float zoom = Mathf.Max(1f, GetViewport().GetVisibleRect().Size.Y / ChapterMap.Height);
+        if (!Mathf.IsEqualApprox(camera.Zoom.X, zoom)) camera.Zoom = new Vector2(zoom, zoom);
+    }
+
     public override void _UnhandledKeyInput(InputEvent @event)
     {
         if (@event is not InputEventKey { Pressed: true, Echo: false } key) return;
