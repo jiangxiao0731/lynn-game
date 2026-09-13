@@ -920,14 +920,17 @@ public partial class GameSceneController : Node2D
         SaveManager.Instance?.SaveState(state);
     }
 
+    /// Same rule as chapters two and three (and SaveManager's stated design):
+    /// Continue resumes at the *start* of the last entered chapter. This used to
+    /// restore the saved objective stage, and a save written when the chapter
+    /// finished (stage Complete, before the results panel committed chapter two)
+    /// reloaded into a finished chapter with no objective and nothing to point at.
     private void RestoreProgressIfSaved()
     {
         var state = SaveManager.Instance?.LoadState();
-        if (state == null) return;
+        if (state == null || state.CurrentLevel != 1 || state.ObjectiveStage == ObjectiveStage.Complete) return;
         _player?.RestoreState(state.CurrentHealth, state.CurrentForm);
-        _skills?.RestoreCharges(state.WaterCharges, state.IceCharges, state.ElectricCharges);
-        _objectives?.RestoreStage(state.ObjectiveStage, 0);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-            string.Format(GameStrings.Tr("RESUME_NOTICE_TEMPLATE"), state.WaterCharges));
+            "Progress restored. This chapter's restoration route begins at the entrance.");
     }
 }
