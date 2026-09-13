@@ -148,6 +148,31 @@ public partial class GameSceneController : Node2D
             boss.Position = ChapterMap.BossPoint(1, boss.Position.Y);
             BossAura.Attach(this, boss, Palette.ArenaTint(1));
         }
+        ObjectiveGuide.Attach(this, CurrentTarget, () => _dialogue != null && _dialogue.IsActive);
+    }
+
+    /// What the guide arrow points at for the current step.
+    private Node2D? CurrentTarget()
+    {
+        switch (_objectives?.Stage)
+        {
+            case ObjectiveStage.FindNpc: return GetNodeOrNull<Node2D>("GrannyLan");
+            case ObjectiveStage.TalkStarfish: return GetNodeOrNull<Node2D>("StarfishNPC");
+            case ObjectiveStage.TalkSeaweed: return GetNodeOrNull<Node2D>("SeaweedNPC");
+            case ObjectiveStage.DefeatBoss: return GetNodeOrNull<Node2D>("BroodMother");
+            case ObjectiveStage.ExitLevel: return _exitMarker;
+            case ObjectiveStage.CollectShards:
+                Node2D? best = null;
+                float bestDistance = float.MaxValue;
+                foreach (var n in GetTree().GetNodesInGroup("element"))
+                {
+                    if (n is not Node2D shard || !shard.Visible || _player == null) continue;
+                    float d = shard.GlobalPosition.DistanceSquaredTo(_player.GlobalPosition);
+                    if (d < bestDistance) { bestDistance = d; best = shard; }
+                }
+                return best;
+            default: return null;
+        }
     }
 
     private void SetupMap()

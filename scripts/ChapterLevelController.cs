@@ -142,6 +142,7 @@ public partial class ChapterLevelController : Node2D
         BuildFragments(map);
         BuildExit(map);
         BossAura.Attach(this, _boss, Palette.ArenaTint(ChapterId));
+        ObjectiveGuide.Attach(this, CurrentTarget, () => _dialogue != null && _dialogue.IsActive);
     }
 
     private void BuildBackdrop(Node2D map)
@@ -451,6 +452,31 @@ public partial class ChapterLevelController : Node2D
                 return;
             }
         }
+    }
+
+    /// What the guide arrow points at for the current step.
+    private Node2D? CurrentTarget() => _stage switch
+    {
+        ObjectiveStage.FindNpc => _guide,
+        ObjectiveStage.TalkStarfish or ObjectiveStage.TalkSeaweed
+            => _restoredNodes < _restoreNodes.Count ? _restoreNodes[_restoredNodes] : null,
+        ObjectiveStage.CollectShards => Nearest(_fragmentsInWorld),
+        ObjectiveStage.DefeatBoss => _boss,
+        ObjectiveStage.ExitLevel => _exit,
+        _ => null,
+    };
+
+    private Node2D? Nearest<T>(System.Collections.Generic.IEnumerable<T> nodes) where T : Node2D
+    {
+        Node2D? best = null;
+        float bestDistance = float.MaxValue;
+        foreach (var node in nodes)
+        {
+            if (!IsInstanceValid(node) || !node.Visible) continue;
+            float d = node.GlobalPosition.DistanceSquaredTo(_player.GlobalPosition);
+            if (d < bestDistance) { bestDistance = d; best = node; }
+        }
+        return best;
     }
 
     private bool IsNodeAvailable(int index) => index == _restoredNodes &&
