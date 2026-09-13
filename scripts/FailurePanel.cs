@@ -19,12 +19,12 @@ public partial class FailurePanel : Control
         if (box != null)
         {
             box.CustomMinimumSize = new Vector2(640, 390);
-            box.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: 36));
+            box.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: UiTheme.PadScreen));
         }
 
         var layout = GetNodeOrNull<VBoxContainer>("Box/VBox");
         if (layout != null)
-            layout.AddThemeConstantOverride("separation", UiTheme.Space6);
+            layout.AddThemeConstantOverride("separation", UiTheme.GapSection);
 
         // ── Failure title label ───────────────────────────────────────────────
         var label = GetNodeOrNull<Label>("Box/VBox/FailureLabel");

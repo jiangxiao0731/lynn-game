@@ -9,20 +9,31 @@ namespace ShallowSeaDream;
 public partial class HudController : CanvasLayer
 {
     private Label _objectiveLabel = null!;
+    /// "STEP 2 OF 6" — which step, not just what to do.
+    private Label _objectiveStep = null!;
+    private readonly List<Panel> _stepPips = new();
+    private const int StepCount = 6;   // FindNpc .. ExitLevel
     private Label _objectiveMeta = null!;
     private ProgressBar _objectiveProgress = null!;
     private Label _zoneLabel = null!;
+    private PanelContainer _locationPanel = null!;
+    private Tween? _zoneTween;
+    /// How long the zone name stays fully visible before fading away.
+    private const float ZoneHoldSeconds = 2.6f;
     private Label _hpLabel = null!;
     private ProgressBar _hpBar = null!;
-    private readonly Label[] _skillCounts = new Label[3];
-    private Panel _skillDock = null!;
-    private Panel _bossPanel = null!;
+    private readonly Label?[] _skillCounts = new Label?[3];
+    private PanelContainer _skillDock = null!;
+    private PanelContainer _bossPanel = null!;
     private Label _bossNameLabel = null!;
     private Label _bossHpLabel = null!;
     private ProgressBar _bossBar = null!;
-    private Panel _statusPanel = null!;
+    private PanelContainer _statusPanel = null!;
     private Label _statusLabel = null!;
-    private Panel _pausePanel = null!;
+    /// Leading uppercase segment of a status line ("CHAPTER 2 · FROSTBOUND TRENCH"),
+    /// shown as a kicker above the message instead of run into it.
+    private Label _statusKicker = null!;
+    private PanelContainer _pausePanel = null!;
     private int _statusRevision;
     private int _shardCollected;
     private int _shardRequired = GameConstants.ShardThresholdForBoss;
@@ -65,12 +76,35 @@ public partial class HudController : CanvasLayer
         OnStatusHint(GameStrings.Tr("STATUS_DEFAULT_HINT"));
     }
 
-    private static Panel Surface(string name, Vector2 size, float alpha = 0.78f)
+    /// A HUD surface that grows to fit its text. These used to be fixed-size Panels,
+    /// so any change to the type scale either clipped text or left dead space; the
+    /// size passed in is now only a minimum.
+    private static PanelContainer Surface(string name, Vector2 size, float alpha = 0.78f)
     {
-        var panel = UiTheme.MakeGlassPanel(name, radius: 10, bgAlpha: alpha, pad: 0);
-        panel.CustomMinimumSize = size;
-        panel.Size = size;
+        var panel = new PanelContainer { Name = name, CustomMinimumSize = size };
+        panel.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(10, alpha, 0));
         return panel;
+    }
+
+    /// Anchor a surface to a screen corner and make it grow away from that corner,
+    /// so a panel pinned to the bottom grows upward instead of off the screen.
+    private static void Pin(Control panel, Control.LayoutPreset preset)
+    {
+        panel.SetAnchorsPreset(preset);
+        panel.GrowHorizontal = preset switch
+        {
+            Control.LayoutPreset.TopRight or Control.LayoutPreset.BottomRight => Control.GrowDirection.Begin,
+            Control.LayoutPreset.CenterBottom or Control.LayoutPreset.CenterTop or Control.LayoutPreset.Center
+                => Control.GrowDirection.Both,
+            _ => Control.GrowDirection.End,
+        };
+        panel.GrowVertical = preset switch
+        {
+            Control.LayoutPreset.BottomLeft or Control.LayoutPreset.BottomRight or Control.LayoutPreset.CenterBottom
+                => Control.GrowDirection.Begin,
+            Control.LayoutPreset.Center => Control.GrowDirection.Both,
+            _ => Control.GrowDirection.End,
+        };
     }
 
     private T Track<T>(T control) where T : Control
@@ -78,9 +112,6 @@ public partial class HudController : CanvasLayer
         _hudChrome.Add(control);
         return control;
     }
-
-    private static Label Text(string text, int size, Color color, bool wrap = false) =>
-        UiTheme.MakeLabel(text, size, color, wrap);
 
     private static MarginContainer Inset(Control parent, int h, int v)
     {
@@ -109,20 +140,20 @@ public partial class HudController : CanvasLayer
     private void BuildHud()
     {
         // Current objective: one readable instruction, never the full quest chain.
-        var objective = Track(Surface("ObjectivePanel", new Vector2(560, 142)));
-        objective.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+        var objective = Track(Surface("ObjectivePanel", new Vector2(620, 0)));
+        Pin(objective, Control.LayoutPreset.TopLeft);
         objective.Position = new Vector2(UiTheme.SafeArea, UiTheme.SafeArea);
         AddChild(objective);
-        var objectiveInset = Inset(objective, UiTheme.Space6, UiTheme.Space4);
+        var objectiveInset = Inset(objective, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
         var objectiveBox = new VBoxContainer();
-        objectiveBox.AddThemeConstantOverride("separation", UiTheme.Space1);
+        objectiveBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         objectiveInset.AddChild(objectiveBox);
-        var eyebrow = UiTheme.MakeStrongLabel("CURRENT OBJECTIVE", UiTheme.FontTiny, UiTheme.Accent);
-        eyebrow.AddThemeConstantOverride("letter_spacing", 2);
-        objectiveBox.AddChild(eyebrow);
-        _objectiveLabel = UiTheme.MakeStrongLabel("", 23, UiTheme.Ink, true);
+        _objectiveStep = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "Step 1 of 6");
+        objectiveBox.AddChild(_objectiveStep);
+        _objectiveLabel = UiTheme.Role(UiTheme.TypeRole.Primary, "", wrap: true);
         objectiveBox.AddChild(_objectiveLabel);
-        _objectiveMeta = Text("", UiTheme.FontTiny, UiTheme.InkDim);
+        objectiveBox.AddChild(BuildStepPips());
+        _objectiveMeta = UiTheme.Role(UiTheme.TypeRole.Meta, "");
         _objectiveMeta.Visible = false;
         objectiveBox.AddChild(_objectiveMeta);
         _objectiveProgress = new ProgressBar
@@ -136,34 +167,37 @@ public partial class HudController : CanvasLayer
         objectiveBox.AddChild(_objectiveProgress);
 
         // Location is orientation, not a faux minimap. The log shortcut is secondary.
-        var location = Track(Surface("LocationPanel", new Vector2(310, 80), 0.66f));
-        location.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+        var location = Track(Surface("LocationPanel", new Vector2(310, 0), 0.66f));
+        Pin(location, Control.LayoutPreset.TopRight);
         location.Position = new Vector2(-382, UiTheme.SafeArea);
         AddChild(location);
-        var locationInset = Inset(location, UiTheme.Space4, UiTheme.Space3);
+        var locationInset = Inset(location, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
         var locationBox = new VBoxContainer();
-        locationBox.AddThemeConstantOverride("separation", 0);
+        locationBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         locationInset.AddChild(locationBox);
-        _zoneLabel = UiTheme.MakeStrongLabel(ChapterRuntime.Zones[0], UiTheme.FontSmall, UiTheme.Ink);
+        _zoneLabel = UiTheme.Role(UiTheme.TypeRole.Name, ChapterRuntime.Zones[0]);
         _zoneLabel.HorizontalAlignment = HorizontalAlignment.Right;
         locationBox.AddChild(_zoneLabel);
-        var logHint = Text("J  ·  MEMORY JOURNAL", UiTheme.FontTiny, UiTheme.InkFaint);
-        logHint.HorizontalAlignment = HorizontalAlignment.Right;
-        locationBox.AddChild(logHint);
+        // The panel announces a zone change and then gets out of the way; it used to
+        // sit there permanently with a key hint that only mattered once.
+        _locationPanel = location;
+        _locationPanel.Modulate = Colors.Transparent;
 
         // Compact health strip. The old 220px ring obscured too much of the world.
-        var health = Track(Surface("HealthPanel", new Vector2(310, 72), 0.78f));
-        health.SetAnchorsPreset(Control.LayoutPreset.BottomLeft);
+        var health = Track(Surface("HealthPanel", new Vector2(310, 0), 0.78f));
+        Pin(health, Control.LayoutPreset.BottomLeft);
         health.Position = new Vector2(UiTheme.SafeArea, -144);
         AddChild(health);
-        var healthInset = Inset(health, UiTheme.Space4, UiTheme.Space3);
+        var healthInset = Inset(health, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
         var healthBox = new VBoxContainer();
-        healthBox.AddThemeConstantOverride("separation", UiTheme.Space2);
+        healthBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         healthInset.AddChild(healthBox);
         var healthTop = new HBoxContainer();
         healthBox.AddChild(healthTop);
-        healthTop.AddChild(UiTheme.MakeStrongLabel("SHIMMER", UiTheme.FontTiny, UiTheme.InkDim));
-        _hpLabel = Text("", UiTheme.FontTiny, UiTheme.Ink);
+        var hpKicker = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "Shimmer");
+        hpKicker.VerticalAlignment = VerticalAlignment.Center;
+        healthTop.AddChild(hpKicker);
+        _hpLabel = UiTheme.Role(UiTheme.TypeRole.Numeral, "");
         _hpLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         _hpLabel.HorizontalAlignment = HorizontalAlignment.Right;
         healthTop.AddChild(_hpLabel);
@@ -172,14 +206,14 @@ public partial class HudController : CanvasLayer
         healthBox.AddChild(_hpBar);
 
         // Ability charges appear only after the mechanic is unlocked.
-        _skillDock = Track(Surface("SkillDock", new Vector2(430, 80), 0.72f));
-        _skillDock.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
+        _skillDock = Track(Surface("SkillDock", new Vector2(430, 0), 0.72f));
+        Pin(_skillDock, Control.LayoutPreset.CenterBottom);
         _skillDock.Position = new Vector2(-215, -152);
         _skillDock.Visible = false;
         AddChild(_skillDock);
-        var skillInset = Inset(_skillDock, UiTheme.Space3, UiTheme.Space3);
+        var skillInset = Inset(_skillDock, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
         var skillRow = new HBoxContainer();
-        skillRow.AddThemeConstantOverride("separation", UiTheme.Space2);
+        skillRow.AddThemeConstantOverride("separation", UiTheme.GapPair);
         skillInset.AddChild(skillRow);
         var skills = new[]
         {
@@ -187,16 +221,24 @@ public partial class HudController : CanvasLayer
             ("2", "ICE", Palette.ElementIce),
             ("3", "ELECTRIC", Palette.ElementElectric),
         };
+        // Ice unlocks at the end of chapter one and Electric at the end of chapter two,
+        // so earlier chapters would otherwise show slots that can only ever read 0.
+        int unlocked = Mathf.Clamp(ChapterRuntime.CurrentChapter, 1, 3);
         for (int i = 0; i < skills.Length; i++)
         {
+            if (i >= unlocked) continue;
             var slot = new HBoxContainer { CustomMinimumSize = new Vector2(126, 0) };
             slot.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            slot.AddThemeConstantOverride("separation", UiTheme.Space2);
-            var key = Text(skills[i].Item1, UiTheme.FontTiny, skills[i].Item3);
+            slot.AddThemeConstantOverride("separation", UiTheme.GapPair);
+            var key = UiTheme.Role(UiTheme.TypeRole.Hint, skills[i].Item1);
+            key.VerticalAlignment = VerticalAlignment.Center;
             slot.AddChild(key);
-            var name = UiTheme.MakeStrongLabel(skills[i].Item2, UiTheme.FontSmall, UiTheme.Ink);
+            var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, skills[i].Item2);
+            name.AddThemeColorOverride("font_color", skills[i].Item3);
+            name.VerticalAlignment = VerticalAlignment.Center;
             slot.AddChild(name);
-            var count = Text("0", UiTheme.FontSmall, UiTheme.InkDim);
+            var count = UiTheme.Role(UiTheme.TypeRole.Numeral, "0");
+            count.AddThemeFontSizeOverride("font_size", UiTheme.SizeName);
             count.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             count.HorizontalAlignment = HorizontalAlignment.Right;
             _skillCounts[i] = count;
@@ -205,20 +247,21 @@ public partial class HudController : CanvasLayer
         }
 
         // Boss name and health get the conventional top-centre focal position.
-        _bossPanel = Track(Surface("BossPanel", new Vector2(760, 96), 0.86f));
-        _bossPanel.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
+        _bossPanel = Track(Surface("BossPanel", new Vector2(760, 0), 0.86f));
+        Pin(_bossPanel, Control.LayoutPreset.CenterTop);
         _bossPanel.Position = new Vector2(-380, UiTheme.SafeArea);
         _bossPanel.Visible = false;
         AddChild(_bossPanel);
-        var bossInset = Inset(_bossPanel, UiTheme.Space6, UiTheme.Space3);
+        var bossInset = Inset(_bossPanel, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
         var bossBox = new VBoxContainer();
-        bossBox.AddThemeConstantOverride("separation", UiTheme.Space2);
+        bossBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         bossInset.AddChild(bossBox);
         var bossTop = new HBoxContainer();
         bossBox.AddChild(bossTop);
-        _bossNameLabel = UiTheme.MakeStrongLabel(ChapterRuntime.BossName, UiTheme.FontSmall, UiTheme.Ink);
+        _bossNameLabel = UiTheme.Role(UiTheme.TypeRole.Name, ChapterRuntime.BossName);
         bossTop.AddChild(_bossNameLabel);
-        _bossHpLabel = Text("", UiTheme.FontTiny, UiTheme.InkDim);
+        _bossHpLabel = UiTheme.Role(UiTheme.TypeRole.Numeral, "");
+        _bossHpLabel.AddThemeColorOverride("font_color", UiTheme.InkDim);
         _bossHpLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         _bossHpLabel.HorizontalAlignment = HorizontalAlignment.Right;
         bossTop.AddChild(_bossHpLabel);
@@ -227,27 +270,38 @@ public partial class HudController : CanvasLayer
         bossBox.AddChild(_bossBar);
 
         // A transient toast replaces the permanent full-width instruction strip.
-        _statusPanel = Track(Surface("StatusToast", new Vector2(880, 96), 0.90f));
-        _statusPanel.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
+        _statusPanel = Track(Surface("StatusToast", new Vector2(880, 0), 0.90f));
+        Pin(_statusPanel, Control.LayoutPreset.CenterBottom);
         _statusPanel.Position = new Vector2(-440, -264);
         AddChild(_statusPanel);
-        var statusInset = Inset(_statusPanel, UiTheme.Space6, UiTheme.Space3);
-        _statusLabel = Text("", UiTheme.FontSmall, UiTheme.Ink, true);
+        var statusInset = Inset(_statusPanel, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
+        var statusBox = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        statusBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
+        statusInset.AddChild(statusBox);
+        _statusKicker = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "");
+        _statusKicker.HorizontalAlignment = HorizontalAlignment.Center;
+        _statusKicker.Visible = false;
+        statusBox.AddChild(_statusKicker);
+        _statusLabel = UiTheme.Role(UiTheme.TypeRole.Body, "", wrap: true);
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        _statusLabel.VerticalAlignment = VerticalAlignment.Center;
-        statusInset.AddChild(_statusLabel);
+        statusBox.AddChild(_statusLabel);
 
-        _pausePanel = Surface("PauseFeedbackPanel", new Vector2(360, 112), 0.94f);
-        _pausePanel.SetAnchorsPreset(Control.LayoutPreset.Center);
+        _pausePanel = Surface("PauseFeedbackPanel", new Vector2(360, 0), 0.94f);
+        Pin(_pausePanel, Control.LayoutPreset.Center);
         _pausePanel.Position = new Vector2(-180, -56);
         _pausePanel.Visible = false;
         _pausePanel.ProcessMode = ProcessModeEnum.Always;
         AddChild(_pausePanel);
-        var pauseLabel = UiTheme.MakeDisplayLabel("PAUSED", UiTheme.FontH2, UiTheme.Ink);
-        pauseLabel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        var pauseBox = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        pauseBox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        pauseBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
+        _pausePanel.AddChild(pauseBox);
+        var pauseLabel = UiTheme.Role(UiTheme.TypeRole.Heading, "Paused");
         pauseLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        pauseLabel.VerticalAlignment = VerticalAlignment.Center;
-        _pausePanel.AddChild(pauseLabel);
+        pauseBox.AddChild(pauseLabel);
+        var pauseHint = UiTheme.Role(UiTheme.TypeRole.Hint, "Esc to resume");
+        pauseHint.HorizontalAlignment = HorizontalAlignment.Center;
+        pauseBox.AddChild(pauseHint);
     }
 
     private void OnPlayerHealthChanged(int current, int max)
@@ -259,9 +313,14 @@ public partial class HudController : CanvasLayer
 
     private void OnChargesChanged(int water, int ice, int electric)
     {
-        _skillCounts[0].Text = water.ToString();
-        _skillCounts[1].Text = ice.ToString();
-        _skillCounts[2].Text = electric.ToString();
+        // Slots for forms this chapter has not unlocked are never built, so the array
+        // is sparse; skip the holes instead of dereferencing them.
+        var counts = new[] { water, ice, electric };
+        for (int i = 0; i < _skillCounts.Length; i++)
+        {
+            var label = _skillCounts[i];
+            if (label != null) label.Text = counts[i].ToString();
+        }
     }
 
     private void OnShardProgressChanged(int collected, int required)
@@ -277,6 +336,11 @@ public partial class HudController : CanvasLayer
     {
         var current = (ObjectiveStage)stage;
         _objectiveLabel.Text = GameStrings.ObjectiveLabel(current);
+        int step = Mathf.Clamp(stage, 0, StepCount);
+        _objectiveStep.Text = current == ObjectiveStage.Complete
+            ? "ALL STEPS DONE"
+            : $"STEP {step + 1} OF {StepCount}";
+        UpdateStepPips(step);
         bool collecting = current == ObjectiveStage.CollectShards;
         _objectiveMeta.Visible = collecting;
         _objectiveProgress.Visible = collecting;
@@ -291,6 +355,42 @@ public partial class HudController : CanvasLayer
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
     }
 
+    /// One pip per step. Done steps fill with the accent, the current one is amber —
+    /// the same amber as the world arrow, so the panel and the arrow read as one
+    /// instruction — and later ones are a faint ring.
+    private HBoxContainer BuildStepPips()
+    {
+        var row = new HBoxContainer { Name = "StepPips" };
+        row.AddThemeConstantOverride("separation", UiTheme.GapPair);
+        for (int i = 0; i < StepCount; i++)
+        {
+            var pip = new Panel { CustomMinimumSize = new Vector2(16, 16), SizeFlagsVertical = Control.SizeFlags.ShrinkCenter };
+            _stepPips.Add(pip);
+            row.AddChild(pip);
+        }
+        return row;
+    }
+
+    private static readonly Color StepAmber = new(1.00f, 0.78f, 0.22f);
+
+    private void UpdateStepPips(int current)
+    {
+        for (int i = 0; i < _stepPips.Count; i++)
+        {
+            bool done = i < current, now = i == current;
+            var style = new StyleBoxFlat
+            {
+                BgColor = done ? UiTheme.Accent : now ? StepAmber : Colors.Transparent,
+                BorderColor = done ? UiTheme.Accent : now ? StepAmber : new Color(UiTheme.InkDim, 0.6f),
+                BorderWidthLeft = 2, BorderWidthTop = 2, BorderWidthRight = 2, BorderWidthBottom = 2,
+                CornerRadiusTopLeft = 12, CornerRadiusTopRight = 12,
+                CornerRadiusBottomLeft = 12, CornerRadiusBottomRight = 12,
+            };
+            _stepPips[i].AddThemeStyleboxOverride("panel", style);
+            _stepPips[i].CustomMinimumSize = now ? new Vector2(24, 24) : new Vector2(16, 16);
+        }
+    }
+
     private void OnBossHealthChanged(int current, int max)
     {
         _bossPanel.Visible = current > 0;
@@ -303,15 +403,30 @@ public partial class HudController : CanvasLayer
     {
         _zoneLabel.Text = zoneName;
         _zoneLabel.Modulate = UiTheme.Accent;
-        var tween = CreateTween();
-        tween.TweenProperty(_zoneLabel, "modulate", UiTheme.Ink, 0.6f)
+
+        // Re-entering a zone restarts the announcement rather than stacking tweens.
+        _zoneTween?.Kill();
+        _zoneTween = CreateTween();
+        _zoneTween.TweenProperty(_locationPanel, "modulate", Colors.White, 0.35f)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        _zoneTween.Parallel().TweenProperty(_zoneLabel, "modulate", UiTheme.Ink, 0.6f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        _zoneTween.TweenInterval(ZoneHoldSeconds);
+        _zoneTween.TweenProperty(_locationPanel, "modulate", Colors.Transparent, 0.9f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
     }
 
     private async void OnStatusHint(string text)
     {
         int revision = ++_statusRevision;
-        _statusLabel.Text = text;
+        // Senders separate a kicker from the message with a run of spaces
+        // ("CHAPTER 2 · FROSTBOUND TRENCH   Find Lanternfish and press E").
+        var parts = System.Text.RegularExpressions.Regex.Split(text.Trim(), @"\s{3,}", 
+            System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromMilliseconds(50));
+        bool hasKicker = parts.Length >= 2 && parts[0] == parts[0].ToUpperInvariant();
+        _statusKicker.Visible = hasKicker;
+        _statusKicker.Text = hasKicker ? parts[0].ToUpperInvariant() : "";
+        _statusLabel.Text = hasKicker ? string.Join(" ", parts, 1, parts.Length - 1) : text;
         _statusPanel.Visible = true;
         _statusPanel.Modulate = Colors.White;
         await ToSignal(GetTree().CreateTimer(4.2), SceneTreeTimer.SignalName.Timeout);

@@ -21,12 +21,12 @@ public partial class SettlementPanel : Control
         if (box != null)
         {
             box.CustomMinimumSize = new Vector2(840, 440);
-            box.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: 36));
+            box.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: UiTheme.PadScreen));
         }
 
         var layout = GetNodeOrNull<VBoxContainer>("Box/VBox");
         if (layout != null)
-            layout.AddThemeConstantOverride("separation", UiTheme.Space6);
+            layout.AddThemeConstantOverride("separation", UiTheme.GapSection);
 
         // ── Title label ───────────────────────────────────────────────────────
         var title = GetNodeOrNull<Label>("Box/VBox/Title");

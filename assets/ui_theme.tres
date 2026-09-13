@@ -1,6 +1,74 @@
 [gd_resource type="Theme" format=3 uid="uid://cj2o6ru61y053"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/AaShuiyu.ttf" id="1_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/Grandstander-VF.ttf" id="1_font"]
+
+[sub_resource type="StyleBoxFlat" id="PillDisabled"]
+content_margin_left = 28.0
+content_margin_top = 12.0
+content_margin_right = 28.0
+content_margin_bottom = 12.0
+bg_color = Color(0.3, 0.4, 0.45, 0.1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.5, 0.55, 0.25)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="PillHover"]
+content_margin_left = 28.0
+content_margin_top = 12.0
+content_margin_right = 28.0
+content_margin_bottom = 12.0
+bg_color = Color(0.52, 0.94, 1, 0.26)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.52, 0.94, 1, 0.9)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0.52, 0.94, 1, 0.35)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="PillNormal"]
+content_margin_left = 28.0
+content_margin_top = 12.0
+content_margin_right = 28.0
+content_margin_bottom = 12.0
+bg_color = Color(0.52, 0.94, 1, 0.12)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.52, 0.94, 1, 0.5)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="PillPressed"]
+content_margin_left = 28.0
+content_margin_top = 12.0
+content_margin_right = 28.0
+content_margin_bottom = 12.0
+bg_color = Color(0.52, 0.94, 1, 0.34)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.52, 0.94, 1, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxEmpty" id="Empty"]
 
 [sub_resource type="StyleBoxFlat" id="GlassPanel"]
 content_margin_left = 20.0
@@ -20,94 +88,21 @@ corner_radius_bottom_left = 20
 shadow_color = Color(0, 0.02, 0.04, 0.45)
 shadow_size = 14
 shadow_offset = Vector2(0, 6)
-anti_aliasing = true
-
-[sub_resource type="StyleBoxFlat" id="PillNormal"]
-content_margin_left = 28.0
-content_margin_top = 12.0
-content_margin_right = 28.0
-content_margin_bottom = 12.0
-bg_color = Color(0.52, 0.94, 1, 0.12)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.52, 0.94, 1, 0.5)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-anti_aliasing = true
-
-[sub_resource type="StyleBoxFlat" id="PillHover"]
-content_margin_left = 28.0
-content_margin_top = 12.0
-content_margin_right = 28.0
-content_margin_bottom = 12.0
-bg_color = Color(0.52, 0.94, 1, 0.26)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.52, 0.94, 1, 0.9)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0.52, 0.94, 1, 0.35)
-shadow_size = 12
-anti_aliasing = true
-
-[sub_resource type="StyleBoxFlat" id="PillPressed"]
-content_margin_left = 28.0
-content_margin_top = 12.0
-content_margin_right = 28.0
-content_margin_bottom = 12.0
-bg_color = Color(0.52, 0.94, 1, 0.34)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.52, 0.94, 1, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-anti_aliasing = true
-
-[sub_resource type="StyleBoxFlat" id="PillDisabled"]
-content_margin_left = 28.0
-content_margin_top = 12.0
-content_margin_right = 28.0
-content_margin_bottom = 12.0
-bg_color = Color(0.3, 0.4, 0.45, 0.1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.4, 0.5, 0.55, 0.25)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-anti_aliasing = true
-
-[sub_resource type="StyleBoxEmpty" id="Empty"]
 
 [resource]
 default_font = ExtResource("1_font")
-default_font_size = 24
+default_font_size = 26
 Button/colors/font_color = Color(0.52, 0.94, 1, 1)
+Button/colors/font_disabled_color = Color(0.52, 0.68, 0.76, 0.7)
+Button/colors/font_focus_color = Color(1, 1, 1, 1)
 Button/colors/font_hover_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/colors/font_focus_color = Color(1, 1, 1, 1)
-Button/colors/font_disabled_color = Color(0.52, 0.68, 0.76, 0.7)
-Button/styles/normal = SubResource("PillNormal")
-Button/styles/hover = SubResource("PillHover")
-Button/styles/pressed = SubResource("PillPressed")
-Button/styles/focus = SubResource("PillHover")
 Button/styles/disabled = SubResource("PillDisabled")
+Button/styles/focus = SubResource("PillHover")
+Button/styles/hover = SubResource("PillHover")
+Button/styles/normal = SubResource("PillNormal")
+Button/styles/pressed = SubResource("PillPressed")
 Label/colors/font_color = Color(0.86, 0.96, 1, 1)
+LineEdit/styles/focus = SubResource("Empty")
 Panel/styles/panel = SubResource("GlassPanel")
 PanelContainer/styles/panel = SubResource("GlassPanel")
-LineEdit/styles/focus = SubResource("Empty")

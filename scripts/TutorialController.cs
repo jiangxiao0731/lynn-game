@@ -79,12 +79,12 @@ public partial class TutorialController : Control
             modal.AnchorRight = 0.93f;
             modal.AnchorBottom = 0.84f;
             modal.OffsetLeft = modal.OffsetTop = modal.OffsetRight = modal.OffsetBottom = 0;
-            modal.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(radius: 10, bgAlpha: 0.78f, pad: 48));
+            modal.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(radius: 10, bgAlpha: 0.78f, pad: UiTheme.PadScreen));
         }
         var vb = GetNodeOrNull<VBoxContainer>("Modal/VBox");
         if (vb != null)
         {
-            vb.AddThemeConstantOverride("separation", UiTheme.Space6);
+            vb.AddThemeConstantOverride("separation", UiTheme.GapSection);
             vb.Alignment = BoxContainer.AlignmentMode.Begin;
         }
 
@@ -103,7 +103,7 @@ public partial class TutorialController : Control
         _body.CustomMinimumSize = new Vector2(0, 290);
 
         // Page indicator dots under the body.
-        _pageDots = UiTheme.MakeLabel("", UiTheme.FontTiny, UiTheme.InkDim);
+        _pageDots = UiTheme.Role(UiTheme.TypeRole.Hint, "");
         _pageDots.HorizontalAlignment = HorizontalAlignment.Left;
         if (vb != null)
         {

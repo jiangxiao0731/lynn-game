@@ -10,8 +10,8 @@ public static class UiTheme
 {
     public const string FontPath = "res://assets/fonts/AaShuiyu.ttf";
     private static FontFile? _displayFont;
-    private static SystemFont? _bodyFont;
-    private static SystemFont? _strongFont;
+    private static Font? _bodyFont;
+    private static Font? _strongFont;
     private static readonly Dictionary<string, Texture2D> PaintedTextures = new();
     private static readonly Dictionary<string, Texture2D> BrushTextures = new();
 
@@ -26,26 +26,87 @@ public static class UiTheme
         }
     }
 
-    /// A calm, highly legible editorial face for paragraphs, HUD data and controls.
-    /// It uses fonts already installed on the viewing system and falls back safely.
-    public static SystemFont BodyFont => _bodyFont ??= MakeSystemFont(450);
-    public static SystemFont StrongFont => _strongFont ??= MakeSystemFont(650);
+    // --- Text face ---------------------------------------------------------------
+    // Bundled with the game rather than borrowed from the OS: a system face renders
+    // differently (or not at all) on the machine the game is sent to, and Godot's
+    // SystemFont could not even pick a weight out of most macOS families. A variable
+    // font serves both weights from one file; a static family uses two files.
+    //
+    // Two faces, children's-game style: a loud, chunky headline face for everything
+    // that names or directs (objective, names, speaker, labels, buttons, key caps),
+    // and a heavy but calm text face for everything that is read at length.
+    private const string HeadlineFacePath = "res://assets/fonts/Gluten-VF.ttf";
+    private const int HeadlineWeight = 800;  // ignored by single-weight display faces
+    private const string BodyFacePath = "res://assets/fonts/Grandstander-VF.ttf";
+    private const int BodyWeight = 600;      // heavy on purpose: thin text vanished on the art
 
-    // A deliberately contrasted type scale: display / heading / lead / body / meta.
-    public const int FontDisplay = 92;
+    /// Dialogue, prose, HUD data.
+    public static Font BodyFont => _bodyFont ??= Face(BodyFacePath, BodyWeight);
+    /// Objective, names, labels, headings, buttons.
+    public static Font StrongFont => _strongFont ??= Face(HeadlineFacePath, HeadlineWeight);
+
+    /// One face at one weight, with optional tracking and tabular figures. Built
+    /// straight off the font file so weight, spacing and features compose in a
+    /// single FontVariation instead of stacking variations on variations.
+    private static Font Face(string path, int weight, int spacing = 0, bool tabular = false)
+    {
+        var file = ResourceLoader.Exists(path) ? GD.Load<FontFile>(path) : null;
+        var ts = TextServerManager.GetPrimaryInterface();
+        var face = new FontVariation { BaseFont = file ?? (Font)MakeSystemFont(weight) };
+        int wght = (int)ts.NameToTag("wght");
+        if (file != null && file.GetSupportedVariationList().ContainsKey(wght))
+            face.VariationOpentype = new Godot.Collections.Dictionary { { wght, weight } };
+        if (spacing != 0) face.SpacingGlyph = spacing;
+        if (tabular)
+            face.OpentypeFeatures = new Godot.Collections.Dictionary { { (int)ts.NameToTag("tnum"), 1 } };
+        return face;
+    }
+
+    // --- Type scale -------------------------------------------------------------
+    // Roughly 1.2 between steps and never closer than 3px, so no two roles can be
+    // mistaken for each other on a compressed capture. Size is only one of three
+    // levers: every role also fixes a weight and an ink (see TypeRole below).
+    public const int SizeDisplay = 96;   // title logo, chapter cards
+    public const int SizeHeading = 48;   // panel titles
+    public const int SizePrimary = 38;   // the one thing to do right now
+    public const int SizeSpeaker = 30;   // who is talking — leads the line it introduces
+    public const int SizeName = 28;      // who something is
+    public const int SizeBody = 26;      // dialogue and prose
+    public const int SizeMeta = 21;      // what it is / secondary numbers
+    public const int SizeEyebrow = 17;   // tracked uppercase kicker labels
+
+    // Legacy names, kept as aliases onto the scale above.
+    public const int FontDisplay = SizeDisplay;
     public const int FontH1 = 46;
-    public const int FontH2 = 30;
-    public const int FontBody = 21;
-    public const int FontSmall = 17;
-    public const int FontTiny = 13;
+    public const int FontH2 = SizeHeading;
+    public const int FontBody = SizeBody;
+    public const int FontSmall = SizeName;
+    public const int FontTiny = SizeEyebrow;
 
+    /// Last resort if the bundled face is missing. Most macOS families only expose one
+    /// face to SystemFont ("Avenir Next" returned Bold for every weight), so this
+    /// sticks to families verified to resolve both weights.
     private static SystemFont MakeSystemFont(int weight) => new()
     {
-        FontNames = new[] { "Avenir Next", "Avenir", "Helvetica Neue", "Arial" },
+        FontNames = new[] { "SF Pro Text", "Arial" },
         FontWeight = weight,
         AllowSystemFallback = true,
         MultichannelSignedDistanceField = true,
     };
+
+    // --- Spacing spec -------------------------------------------------------------
+    // One 8-point spec for every box that holds text; nothing else sets padding.
+    // The painted panel edge inks roughly 10px into its box, so these are measured
+    // from the outside edge and already include that allowance: with the old 12px
+    // insets the text sat about 2px off the ink line.
+    public const int PadSurfaceX = 32;   // every panel that holds text in play
+    public const int PadSurfaceY = 24;
+    public const int PadScreen = 48;     // full-screen panels: journal, results, tutorial
+    public const int PadPillX = 16;      // key prompts
+    public const int PadPillY = 8;
+    public const int GapPair = 8;        // kicker → value, name → subtitle, line → line
+    public const int GapBlock = 16;      // between blocks inside one surface
+    public const int GapSection = 24;    // between sections of a full-screen panel
 
     public const int Space1 = 4;
     public const int Space2 = 8;
@@ -136,7 +197,7 @@ public static class UiTheme
         return PaintedStyle(wash, Hairline, pad, 19 + radius);
     }
 
-    public static StyleBoxTexture OverlayPanel(int radius = 12, int pad = 32) =>
+    public static StyleBoxTexture OverlayPanel(int radius = 12, int pad = PadScreen) =>
         PaintedStyle(GlassBgDeep, new Color(.62f,.82f,.69f,.96f), pad, 71 + radius);
 
     public static StyleBoxFlat Scrim(float alpha = 0.72f) =>
@@ -223,6 +284,132 @@ public static class UiTheme
         var label = MakeLabel(text, size, color, wrap);
         ApplyDisplayFont(label, size);
         return label;
+    }
+
+    // --- Semantic type roles -----------------------------------------------------
+    // Call sites pick a role, never a raw size/weight/colour. Two weights (Body 450,
+    // Strong 650) plus the hand-drawn display face are the whole palette; hierarchy
+    // comes from combining size, weight and ink per role, not from any one alone.
+
+    private static Font? _eyebrowFont;
+    private static Font? _numeralFont;
+
+    /// Strong face with open tracking. Label has no letter-spacing theme constant in
+    /// Godot 4 (the old "letter_spacing" override was silently ignored), so tracking
+    /// has to live on the font itself.
+    public static Font EyebrowFont => _eyebrowFont ??= Face(HeadlineFacePath, HeadlineWeight, spacing: 2);
+
+    /// Body face with tabular figures, so changing numbers (HP, counts) keep their
+    /// width instead of jittering as digits change.
+    public static Font NumeralFont => _numeralFont ??= Face(BodyFacePath, BodyWeight, tabular: true);
+
+    public enum TypeRole
+    {
+        Display,   // hand-drawn face, the few moments meant to feel authored
+        Heading,   // panel / screen titles
+        Primary,   // current objective — the brightest, largest HUD text
+        Speaker,   // dialogue speaker: a size above the line, headline face, accent ink
+        Body,      // dialogue lines, prose, toast messages
+        Name,      // world nameplates, zone name, boss name
+        Meta,      // subtitles, roles, secondary info
+        Numeral,   // HP, counts — tabular
+        Eyebrow,   // tracked uppercase kicker above a heading or value
+        Hint,      // tertiary: control reminders, fades into the background
+    }
+
+    public static Label Role(TypeRole role, string text, bool wrap = false)
+    {
+        var (size, font, ink, upper) = role switch
+        {
+            TypeRole.Display => (SizeDisplay, (Font)(DisplayFont ?? (Font)StrongFont), Accent, false),
+            TypeRole.Heading => (SizeHeading, (Font)StrongFont, Ink, false),
+            TypeRole.Primary => (SizePrimary, (Font)StrongFont, Ink, false),
+            TypeRole.Speaker => (SizeSpeaker, (Font)StrongFont, Accent, false),
+            TypeRole.Body => (SizeBody, (Font)BodyFont, Ink, false),
+            TypeRole.Name => (SizeName, (Font)StrongFont, Ink, false),
+            TypeRole.Meta => (SizeMeta, (Font)BodyFont, InkDim, false),
+            TypeRole.Numeral => (SizeMeta, (Font)NumeralFont, Ink, false),
+            TypeRole.Eyebrow => (SizeEyebrow, (Font)EyebrowFont, Accent, true),
+            TypeRole.Hint => (SizeEyebrow, (Font)EyebrowFont, InkFaint, true),
+            _ => (SizeBody, (Font)BodyFont, Ink, false),
+        };
+
+        var label = new Label { Text = upper ? text.ToUpperInvariant() : text };
+        if (wrap)
+        {
+            label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            label.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        }
+        label.AddThemeFontOverride("font", font);
+        label.AddThemeFontSizeOverride("font_size", size);
+        label.AddThemeColorOverride("font_color", ink);
+        // Prose breathes more than labels; headings sit tight.
+        float leading = role switch
+        {
+            TypeRole.Body => 0.45f,
+            TypeRole.Heading or TypeRole.Display or TypeRole.Primary => 0.18f,
+            _ => 0.28f,
+        };
+        label.AddThemeConstantOverride("line_spacing", Mathf.RoundToInt(size * leading));
+        return label;
+    }
+
+    /// Text drawn over the painted world: adds a soft dark outline so it survives any
+    /// part of the backdrop without a panel behind it.
+    public static Label WorldRole(TypeRole role, string text)
+    {
+        var label = Role(role, text);
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.MouseFilter = Control.MouseFilterEnum.Ignore;
+        label.AddThemeColorOverride("font_outline_color", new Color(0.01f, 0.05f, 0.07f, 0.94f));
+        label.AddThemeConstantOverride("outline_size", role == TypeRole.Name ? 6 : 5);
+        return label;
+    }
+
+    /// The one interaction prompt used everywhere: a light key-cap carrying the key,
+    /// followed by the action in tracked caps. Reads as "press this", not as another
+    /// nameplate, which is what a same-style text label could not do.
+    public static PanelContainer KeyPrompt(string key, string action)
+    {
+        var pill = new PanelContainer { Name = "KeyPrompt", MouseFilter = Control.MouseFilterEnum.Ignore };
+        var pillStyle = new StyleBoxFlat
+        {
+            BgColor = new Color(0.02f, 0.07f, 0.09f, 0.90f),
+            BorderColor = new Color(Accent, 0.55f),
+            CornerRadiusTopLeft = 20, CornerRadiusTopRight = 20,
+            CornerRadiusBottomLeft = 20, CornerRadiusBottomRight = 20,
+            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
+            ContentMarginLeft = PadPillY, ContentMarginRight = PadPillX,
+            ContentMarginTop = PadPillY, ContentMarginBottom = PadPillY,
+        };
+        pill.AddThemeStyleboxOverride("panel", pillStyle);
+
+        var row = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        row.AddThemeConstantOverride("separation", GapPair);
+        pill.AddChild(row);
+
+        var cap = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        var capStyle = new StyleBoxFlat
+        {
+            BgColor = Ink,
+            CornerRadiusTopLeft = 6, CornerRadiusTopRight = 6,
+            CornerRadiusBottomLeft = 6, CornerRadiusBottomRight = 6,
+            ContentMarginLeft = GapPair, ContentMarginRight = GapPair,
+            ContentMarginTop = Space1, ContentMarginBottom = Space1,
+        };
+        cap.AddThemeStyleboxOverride("panel", capStyle);
+        var keyLabel = Role(TypeRole.Name, key);
+        keyLabel.AddThemeFontSizeOverride("font_size", SizeMeta);
+        keyLabel.AddThemeColorOverride("font_color", new Color(0.03f, 0.10f, 0.12f));
+        keyLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        cap.AddChild(keyLabel);
+        row.AddChild(cap);
+
+        var actionLabel = Role(TypeRole.Eyebrow, action);
+        actionLabel.AddThemeColorOverride("font_color", Ink);
+        actionLabel.VerticalAlignment = VerticalAlignment.Center;
+        row.AddChild(actionLabel);
+        return pill;
     }
 
     public static ColorRect Divider(float alpha = 0.18f)

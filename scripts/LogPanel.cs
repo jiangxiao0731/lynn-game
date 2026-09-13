@@ -35,16 +35,16 @@ public partial class LogPanel : CanvasLayer
         _panel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         _panel.OffsetLeft = 160; _panel.OffsetRight = -160;
         _panel.OffsetTop = 80; _panel.OffsetBottom = -80;
-        _panel.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: 36));
+        _panel.AddThemeStyleboxOverride("panel", UiTheme.OverlayPanel(radius: 24, pad: UiTheme.PadScreen));
         AddChild(_panel);
 
         var outer = new VBoxContainer();
         outer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        outer.AddThemeConstantOverride("separation", 14);
+        outer.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         _panel.AddChild(outer);
 
         outer.AddChild(UiTheme.MakeDisplayLabel(GameStrings.Tr("LOG_TITLE"), UiTheme.FontH1, Palette.CoastalCyan));
-        outer.AddChild(UiTheme.MakeStrongLabel(GameStrings.Tr("LOG_HINT"), UiTheme.FontSmall, UiTheme.InkDim));
+        outer.AddChild(UiTheme.Role(UiTheme.TypeRole.Hint, GameStrings.Tr("LOG_HINT")));
         outer.AddChild(UiTheme.Divider());
 
         var scroll = new ScrollContainer();
@@ -54,7 +54,7 @@ public partial class LogPanel : CanvasLayer
 
         _content = new VBoxContainer();
         _content.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        _content.AddThemeConstantOverride("separation", 10);
+        _content.AddThemeConstantOverride("separation", UiTheme.GapPair);
         scroll.AddChild(_content);
     }
 
@@ -128,16 +128,23 @@ public partial class LogPanel : CanvasLayer
     private void AddSection(string text)
     {
         _content.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
-        _content.AddChild(UiTheme.MakeDisplayLabel(text, UiTheme.FontH2, Palette.CoastalCyan, wrap: true));
+        _content.AddChild(UiTheme.Role(UiTheme.TypeRole.Eyebrow, text, wrap: true));
         _content.AddChild(UiTheme.Divider(0.18f));
     }
 
     private void AddEntry(string title, string body, string zone)
     {
-        string head = string.IsNullOrEmpty(zone) ? $"· {title}" : $"· {title}  —  {zone}";
-        _content.AddChild(UiTheme.MakeStrongLabel(head, UiTheme.FontBody, UiTheme.Ink, wrap: true));
+        var entry = new VBoxContainer();
+        entry.AddThemeConstantOverride("separation", UiTheme.GapPair);
+        _content.AddChild(entry);
+        if (!string.IsNullOrEmpty(zone)) entry.AddChild(UiTheme.Role(UiTheme.TypeRole.Hint, zone));
+        entry.AddChild(UiTheme.Role(UiTheme.TypeRole.Name, title, wrap: true));
         if (!string.IsNullOrEmpty(body))
-            _content.AddChild(MakeLabel("   " + body, UiTheme.FontSmall, UiTheme.InkDim));
+        {
+            var text = UiTheme.Role(UiTheme.TypeRole.Meta, body, wrap: true);
+            entry.AddChild(text);
+        }
+        _content.AddChild(new Control { CustomMinimumSize = new Vector2(0, UiTheme.Space2) });
     }
 
     private static string ConversationTitle(string id) => id switch
@@ -167,6 +174,4 @@ public partial class LogPanel : CanvasLayer
         _ => id,
     };
 
-    private static Label MakeLabel(string text, int size, Color color) =>
-        UiTheme.MakeLabel(text, size, color, wrap: true);
 }

@@ -15,6 +15,8 @@ public partial class DialogueRunner : CanvasLayer
     private const float CharsPerSecond = 42f;
 
     private Panel _panel = null!;
+    /// Content root of the bubble; its minimum size is what the bubble grows to.
+    private MarginContainer _inset = null!;
     private Panel _portraitFrame = null!;
     private PanelContainer _speakerTab = null!;
     private TextureRect _portrait = null!;
@@ -25,8 +27,8 @@ public partial class DialogueRunner : CanvasLayer
     private Polygon2D _tail = null!;
     private Node2D? _speakerAnchor;
 
-    private static readonly Vector2 BubbleSize = new(700, 214);
-    private static readonly Vector2 ChoiceBubbleSize = new(780, 374);
+    private static readonly Vector2 BubbleSize = new(780, 0);
+    private static readonly Vector2 ChoiceBubbleSize = new(860, 0);
 
     private DialogueTimeline? _timeline;
     private int _lineIndex;
@@ -67,18 +69,19 @@ public partial class DialogueRunner : CanvasLayer
         _panel.AddChild(_tail);
 
         var inset = new MarginContainer();
+        _inset = inset;
         inset.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        inset.AddThemeConstantOverride("margin_left", UiTheme.Space6);
-        inset.AddThemeConstantOverride("margin_right", UiTheme.Space6);
-        inset.AddThemeConstantOverride("margin_top", UiTheme.Space4);
-        inset.AddThemeConstantOverride("margin_bottom", UiTheme.Space4);
+        inset.AddThemeConstantOverride("margin_left", UiTheme.PadSurfaceX);
+        inset.AddThemeConstantOverride("margin_right", UiTheme.PadSurfaceX);
+        inset.AddThemeConstantOverride("margin_top", UiTheme.PadSurfaceY);
+        inset.AddThemeConstantOverride("margin_bottom", UiTheme.PadSurfaceY);
         _panel.AddChild(inset);
 
         var hbox = new HBoxContainer();
-        hbox.AddThemeConstantOverride("separation", UiTheme.Space4);
+        hbox.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         inset.AddChild(hbox);
 
-        _portraitFrame = UiTheme.MakeGlassPanel("PortraitFrame", radius: 8, bgAlpha: 0.28f, pad: 6);
+        _portraitFrame = UiTheme.MakeGlassPanel("PortraitFrame", radius: 8, bgAlpha: 0.28f, pad: UiTheme.GapPair);
         _portraitFrame.CustomMinimumSize = new Vector2(96, 96);
         _portraitFrame.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
         hbox.AddChild(_portraitFrame);
@@ -94,7 +97,7 @@ public partial class DialogueRunner : CanvasLayer
 
         var vbox = new VBoxContainer();
         vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        vbox.AddThemeConstantOverride("separation", UiTheme.Space2);
+        vbox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         hbox.AddChild(vbox);
 
         // Speaker is an eyebrow, not another nested card.
@@ -104,20 +107,18 @@ public partial class DialogueRunner : CanvasLayer
         _speakerTab.SizeFlagsHorizontal = Control.SizeFlags.ShrinkBegin;
         vbox.AddChild(_speakerTab);
 
-        _speakerLabel = UiTheme.MakeDisplayLabel("", UiTheme.FontSmall, UiTheme.Accent);
+        _speakerLabel = UiTheme.Role(UiTheme.TypeRole.Speaker, "");
         _speakerTab.AddChild(_speakerLabel);
 
-        _textLabel = UiTheme.MakeLabel("", UiTheme.FontBody, UiTheme.Ink, wrap: true);
+        _textLabel = UiTheme.Role(UiTheme.TypeRole.Body, "", wrap: true);
         _textLabel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        _textLabel.AddThemeConstantOverride("line_spacing", 9);
-        _textLabel.CustomMinimumSize = new Vector2(0, 112);
         vbox.AddChild(_textLabel);
 
         _choiceBox = new VBoxContainer { Name = "Choices" };
-        _choiceBox.AddThemeConstantOverride("separation", 8);
+        _choiceBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         vbox.AddChild(_choiceBox);
 
-        _hintLabel = UiTheme.MakeLabel("SPACE / ENTER  ·  CONTINUE", UiTheme.FontTiny, UiTheme.InkFaint);
+        _hintLabel = UiTheme.Role(UiTheme.TypeRole.Hint, "Space / Enter  ·  Continue");
         _hintLabel.HorizontalAlignment = HorizontalAlignment.Right;
         vbox.AddChild(_hintLabel);
     }
@@ -161,7 +162,7 @@ public partial class DialogueRunner : CanvasLayer
         if (!_revealing) return;
         _revealChars += (float)delta * CharsPerSecond;
         int show = Mathf.Min(_fullText.Length, Mathf.FloorToInt(_revealChars));
-        _textLabel.Text = _fullText.Substring(0, show);
+        _textLabel.VisibleCharacters = show;
         if (show >= _fullText.Length) _revealing = false;
     }
 
@@ -174,7 +175,7 @@ public partial class DialogueRunner : CanvasLayer
             {
                 // First press: reveal the whole line instantly (skip-to-full).
                 _revealing = false;
-                _textLabel.Text = _fullText;
+                _textLabel.VisibleCharacters = -1;
             }
             else
             {
@@ -209,12 +210,30 @@ public partial class DialogueRunner : CanvasLayer
             OpenChoices(line.Choices);
     }
 
+    /// The whole line is laid out up front and revealed with VisibleCharacters.
+    /// Typing a growing substring made a half-typed word jump to the next line when it
+    /// finished, and made the bubble's size unknowable until the line was complete.
     private void StartTypewriter(string text)
     {
         _fullText = text;
         _revealChars = 0f;
         _revealing = true;
-        _textLabel.Text = "";
+        _textLabel.Text = text;
+        _textLabel.VisibleCharacters = 0;
+        CallDeferred(nameof(FitBubble));
+    }
+
+    /// Grow the bubble to the laid-out line (plus choices, if any), never below the
+    /// base size. Deferred one frame so the wrapped text has a measured height; the
+    /// full line is already set, so the bubble is sized once and never grows mid-line.
+    private void FitBubble()
+    {
+        Vector2 floor = _choicesOpen ? ChoiceBubbleSize : BubbleSize;
+        float needed = _inset.GetCombinedMinimumSize().Y;
+        var size = new Vector2(floor.X, Mathf.Max(floor.Y, needed));
+        _panel.CustomMinimumSize = size;
+        _panel.Size = size;
+        UpdateBubblePosition();
     }
 
     private Node2D? ResolveSpeakerAnchor(string speaker)
@@ -319,12 +338,10 @@ public partial class DialogueRunner : CanvasLayer
     private void OpenChoices(IReadOnlyList<DialogueChoice> choices)
     {
         _choicesOpen = true;
-        _panel.Size = ChoiceBubbleSize;
-        _panel.CustomMinimumSize = ChoiceBubbleSize;
         _hintLabel.Visible = false;
         // Reveal instantly so the player can read the prompt before choosing.
         _revealing = false;
-        _textLabel.Text = _fullText;
+        _textLabel.VisibleCharacters = -1;
 
         foreach (var choice in choices)
         {
@@ -336,6 +353,7 @@ public partial class DialogueRunner : CanvasLayer
             btn.Pressed += () => OnChoicePicked(captured);
             _choiceBox.AddChild(btn);
         }
+        CallDeferred(nameof(FitBubble));
     }
 
     private void OnChoicePicked(DialogueChoice choice)
@@ -370,9 +388,8 @@ public partial class DialogueRunner : CanvasLayer
     {
         foreach (var c in _choiceBox.GetChildren()) c.QueueFree();
         _choicesOpen = false;
-        _panel.Size = BubbleSize;
-        _panel.CustomMinimumSize = BubbleSize;
         _hintLabel.Visible = true;
+        CallDeferred(nameof(FitBubble));
     }
 
     private void Finish()

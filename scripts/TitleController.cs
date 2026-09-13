@@ -79,13 +79,12 @@ public partial class TitleController : Control
         int savedLevel = saved?.CurrentLevel ?? 1;
         string chapterText = savedLevel == 2 ? "CHAPTER 2  ·  FROSTBOUND TRENCH"
             : savedLevel == 3 ? "CHAPTER 3  ·  THE SILENT LIGHTHOUSE" : "CHAPTER 1  ·  TIDEPOOL NURSERY";
-        var chapter = UiTheme.MakeStrongLabel(chapterText, UiTheme.FontTiny, UiTheme.Accent);
-        chapter.AddThemeConstantOverride("letter_spacing", 2);
+        var chapter = UiTheme.Role(UiTheme.TypeRole.Eyebrow, chapterText);
         menu.AddChild(chapter);
 
         // Editorial, left-aligned title lockup. One restrained glow belongs to the
         // title only; buttons and supporting text remain quiet.
-        var title = UiTheme.MakeDisplayLabel("Shallow Sea\nDream", UiTheme.FontDisplay, UiTheme.Accent);
+        var title = UiTheme.Role(UiTheme.TypeRole.Display, "Shallow Sea\nDream");
         title.HorizontalAlignment = HorizontalAlignment.Left;
         title.CustomMinimumSize = new Vector2(620, 184);
         title.AddThemeConstantOverride("line_spacing", -8);
@@ -95,13 +94,13 @@ public partial class TitleController : Control
         menu.AddChild(title);
         StartTitlePulse(title);
 
-        var subtitle = UiTheme.MakeStrongLabel("AN OCEAN RESTORATION STORY", UiTheme.FontSmall, UiTheme.InkDim);
-        subtitle.AddThemeConstantOverride("letter_spacing", 2);
+        var subtitle = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "An ocean restoration story");
+        subtitle.AddThemeFontSizeOverride("font_size", UiTheme.SizeMeta);
+        subtitle.AddThemeColorOverride("font_color", UiTheme.InkDim);
         subtitle.HorizontalAlignment = HorizontalAlignment.Left;
         menu.AddChild(subtitle);
 
-        var premise = UiTheme.MakeLabel("Protect the last light. Help a polluted ocean recover.",
-            UiTheme.FontBody, UiTheme.Ink, wrap: true);
+        var premise = UiTheme.Role(UiTheme.TypeRole.Body, "Protect the last light. Help a polluted ocean recover.", wrap: true);
         premise.CustomMinimumSize = new Vector2(620, 64);
         menu.AddChild(premise);
         menu.AddChild(new Control { CustomMinimumSize = new Vector2(0, UiTheme.Space8) });
