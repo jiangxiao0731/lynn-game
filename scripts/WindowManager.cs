@@ -29,8 +29,11 @@ public partial class WindowManager : Node
 
         // Escape is deliberately NOT bound here: it is the pause key, and sharing it
         // made fullscreen and pause swallow each other's input.
+        // macOS takes F11 for "Show Desktop", so Ctrl+Cmd+F (the system shortcut)
+        // and Cmd+Enter are the keys that actually reach the game there.
         bool toggle = key.Keycode == Key.F11
-            || (key.Keycode == Key.Enter && (key.AltPressed || key.MetaPressed));
+            || (key.Keycode == Key.Enter && (key.AltPressed || key.MetaPressed))
+            || (key.Keycode == Key.F && key.MetaPressed && key.CtrlPressed);
         if (!toggle) return;
 
         SetFullscreen(!IsFullscreen);
