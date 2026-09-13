@@ -14,3 +14,6 @@ assets/sprites/_electric_frames/
 assets/sprites/_ice_frames/
 assets/sprites/_water_frames/
 assets/sprites/_water_attack_frames/
+
+# Exported game builds (the macOS binary alone is ~170MB, over GitHub's 100MB limit)
+build/
