@@ -11,6 +11,23 @@ namespace ShallowSeaDream;
 public static class PlaceholderArt
 {
     /// A soft round blob texture of the given size and colour (alpha-feathered edge).
+    /// A left-to-right gradient between two colours, alpha included.
+    ///
+    /// Used for the per-zone pollution veils. They used to be flat ColorRects whose
+    /// colour jumped at every zone boundary; because those boundaries sit exactly on
+    /// the backdrop seams, the step read as a hard band across the painting. Sampling
+    /// one continuous curve per zone keeps neighbours matching at the shared edge.
+    public static GradientTexture2D HorizontalGradient(Color from, Color to)
+    {
+        var gradient = new Gradient { Offsets = new[] { 0f, 1f }, Colors = new[] { from, to } };
+        return new GradientTexture2D
+        {
+            Gradient = gradient, Width = 256, Height = 1,
+            Fill = GradientTexture2D.FillEnum.Linear,
+            FillFrom = new Vector2(0f, 0f), FillTo = new Vector2(1f, 0f),
+        };
+    }
+
     public static ImageTexture RoundBlob(int size, Color color)
     {
         var img = Image.CreateEmpty(size, size, false, Image.Format.Rgba8);

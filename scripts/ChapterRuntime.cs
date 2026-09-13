@@ -6,6 +6,12 @@ namespace ShallowSeaDream;
 /// It is set by a level root in _EnterTree, before child HUD nodes enter _Ready.
 public static class ChapterRuntime
 {
+    /// Temporarily hidden: the interior reef pillars that made each map a maze.
+    /// Flip this back to true to restore them; the map outer bounds and the boss
+    /// arena gate are deliberately NOT covered by this switch, because the level
+    /// needs them to stay playable.
+    public static readonly bool ReefMazeEnabled = false;
+
     public static int CurrentChapter { get; private set; } = 1;
     public static ElementForm RequiredForm { get; private set; } = ElementForm.Water;
     public static string FragmentLabel { get; private set; } = "Tidal Shards";

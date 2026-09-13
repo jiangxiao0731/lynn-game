@@ -16,6 +16,14 @@ public static class Palette
     /// Player-damage only — the single warm accent. Do not reuse for enemies.
     public static readonly Color WarningAmber = new(0.98f, 0.74f, 0.32f);
 
+    /// Atmosphere around a chapter guardian, keyed to that chapter's pollution.
+    public static Color ArenaTint(int chapter) => chapter switch
+    {
+        2 => new Color(0.58f, 0.72f, 0.18f),   // chemical
+        3 => new Color(0.82f, 0.36f, 0.12f),   // oil
+        _ => new Color(0.30f, 0.52f, 0.72f),   // plastic
+    };
+
     public static readonly Color ElementWater = new(0.30f, 0.70f, 1.0f);
     public static readonly Color ElementIce = new(0.70f, 0.92f, 1.0f);
     public static readonly Color ElementElectric = new(0.90f, 1.0f, 0.30f);

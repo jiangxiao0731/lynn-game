@@ -15,10 +15,21 @@ public partial class GameSceneController : Node2D
     [Export] public string TitleScenePath = "res://scenes/title.tscn";
 
     // Playfield is widened to 3 zones laid out left→right (item 7).
-    private const float MapWidth = 3600f;
+    /// Chapter one's length comes from its three paintings; hand-authored X
+    /// coordinates below are still written against ChapterMap.AuthoredWidth and are
+    /// restretched through SX / SR.
+    private static float MapWidth => ChapterMap.TotalWidth(1);
     private const float MapHeight = 1080f;
-    private static readonly float ZoneSedimentX = 1280f;  // 浅滩 → 沉积带 boundary
-    private static readonly float ZoneDepthsX = 2480f;     // 沉积带 → 巢母深处 boundary
+    // Zone boundaries follow the painted panel joins instead of fixed offsets.
+    private static float ZoneSedimentX => ChapterMap.PanelStart(1, 1);  // 浅滩 → 沉积带
+    private static float ZoneDepthsX => ChapterMap.PanelStart(1, 2);    // 沉积带 → 巢母深处
+
+    private static Vector2 SX(Vector2 authored) => ChapterMap.Place(1, authored);
+    private static Rect2 SR(Rect2 authored) => ChapterMap.Place(1, authored);
+
+    /// GameConstants.ExitPoint was authored against the old 3600-wide map; on the long
+    /// map the gate belongs at the right edge, past the guardian.
+    private static Vector2 ChapterExitPoint => ChapterMap.ExitPoint(1);
 
     // Fixed draw order below entities (player/NPCs/boss default to ZIndex 0).
     private const int BackgroundZ = -100; // zone art, furthest back
@@ -32,7 +43,15 @@ public partial class GameSceneController : Node2D
     private bool _bossPrePlayed;
     private bool _bossMidPlayed;
     private bool _grannyMidPlayed;
-    private readonly System.Collections.Generic.List<ColorRect> _pollutionVeils = new();
+    private readonly System.Collections.Generic.List<TextureRect> _pollutionVeils = new();
+
+    /// Pollution veil colour at a fraction across the map, 0 at the mouth to 1 at the
+    /// guardian. Continuous by construction, so adjacent zones meet without a step.
+    private static Color PollutionAt(float t)
+    {
+        t = Mathf.Clamp(t, 0f, 1f);
+        return new Color(0.03f, 0.18f, 0.20f, 0.16f).Lerp(new Color(0.01f, 0.06f, 0.09f, 0.34f), t);
+    }
     private readonly System.Collections.Generic.List<System.Collections.Generic.List<Sprite2D>> _zoneInvaders = new();
     private readonly System.Collections.Generic.Dictionary<int, Texture2D> _keyedInvaders = new();
     private readonly bool[] _zoneRestored = new bool[3];
@@ -88,6 +107,7 @@ public partial class GameSceneController : Node2D
             bus.ObjectiveAdvanced += OnObjectiveAdvanced;
         }
 
+        StretchAuthoredScene();
         if (_player != null) _player.SetSafePoint(_player.GlobalPosition);
 
         RestoreProgressIfSaved();
@@ -106,6 +126,29 @@ public partial class GameSceneController : Node2D
     }
 
     // --- Setup ---
+
+    /// Move the nodes placed in game_scene1.tscn (player spawn, guardian, camera
+    /// bounds) onto the long map. The scene file stays authored against
+    /// ChapterMap.AuthoredWidth so it remains readable.
+    private void StretchAuthoredScene()
+    {
+        if (_player != null)
+        {
+            _player.Position = SX(_player.Position);
+            var camera = _player.GetNodeOrNull<Camera2D>("Camera2D");
+            if (camera != null)
+            {
+                camera.LimitLeft = 0;
+                camera.LimitRight = Mathf.RoundToInt(MapWidth);
+            }
+        }
+        var boss = GetNodeOrNull<Node2D>("BroodMother");
+        if (boss != null)
+        {
+            boss.Position = ChapterMap.BossPoint(1, boss.Position.Y);
+            BossAura.Attach(this, boss, Palette.ArenaTint(1));
+        }
+    }
 
     private void SetupMap()
     {
@@ -159,15 +202,24 @@ public partial class GameSceneController : Node2D
         };
 
         int seed = 31;
-        for (int zone = 0; zone < zoneLayouts.Length; zone++)
-        foreach (var rect in zoneLayouts[zone])
-            AddReefObstacle(map, walls, rect, zone, seed++);
+        if (ChapterRuntime.ReefMazeEnabled)
+        {
+            for (int zone = 0; zone < zoneLayouts.Length; zone++)
+            foreach (var rect in zoneLayouts[zone])
+                AddReefObstacle(map, walls, rect, zone, seed++);
+        }
+        else
+        {
+            // Keep the seed advancing so the decorative variation downstream is
+            // identical whether or not the maze is drawn.
+            foreach (var zoneRects in zoneLayouts) seed += zoneRects.Length;
+        }
 
         // Optional shortcuts. Each has a longer open route around it, so progress can
         // never deadlock; restoration simply makes later traversal more graceful.
-        AddPollutionGate(map, new Rect2(760, 730, 80, 180), 0, seed++);
-        AddPollutionGate(map, new Rect2(1680, 470, 140, 70), 1, seed++);
-        AddPollutionGate(map, new Rect2(3180, 480, 100, 180), 2, seed++);
+        AddPollutionGate(map, SR(new Rect2(760, 730, 80, 180)), 0, seed++);
+        AddPollutionGate(map, SR(new Rect2(1680, 470, 140, 70)), 1, seed++);
+        AddPollutionGate(map, SR(new Rect2(3180, 480, 100, 180)), 2, seed++);
     }
 
     private static Vector2[] OrganicOutline(Vector2 size, int seed)
@@ -302,7 +354,7 @@ public partial class GameSceneController : Node2D
         {
             Name = "TidalGate",
             Texture = texture ?? PlaceholderArt.RoundBlob(72, Palette.CoastalCyan),
-            Position = GameConstants.ExitPoint,
+            Position = ChapterExitPoint,
             ZIndex = -5,
             Modulate = new Color(0.55f, 0.78f, 0.84f, 0.34f),
         };
@@ -340,14 +392,16 @@ public partial class GameSceneController : Node2D
             });
         }
 
-        var veil = new ColorRect
+        // One continuous "further in, more polluted" curve sampled over this zone's
+        // span. Flat per-zone colours stepped at the boundary, which lands on the
+        // backdrop seam and read as a band painted across the art.
+        var veil = new TextureRect
         {
             Name = $"PollutionVeil{zone + 1}",
             Position = new Vector2(x0, 0),
             Size = new Vector2(x1 - x0, MapHeight),
-            Color = zone == 0
-                ? new Color(0.03f, 0.18f, 0.20f, 0.18f)
-                : new Color(0.01f, 0.07f, 0.10f, 0.32f),
+            Texture = PlaceholderArt.HorizontalGradient(PollutionAt(x0 / MapWidth), PollutionAt(x1 / MapWidth)),
+            StretchMode = TextureRect.StretchModeEnum.Scale,
             ZIndex = BackgroundZ + 2,
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
@@ -405,30 +459,35 @@ public partial class GameSceneController : Node2D
     {
         // 岚婆婆 (浅滩) — first objective NPC.
         WireNpc("GrannyLan", DialogueData.GrannyLan, DialogueData.SpeakerGranny,
-            new Vector2(520, 360), Palette.WarningAmber, 124f,
+            SX(new Vector2(520, 360)), Palette.WarningAmber, 124f,
             () => _objectives?.OnGrannyTalked());
         // 海星 (浅滩) — deepened on repeat talk.
         WireNpc("StarfishNPC", DialogueData.Starfish, DialogueData.SpeakerStarfish,
-            new Vector2(980, 320), Palette.CoastalCyan, 108f,
+            SX(new Vector2(980, 320)), Palette.CoastalCyan, 108f,
             () => _objectives?.OnStarfishTalked(), NarrativeData.StarfishDeep);
         // 海草 (浅滩/沉积带 border) — deepened on repeat talk.
         WireNpc("SeaweedNPC", DialogueData.Seaweed, DialogueData.SpeakerSeaweed,
-            new Vector2(700, 840), Palette.PollutedTealBright, 108f,
+            SX(new Vector2(700, 840)), Palette.PollutedTealBright, 108f,
             () => _objectives?.OnSeaweedTalked(), NarrativeData.SeaweedDeep);
 
         // NEW in-canon NPCs (item 6), placed across zones, added as runtime nodes.
-        WireRuntimeNpc("HermitNPC", NarrativeData.Hermit, new Vector2(1700, 760),
+        WireRuntimeNpc("HermitNPC", NarrativeData.Hermit, SX(new Vector2(1700, 760)),
             new Color(0.7f, 0.5f, 0.35f), "hermit", DialogueData.SpeakerHermit);
-        WireRuntimeNpc("ShoalNPC", NarrativeData.Shoal, new Vector2(2150, 500),
+        WireRuntimeNpc("ShoalNPC", NarrativeData.Shoal, SX(new Vector2(2150, 500)),
             new Color(0.5f, 0.7f, 0.8f), "shoal", DialogueData.SpeakerShoal);
-        WireRuntimeNpc("LanternNPC", NarrativeData.Lantern, new Vector2(2900, 420),
+        WireRuntimeNpc("LanternNPC", NarrativeData.Lantern, SX(new Vector2(2900, 420)),
             new Color(0.85f, 0.8f, 0.45f), "lantern", DialogueData.SpeakerLantern);
+
+        // Residents painted for chapter one but not hand-placed above.
+        foreach (var member in ChapterCast.For(1))
+            WireRuntimeNpc($"Cast_{member.Id}", member.Id, SX(member.Position),
+                member.Tint, member.PortraitId, member.DisplayName, member.DisplaySize);
 
         // 汽油桶 (浅滩) — examinable canon prop with its vignette.
         var barrel = GetNodeOrNull<Node2D>("GasolineBarrel");
         if (barrel != null)
         {
-            barrel.Position = new Vector2(1100, 860);
+            barrel.Position = SX(new Vector2(1100, 860));
             var barrelSprite = new Sprite2D
             {
                 Texture = AssetLoader.Texture(AssetLoader.NpcPortrait("barrel"))
@@ -440,7 +499,7 @@ public partial class GameSceneController : Node2D
             {
                 Node = barrel,
                 Timeline = DialogueData.JellyfishBox,
-                Prompt = AddWorldPrompt(barrel, "E  ·  EXAMINE"),
+                Prompt = AddWorldPrompt(barrel, "E", "Examine"),
             });
         }
     }
@@ -465,19 +524,19 @@ public partial class GameSceneController : Node2D
             OnFirstDone = onDone,
             FollowUp = followUp,
             Identity = identity,
-            Prompt = AddWorldPrompt(node, "E  ·  TALK"),
+            Prompt = AddWorldPrompt(node, "E", "Talk"),
         });
     }
 
     private void WireRuntimeNpc(string name, string timeline, Vector2 pos, Color tint,
-        string portraitId, string displayName)
+        string portraitId, string displayName, float displaySize = 112f)
     {
         var node = new Node2D { Name = name, Position = pos };
         node.AddToGroup("npc");
         AddChild(node);
         var portrait = AssetLoader.Texture(AssetLoader.NpcPortrait(portraitId));
         var runtimeSprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(80, tint) };
-        if (portrait != null) PlaceholderArt.FitSprite(runtimeSprite, 112f);
+        if (portrait != null) PlaceholderArt.FitSprite(runtimeSprite, displaySize);
         node.AddChild(runtimeSprite);
         var identity = DecorateNpc(node, runtimeSprite, displayName, tint);
         _interactables.Add(new Interactable
@@ -485,7 +544,7 @@ public partial class GameSceneController : Node2D
             Node = node,
             Timeline = timeline,
             Identity = identity,
-            Prompt = AddWorldPrompt(node, "E  ·  TALK"),
+            Prompt = AddWorldPrompt(node, "E", "Talk"),
         });
     }
 
@@ -520,14 +579,10 @@ public partial class GameSceneController : Node2D
         haloTween.TweenProperty(halo, "modulate:a", 0.92f, 1.5f)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 
-        var name = UiTheme.MakeLabel(displayName, 20, UiTheme.Ink);
+        var name = UiTheme.WorldRole(UiTheme.TypeRole.Name, displayName);
         name.Name = "NpcName";
-        name.Position = new Vector2(-120, -108);
-        name.Size = new Vector2(240, 30);
-        name.HorizontalAlignment = HorizontalAlignment.Center;
-        name.MouseFilter = Control.MouseFilterEnum.Ignore;
-        name.AddThemeColorOverride("font_outline_color", new Color(0.01f, 0.05f, 0.07f, 0.96f));
-        name.AddThemeConstantOverride("outline_size", 5);
+        name.Position = new Vector2(-150, -108);
+        name.Size = new Vector2(300, 30);
         node.AddChild(name);
 
         float baseY = sprite.Position.Y;
@@ -540,21 +595,20 @@ public partial class GameSceneController : Node2D
         return name;
     }
 
-    private static Panel AddWorldPrompt(Node2D node, string text)
+    /// The shared key-cap prompt (UiTheme.KeyPrompt), centred under a world object.
+    /// Chapter one used a glass pill with 13px regular text while chapters two and
+    /// three used a bare label; both now read the same way.
+    private static Control AddWorldPrompt(Node2D node, string key, string action)
     {
-        var panel = UiTheme.MakeGlassPanel("InteractionPrompt", radius: 8, bgAlpha: 0.92f, pad: 0);
-        panel.Position = new Vector2(-66, 78);
-        panel.Size = new Vector2(132, 38);
-        panel.Visible = false;
-        panel.MouseFilter = Control.MouseFilterEnum.Ignore;
-        var label = UiTheme.MakeLabel(text, UiTheme.FontTiny, UiTheme.Accent);
-        label.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        label.HorizontalAlignment = HorizontalAlignment.Center;
-        label.VerticalAlignment = VerticalAlignment.Center;
-        label.MouseFilter = Control.MouseFilterEnum.Ignore;
-        panel.AddChild(label);
-        node.AddChild(panel);
-        return panel;
+        var holder = new CenterContainer
+        {
+            Name = "InteractionPrompt",
+            Position = new Vector2(-150, 78), Size = new Vector2(300, 36),
+            Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        holder.AddChild(UiTheme.KeyPrompt(key, action));
+        node.AddChild(holder);
+        return holder;
     }
 
     private void SetupLoreObjects()
@@ -563,13 +617,13 @@ public partial class GameSceneController : Node2D
         // these add several more in-canon readable objects.
         var positions = new System.Collections.Generic.Dictionary<string, Vector2>
         {
-            ["lore_net"] = new Vector2(300, 700),
-            ["lore_bottle"] = new Vector2(1180, 300),
-            ["lore_pipe"] = new Vector2(1620, 880),
-            ["lore_shell"] = new Vector2(2000, 760),
-            ["lore_log"] = new Vector2(2300, 280),
-            ["lore_membrane"] = new Vector2(2800, 820),
-            ["lore_lantern"] = new Vector2(3250, 560),
+            ["lore_net"] = SX(new Vector2(300, 700)),
+            ["lore_bottle"] = SX(new Vector2(1180, 300)),
+            ["lore_pipe"] = SX(new Vector2(1620, 880)),
+            ["lore_shell"] = SX(new Vector2(2000, 760)),
+            ["lore_log"] = SX(new Vector2(2300, 280)),
+            ["lore_membrane"] = SX(new Vector2(2800, 820)),
+            ["lore_lantern"] = SX(new Vector2(3250, 560)),
         };
         foreach (var note in NarrativeData.LoreNotes)
         {
@@ -587,7 +641,7 @@ public partial class GameSceneController : Node2D
             {
                 Node = node,
                 Note = note,
-                Prompt = AddWorldPrompt(node, "E  ·  EXAMINE"),
+                Prompt = AddWorldPrompt(node, "E", "Examine"),
             });
         }
     }
@@ -664,9 +718,14 @@ public partial class GameSceneController : Node2D
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        // While paused the PauseInput autoload owns Escape (this node is Pausable and
-        // would never see the event), so only the pause-entering half runs here.
-        if (@event.IsActionPressed("pause_game")) TogglePause();
+        // Entering pause happens here; leaving it belongs to the PauseInput autoload,
+        // because this node is Pausable and stops receiving input once paused. The
+        // event must be consumed or PauseInput would see it too and undo the pause.
+        if (@event.IsActionPressed("pause_game"))
+        {
+            TogglePause();
+            GetViewport().SetInputAsHandled();
+        }
         else if (@event.IsActionPressed("restart_level")) RestartLevel();
     }
 
@@ -674,7 +733,7 @@ public partial class GameSceneController : Node2D
     {
         if (_exitReached || _player == null) return;
         if (_objectives?.Stage != ObjectiveStage.ExitLevel) return;
-        if (_player.GlobalPosition.DistanceTo(GameConstants.ExitPoint) <= GameConstants.ExitReachDistance)
+        if (_player.GlobalPosition.DistanceTo(ChapterExitPoint) <= GameConstants.ExitReachDistance)
         {
             _exitReached = true;
             AudioManager.Instance?.PlaySfx("exit_reached");
@@ -722,7 +781,7 @@ public partial class GameSceneController : Node2D
         if (zone < _pollutionVeils.Count)
         {
             var veil = _pollutionVeils[zone];
-            veil.CreateTween().TweenProperty(veil, "color:a", 0.04f, 1.8f)
+            veil.CreateTween().TweenProperty(veil, "modulate:a", 0.15f, 1.8f)
                 .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
         }
         if (zone < _zoneInvaders.Count)

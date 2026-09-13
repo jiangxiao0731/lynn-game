@@ -10,7 +10,9 @@ public partial class ElementSpawner : Node2D
 {
     [Export] public float PickupDistance = GameConstants.ElementPickupDistance;
     /// How many shards to keep available on the map at once.
-    [Export] public int ActiveShardTarget = 8;
+    /// The map grew from 3600 to ~17200 wide, so the old count of 8 left long empty
+    /// stretches. This keeps roughly the same pickup density per screen.
+    [Export] public int ActiveShardTarget = 22;
 
     private Player? _player;
     private SkillSystem? _skills;
@@ -27,13 +29,24 @@ public partial class ElementSpawner : Node2D
     private readonly System.Collections.Generic.Dictionary<Sprite2D, float> _shardPhases = new();
     private int _spawnCursor;
 
+    /// On-screen size of a collectable. The pickup is the chapter's pollution item, so
+    /// it has to read as an object, not a mote — but never larger than a resident
+    /// (the smallest is 126px), or the litter outranks the characters.
+    private const float ShardDisplaySize = 96f;
+
+    /// Keep a pickup this far from any character or prop centre.
+    private const float PickupClearance = 190f;
+
     public override void _Ready()
     {
         _player = GetTree().GetFirstNodeInGroup("player") as Player;
         _skills = GetParent().GetNodeOrNull<SkillSystem>("SkillSystem");
         _objectives = GetParent().GetNodeOrNull<ObjectiveManager>("ObjectiveManager");
         BuildSpawnGrid();
-        for (int i = 0; i < ActiveShardTarget; i++) SpawnNext();
+        // The level root wires its NPCs, props and lore notes in its own _Ready, which
+        // runs after this child's. Defer the first stocking so those already exist and
+        // pickups can avoid landing on them.
+        CallDeferred(nameof(StockInitial));
     }
 
     /// Authored branch rewards for the organic maze. Unlike the old regular grid,
@@ -52,8 +65,16 @@ public partial class ElementSpawner : Node2D
             new Vector2(2540, 520), new Vector2(2680, 170), new Vector2(2880, 500),
             new Vector2(2960, 900), new Vector2(3160, 260), new Vector2(3380, 620),
             new Vector2(3480, 900),
+            // Infill so the long crossing never has a bare screen.
+            new Vector2(400, 400), new Vector2(680, 760), new Vector2(1020, 340),
+            new Vector2(1100, 700), new Vector2(1450, 800), new Vector2(1620, 620),
+            new Vector2(1840, 300), new Vector2(2060, 660), new Vector2(2280, 200),
+            new Vector2(2600, 760), new Vector2(2780, 320), new Vector2(3060, 560),
+            new Vector2(3280, 840), new Vector2(3540, 300),
         };
-        _spawnPoints.AddRange(authored);
+        // Authored against ChapterMap.AuthoredWidth; restretch onto the long map.
+        foreach (var point in authored)
+            _spawnPoints.Add(ChapterMap.Place(ChapterRuntime.CurrentChapter, point));
     }
 
     public override void _Process(double delta)
@@ -93,12 +114,25 @@ public partial class ElementSpawner : Node2D
         }
     }
 
+    private void StockInitial()
+    {
+        for (int i = 0; i < ActiveShardTarget; i++) SpawnNext();
+    }
+
     private void SpawnNext()
     {
         if (_spawnPoints.Count == 0) return;
-        var pos = _spawnPoints[_spawnCursor % _spawnPoints.Count];
-        _spawnCursor++;
-        SpawnShard(ElementForm.Water, pos);
+        // Walk forward past any point currently covered by a character or prop, so a
+        // pickup never renders on top of one. One full lap is the give-up condition.
+        for (int tries = 0; tries < _spawnPoints.Count; tries++)
+        {
+            var candidate = _spawnPoints[_spawnCursor % _spawnPoints.Count];
+            _spawnCursor++;
+            if (!ChapterMap.IsClearOfOccupants(this, candidate, PickupClearance, "npc", "lore", "box"))
+                continue;
+            SpawnShard(ElementForm.Water, candidate);
+            return;
+        }
     }
 
     /// Spawn a single shard of the given form at a clear grid point.
@@ -110,17 +144,18 @@ public partial class ElementSpawner : Node2D
             Position = position,
             // Shards are now 微光潮汐记忆 motes (item 3): prefer the memory icon, then the
             // water-shard icon, then a procedural blob.
-            Texture = AssetLoader.Texture(AssetLoader.MemoryIcon)
+            Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterRuntime.CurrentChapter))
+                      ?? AssetLoader.Texture(AssetLoader.MemoryIcon)
                       ?? AssetLoader.Texture(AssetLoader.ShardIcon)
                       ?? PlaceholderArt.RoundBlob(40, Palette.ForForm(form)),
         };
-        // Scale to a small in-world mote (~56px). The source art is up to 1024px; without
+        // Scale to a readable in-world pickup. The source art is up to 1024px; without
         // this the shard renders at native size — giant overlapping glow orbs that read as
         // a halftone/dot artifact across the field.
         if (shard.Texture != null)
         {
             float longest = Mathf.Max(shard.Texture.GetWidth(), shard.Texture.GetHeight());
-            if (longest > 0) shard.Scale = Vector2.One * (56f / longest);
+            if (longest > 0) shard.Scale = Vector2.One * (ShardDisplaySize / longest);
         }
         shard.AddToGroup("element");
         AddChild(shard);

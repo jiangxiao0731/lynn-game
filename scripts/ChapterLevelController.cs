@@ -11,10 +11,27 @@ public partial class ChapterLevelController : Node2D
 {
     [Export(PropertyHint.Range, "2,3,1")] public int ChapterId = 2;
 
-    private const float MapWidth = 3600f;
+    /// Length of the chapter, taken from its three paintings at their own aspect
+    /// ratio. Hand-authored X coordinates below are still written against the old
+    /// 3600 layout and are restretched through SX / SR.
+    private float MapWidth => ChapterMap.TotalWidth(ChapterId);
     private const float MapHeight = 1080f;
     private const int RequiredFragments = 8;
     private const float InteractionRange = 210f;
+
+    /// The pickup is the chapter's pollution item, so it reads as an object rather
+    /// than a mote, while staying smaller than the smallest resident (126px).
+    private const float FragmentDisplaySize = 96f;
+
+    /// Keep a fragment this far from any resident or objective node centre.
+    private const float FragmentClearance = 190f;
+
+    /// Stretch an authored point / rect across the long map.
+    private Vector2 SX(Vector2 authored) => ChapterMap.Place(ChapterId, authored);
+    private Rect2 SR(Rect2 authored) => ChapterMap.Place(ChapterId, authored);
+    /// A slice of the arena mouth, anchored to the map's right end.
+    private Rect2 ArenaRect(float y, float height)
+        => new(ChapterMap.ArenaGateX(ChapterId), y, 72f, height);
 
     private Player _player = null!;
     private SkillSystem _skills = null!;
@@ -31,16 +48,29 @@ public partial class ChapterLevelController : Node2D
     private float _time;
 
     private Node2D _guide = null!;
-    private Label _guidePrompt = null!;
+    private Control _guidePrompt = null!;
     private Sprite2D _exit = null!;
     private StaticBody2D? _arenaGate;
     private readonly List<Node2D> _restoreNodes = new();
-    private readonly List<Label> _restorePrompts = new();
+    private readonly List<Control> _restorePrompts = new();
     private readonly List<StaticBody2D> _shortcutGates = new();
     private readonly List<Sprite2D> _fragmentsInWorld = new();
     private readonly Dictionary<Sprite2D, Vector2> _fragmentOrigins = new();
-    private readonly List<ColorRect> _veils = new();
+    private readonly List<TextureRect> _veils = new();
+
+    /// Damage veil colour at a fraction across the map. Continuous, so neighbouring
+    /// panels meet without a visible step at the seam.
+    private Color DamageAt(float t)
+    {
+        t = Mathf.Clamp(t, 0f, 1f);
+        return ChapterId == 2
+            ? new Color(0.12f, 0.30f, 0.48f, 0.35f).Lerp(new Color(0.10f, 0.24f, 0.42f, 0.26f), t)
+            : new Color(0.16f, 0.08f, 0.08f, 0.43f).Lerp(new Color(0.13f, 0.06f, 0.06f, 0.32f), t);
+    }
     private readonly List<Line2D> _energyLines = new();
+    private readonly List<Node2D> _residents = new();
+    private readonly List<Control> _residentPrompts = new();
+    private readonly List<string> _residentTimelines = new();
 
     private ElementForm RequiredForm => ChapterId == 2 ? ElementForm.Ice : ElementForm.Electric;
     private string GuideTimeline => ChapterId == 2 ? NarrativeData.Chapter2Opening : NarrativeData.Chapter3Opening;
@@ -56,6 +86,7 @@ public partial class ChapterLevelController : Node2D
         _boss = GetNode<BossController>("BroodMother");
         _settlement = GetNodeOrNull<SettlementPanel>("HUD/SettlementPanel");
 
+        StretchAuthoredScene();
         BuildWorld();
         _dialogue = new DialogueRunner { Name = "DialogueRunner" };
         AddChild(_dialogue);
@@ -85,52 +116,72 @@ public partial class ChapterLevelController : Node2D
             CallDeferred(nameof(PreviewGuardian));
     }
 
+    /// Move the nodes placed in the .tscn (player spawn, guardian, camera bounds)
+    /// onto the long map. The scene files stay authored against ChapterMap.AuthoredWidth.
+    private void StretchAuthoredScene()
+    {
+        _player.Position = SX(_player.Position);
+        // The guardian owns the far right of the map, not a scaled authored spot.
+        _boss.Position = ChapterMap.BossPoint(ChapterId, _boss.Position.Y);
+        var camera = _player.GetNodeOrNull<Camera2D>("Camera2D");
+        if (camera != null)
+        {
+            camera.LimitLeft = 0;
+            camera.LimitRight = Mathf.RoundToInt(MapWidth);
+        }
+    }
+
     private void BuildWorld()
     {
         var map = GetNode<Node2D>("Map");
         BuildBackdrop(map);
         BuildBoundsAndMaze(map);
         BuildGuide();
+        BuildResidents();
         BuildRestoreNodes(map);
         BuildFragments(map);
         BuildExit(map);
+        BossAura.Attach(this, _boss, Palette.ArenaTint(ChapterId));
     }
 
     private void BuildBackdrop(Node2D map)
     {
-        string[] sources = { AssetLoader.ZoneBackground(NarrativeData.ZoneShallows), AssetLoader.ZoneBackground(NarrativeData.ZoneSediment), AssetLoader.ZoneBackground(NarrativeData.ZoneDepths) };
+        // Each chapter owns three painted panels laid head to tail across the map.
+        string[] sources = { AssetLoader.ChapterBackground(ChapterId, 0), AssetLoader.ChapterBackground(ChapterId, 1), AssetLoader.ChapterBackground(ChapterId, 2) };
         for (int i = 0; i < 3; i++)
         {
-            float x0 = i * 1200f;
+            float x0 = ChapterMap.PanelStart(ChapterId, i);
+            float panelWidth = ChapterMap.PanelWidth(ChapterId, i);
             var texture = AssetLoader.Texture(sources[i]);
             if (texture != null)
             {
                 var art = new TextureRect
                 {
-                    Name = $"ChapterArt{i + 1}", Position = new Vector2(x0, 0), Size = new Vector2(1200, MapHeight),
+                    Name = $"ChapterArt{i + 1}", Position = new Vector2(x0, 0), Size = new Vector2(panelWidth, MapHeight),
                     Texture = texture, ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
                     StretchMode = TextureRect.StretchModeEnum.Scale, ZIndex = -100,
                     MouseFilter = Control.MouseFilterEnum.Ignore,
-                    Modulate = ChapterId == 2
-                        ? new Color(0.72f, 0.88f, 1.08f, 1f)
-                        : new Color(0.72f + i * 0.08f, 0.66f + i * 0.06f, 0.88f, 1f),
+                    Modulate = Colors.White,
                 };
                 map.AddChild(art);
             }
 
-            var veil = new ColorRect
+            // Sampled from one continuous curve rather than a per-panel alpha step, so
+            // the veil does not draw a band exactly on each backdrop seam.
+            float t0 = x0 / MapWidth, t1 = (x0 + panelWidth) / MapWidth;
+            var veil = new TextureRect
             {
-                Name = $"DamageVeil{i + 1}", Position = new Vector2(x0, 0), Size = new Vector2(1200, MapHeight),
-                Color = ChapterId == 2
-                    ? new Color(0.12f, 0.30f, 0.48f, 0.34f - i * 0.03f)
-                    : new Color(0.16f, 0.08f, 0.08f, 0.42f - i * 0.03f),
+                Name = $"DamageVeil{i + 1}", Position = new Vector2(x0, 0), Size = new Vector2(panelWidth, MapHeight),
+                Texture = PlaceholderArt.HorizontalGradient(DamageAt(t0), DamageAt(t1)),
+                StretchMode = TextureRect.StretchModeEnum.Scale,
                 ZIndex = -96, MouseFilter = Control.MouseFilterEnum.Ignore,
             };
             map.AddChild(veil);
             _veils.Add(veil);
 
-            var zoneName = UiTheme.MakeStrongLabel(ChapterRuntime.Zones[i], 34,
-                ChapterId == 2 ? new Color(0.72f, 0.92f, 1f, 0.72f) : new Color(0.46f, 0.94f, 0.78f, 0.72f));
+            var zoneName = UiTheme.Role(UiTheme.TypeRole.Heading, ChapterRuntime.Zones[i]);
+            zoneName.AddThemeColorOverride("font_color",
+                ChapterId == 2 ? new Color(0.72f, 0.92f, 1f, 0.46f) : new Color(0.46f, 0.94f, 0.78f, 0.46f));
             zoneName.Position = new Vector2(x0 + 76, 930);
             zoneName.ZIndex = -10;
             map.AddChild(zoneName);
@@ -148,7 +199,7 @@ public partial class ChapterLevelController : Node2D
             map.AddChild(flow);
             _energyLines.Add(flow);
         }
-        AddCurrentSeam(map, 1200f);
+        AddCurrentSeam(map, ChapterMap.PanelStart(ChapterId, 1));
         AddCurrentSeam(map, 2400f);
     }
 
@@ -176,41 +227,70 @@ public partial class ChapterLevelController : Node2D
         int seed = ChapterId * 41;
         foreach (var rect in layout)
         {
-            AddWall(walls, rect);
-            AddReefVisual(map, rect, seed++);
+            if (ChapterRuntime.ReefMazeEnabled)
+            {
+                AddWall(walls, rect);
+                AddReefVisual(map, rect, seed++);
+            }
+            else seed++;
         }
 
         // The final arena has one readable entrance; the elemental collection opens it.
-        AddWall(walls, new Rect2(2840, 24, 72, 320));
-        AddWall(walls, new Rect2(2840, 736, 72, 320));
-        AddReefVisual(map, new Rect2(2840, 24, 72, 320), seed++);
-        AddReefVisual(map, new Rect2(2840, 736, 72, 320), seed++);
-        _arenaGate = MakeGate(map, new Rect2(2840, 344, 72, 392), "GuardianGate", ChapterId == 2 ? Palette.ElementIce : Palette.ElementElectric);
+        AddWall(walls, ArenaRect(24, 320));
+        AddWall(walls, ArenaRect(736, 320));
+        AddReefVisual(map, ArenaRect(24, 320), seed++);
+        AddReefVisual(map, ArenaRect(736, 320), seed++);
+        _arenaGate = MakeGate(map, ArenaRect(344, 392), "GuardianGate", ChapterId == 2 ? Palette.ElementIce : Palette.ElementElectric);
     }
 
     private void BuildGuide()
     {
         bool ice = ChapterId == 2;
-        _guide = new Node2D { Name = ice ? "LanternNPC" : "ShoalNPC", Position = ice ? new Vector2(330, 530) : new Vector2(340, 650) };
+        _guide = new Node2D { Name = ice ? "LanternNPC" : "ShoalNPC", Position = SX(ice ? new Vector2(330, 530) : new Vector2(340, 650)) };
         AddChild(_guide);
         var halo = CircleLine(82f, ice ? new Color(0.52f, 0.94f, 1f, 0.72f) : new Color(0.42f, 0.94f, 0.76f, 0.78f), 5f);
         _guide.AddChild(halo);
         var sprite = new Sprite2D { Texture = AssetLoader.Texture(AssetLoader.NpcPortrait(ice ? "lantern" : "shoal")), ZIndex = 1 };
         if (sprite.Texture != null) PlaceholderArt.FitSprite(sprite, 152f);
         _guide.AddChild(sprite);
-        var name = WorldLabel(ice ? "Lanternfish  ·  Thaw Guide" : "Lost Shoal  ·  Circuit Guide", new Vector2(-145, 96), 290, UiTheme.Accent);
-        _guide.AddChild(name);
-        _guidePrompt = WorldLabel("E  ·  TALK", new Vector2(-75, 132), 150, UiTheme.Ink);
+        _guidePrompt = WorldPlate(_guide, 88f, ice ? "Lanternfish" : "Lost Shoal",
+            ice ? "Thaw guide" : "Circuit guide", "Talk");
         _guidePrompt.Visible = false;
-        _guide.AddChild(_guidePrompt);
         StartBob(_guide, 8f, 1.7f);
+    }
+
+    /// The chapter's painted residents. They are spoken to, never fought: the one
+    /// creature this chapter fights is the guardian at the end.
+    private void BuildResidents()
+    {
+        foreach (var member in ChapterCast.For(ChapterId))
+        {
+            var node = new Node2D { Name = $"Cast_{member.Id}", Position = SX(member.Position) };
+            node.AddToGroup("npc");
+            AddChild(node);
+            node.AddChild(CircleLine(member.DisplaySize * 0.49f, new Color(member.Tint, 0.34f), 3f));
+
+            var portrait = AssetLoader.Texture(AssetLoader.NpcPortrait(member.PortraitId));
+            var sprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(72, member.Tint), ZIndex = 1 };
+            if (portrait != null) PlaceholderArt.FitSprite(sprite, member.DisplaySize);
+            node.AddChild(sprite);
+
+            float labelY = member.DisplaySize * 0.56f + 16f;
+            var prompt = WorldPlate(node, labelY, member.DisplayName, null, "Talk");
+            prompt.Visible = false;
+
+            StartBob(node, 6f, 2.1f + _residents.Count * 0.13f);
+            _residents.Add(node);
+            _residentPrompts.Add(prompt);
+            _residentTimelines.Add(member.Id);
+        }
     }
 
     private void BuildRestoreNodes(Node2D map)
     {
         Vector2[] positions = ChapterId == 2
-            ? new[] { new Vector2(900, 220), new Vector2(1680, 880), new Vector2(2420, 230) }
-            : new[] { new Vector2(980, 850), new Vector2(1850, 250), new Vector2(2590, 850) };
+            ? new[] { SX(new Vector2(900, 220)), SX(new Vector2(1680, 880)), SX(new Vector2(2420, 230)) }
+            : new[] { SX(new Vector2(980, 850)), SX(new Vector2(1850, 250)), SX(new Vector2(2590, 850)) };
         for (int i = 0; i < positions.Length; i++)
         {
             var node = new Node2D { Name = ChapterId == 2 ? $"ThawAnchor{i + 1}" : $"Relay{i + 1}", Position = positions[i] };
@@ -223,15 +303,14 @@ public partial class ChapterLevelController : Node2D
             };
             PlaceholderArt.FitSprite(icon, 88f);
             node.AddChild(icon);
-            node.AddChild(WorldLabel(ChapterId == 2 ? $"Thaw Anchor {i + 1}" : $"Tide Relay {i + 1}", new Vector2(-110, 78), 220, UiTheme.InkDim));
-            var prompt = WorldLabel("E  ·  RESTORE", new Vector2(-75, 112), 150, UiTheme.Ink);
+            var prompt = WorldPlate(node, 72f, ChapterId == 2 ? "Thaw Anchor" : "Tide Relay",
+                $"{i + 1} of 3", "Restore");
             prompt.Visible = false;
-            node.AddChild(prompt);
             _restoreNodes.Add(node);
             _restorePrompts.Add(prompt);
 
             var gate = MakeGate(map,
-                i == 0 ? new Rect2(1130, 450, 70, 180) : i == 1 ? new Rect2(2390, 430, 70, 180) : new Rect2(2710, 430, 70, 180),
+                SR(i == 0 ? new Rect2(1130, 450, 70, 180) : i == 1 ? new Rect2(2390, 430, 70, 180) : new Rect2(2710, 430, 70, 180)),
                 $"ShortcutGate{i + 1}", ChapterId == 2 ? Palette.ElementIce : Palette.PollutedTeal);
             _shortcutGates.Add(gate);
         }
@@ -241,15 +320,26 @@ public partial class ChapterLevelController : Node2D
     {
         Vector2[] ice = { new(210,210), new(600,870), new(740,230), new(1170,650), new(1370,480), new(1730,170), new(1960,900), new(2220,430), new(2500,900), new(2670,180), new(3010,900), new(3370,850) };
         Vector2[] electric = { new(190,540), new(520,190), new(740,520), new(1080,220), new(1280,850), new(1700,560), new(1940,900), new(2190,250), new(2470,560), new(2780,180), new(3150,860), new(3440,470) };
-        foreach (var point in ChapterId == 2 ? ice : electric)
+        foreach (var authored in ChapterId == 2 ? ice : electric)
         {
+            var point = SX(authored);
+            // Residents, the guide and the restore nodes are already in the tree, so a
+            // fragment that would sit on one is simply skipped.
+            if (!ChapterMap.IsClearOfOccupants(this, point, FragmentClearance, "npc")) continue;
+            if (_restoreNodes.Exists(n => n.GlobalPosition.DistanceTo(point) < FragmentClearance)) continue;
             var shard = new Sprite2D
             {
                 Name = ChapterId == 2 ? "IceFragment" : "ElectricSpark",
-                Texture = AssetLoader.Texture(AssetLoader.ShardIcon) ?? PlaceholderArt.RoundBlob(56, Palette.ForForm(RequiredForm)),
-                Position = point, Modulate = Palette.ForForm(RequiredForm), ZIndex = 3,
+                Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterId))
+                          ?? AssetLoader.Texture(AssetLoader.ShardIcon)
+                          ?? PlaceholderArt.RoundBlob(56, Palette.ForForm(RequiredForm)),
+                // The element art already carries its own colour, so it is left
+                // unmodulated; a tint here only greys the painting out.
+                Position = point, ZIndex = 3,
             };
-            PlaceholderArt.FitSprite(shard, 68f);
+            PlaceholderArt.FitSprite(shard, FragmentDisplaySize);
+            // Same group chapter one uses, so tooling and audits see one kind of pickup.
+            shard.AddToGroup("element");
             map.AddChild(shard);
             _fragmentsInWorld.Add(shard);
             _fragmentOrigins[shard] = point;
@@ -261,7 +351,7 @@ public partial class ChapterLevelController : Node2D
         _exit = new Sprite2D
         {
             Name = "ChapterExit", Texture = AssetLoader.Texture(AssetLoader.MemoryIcon) ?? PlaceholderArt.RoundBlob(72, UiTheme.Accent),
-            Position = new Vector2(3420, 540), Modulate = new Color(0.7f, 0.9f, 1f, 0.2f), ZIndex = -4,
+            Position = ChapterMap.ExitPoint(ChapterId), Modulate = new Color(0.7f, 0.9f, 1f, 0.2f), ZIndex = -4,
         };
         PlaceholderArt.FitSprite(_exit, 112f);
         map.AddChild(_exit);
@@ -285,7 +375,7 @@ public partial class ChapterLevelController : Node2D
 
     private void UpdateZone()
     {
-        int next = Mathf.Clamp(Mathf.FloorToInt(_player.GlobalPosition.X / 1200f), 0, 2);
+        int next = ChapterMap.ZoneAt(ChapterId, _player.GlobalPosition.X);
         if (next == _zone) return;
         _zone = next;
         _player.SetSafePoint(_player.GlobalPosition);
@@ -298,6 +388,8 @@ public partial class ChapterLevelController : Node2D
         _guidePrompt.Visible = dialogueFree && _stage == ObjectiveStage.FindNpc && Near(_guide);
         for (int i = 0; i < _restoreNodes.Count; i++)
             _restorePrompts[i].Visible = dialogueFree && IsNodeAvailable(i) && Near(_restoreNodes[i]);
+        for (int i = 0; i < _residents.Count; i++)
+            _residentPrompts[i].Visible = dialogueFree && Near(_residents[i]);
     }
 
     private void UpdateFragments()
@@ -321,6 +413,9 @@ public partial class ChapterLevelController : Node2D
         {
             GetTree().Paused = !GetTree().Paused;
             Events.Instance?.EmitSignal(Events.SignalName.GamePaused, GetTree().Paused);
+            // Consume it: this node runs before the PauseInput autoload, which would
+            // otherwise see the same event and immediately clear the pause again.
+            GetViewport().SetInputAsHandled();
             return;
         }
         if (@event.IsActionPressed("restart_level"))
@@ -341,6 +436,17 @@ public partial class ChapterLevelController : Node2D
             if (IsNodeAvailable(i) && Near(_restoreNodes[i]))
             {
                 RestoreNode(i);
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+        }
+        // Residents are optional colour, so they are offered only once nothing
+        // required is in reach.
+        for (int i = 0; i < _residents.Count; i++)
+        {
+            if (Near(_residents[i]))
+            {
+                _dialogue.Play(_residentTimelines[i]);
                 GetViewport().SetInputAsHandled();
                 return;
             }
@@ -392,7 +498,7 @@ public partial class ChapterLevelController : Node2D
     private void SetZoneRestored(int index)
     {
         if (index < _veils.Count)
-            _veils[index].CreateTween().TweenProperty(_veils[index], "color:a", 0.06f, 0.85f);
+            _veils[index].CreateTween().TweenProperty(_veils[index], "modulate:a", 0.18f, 0.85f);
         if (index < _energyLines.Count)
         {
             var c = _energyLines[index].DefaultColor; c.A = 0.82f;
@@ -619,12 +725,32 @@ public partial class ChapterLevelController : Node2D
         return points.ToArray();
     }
 
-    private static Label WorldLabel(string text, Vector2 position, float width, Color color)
+    /// Name, optional subtitle and the key prompt, stacked under a world object.
+    /// They used to sit at fixed pixel offsets, so any face with tall ascenders ran
+    /// the name into the subtitle; a VBox stacks them by their real line heights.
+    /// An accent subtitle marks something the player has to interact with.
+    /// Returns the prompt, which starts hidden and is shown in range.
+    private static Control WorldPlate(Node2D host, float y, string name, string? subtitle, string action)
     {
-        var label = UiTheme.MakeLabel(text, UiTheme.FontSmall, color);
-        label.Position = position; label.Size = new Vector2(width, 32); label.HorizontalAlignment = HorizontalAlignment.Center; label.ZIndex = 4;
-        label.AddThemeColorOverride("font_shadow_color", new Color(0,0,0,.85f)); label.AddThemeConstantOverride("shadow_offset_x", 2); label.AddThemeConstantOverride("shadow_offset_y", 2);
-        return label;
+        const float width = 360f;
+        var plate = new VBoxContainer
+        {
+            Name = "Plate", Position = new Vector2(-width / 2f, y), Size = new Vector2(width, 0),
+            ZIndex = 4, MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        plate.AddThemeConstantOverride("separation", UiTheme.Space1);
+        plate.AddChild(UiTheme.WorldRole(UiTheme.TypeRole.Name, name));
+        if (subtitle != null)
+        {
+            var sub = UiTheme.WorldRole(UiTheme.TypeRole.Meta, subtitle);
+            sub.AddThemeColorOverride("font_color", UiTheme.Accent);
+            plate.AddChild(sub);
+        }
+        var prompt = new CenterContainer { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
+        prompt.AddChild(UiTheme.KeyPrompt("E", action));
+        plate.AddChild(prompt);
+        host.AddChild(plate);
+        return prompt;
     }
 
     private static void StartBob(Node2D node, float amount, float seconds)
