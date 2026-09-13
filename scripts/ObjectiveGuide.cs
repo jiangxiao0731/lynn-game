@@ -12,8 +12,9 @@ namespace ShallowSeaDream;
 ///   * a big bouncing arrow over the target whenever it is on screen;
 ///   * a pinned arrow on the screen edge, pointing at it, with the distance, whenever
 ///     it is not.
-/// Both use bright amber: the only warm, saturated colour in a teal world, so the
-/// eye goes to it before it reads anything.
+/// The marker over the target is drawn like the HUD's primary button, so it reads as
+/// part of the interface; the edge pointer is an amber disc, the one warm colour in
+/// a teal world, so the eye finds it before reading anything.
 ///
 /// The level controller supplies the target through a callback, so the guide never
 /// has to know how each chapter's objectives are structured.
@@ -37,7 +38,6 @@ public partial class ObjectiveGuide : Node2D
     /// Height of the arrow art above its tip.
     private const float MarkerHeight = 95f;
 
-    private static readonly Color Amber = new(1.00f, 0.78f, 0.22f);
     private static readonly Color Ink = new(0.07f, 0.05f, 0.03f, 0.92f);
 
     private Node2D _worldMarker = null!;
@@ -56,21 +56,21 @@ public partial class ObjectiveGuide : Node2D
 
     public override void _Ready()
     {
-        // World marker: a fat downward chevron with a dark outline, like a sticker.
+        // World marker over the target: drawn like the HUD's primary button (mint
+        // fill, dark teal ink edge, soft drop shadow) so it reads as part of the UI.
         _worldMarker = new Node2D { Name = "TargetArrow", ZIndex = 40, Visible = false };
         AddChild(_worldMarker);
         var chevron = new[]
         {
-            new Vector2(-34, -58), new Vector2(34, -58), new Vector2(34, -22),
-            new Vector2(58, -22), new Vector2(0, 30), new Vector2(-58, -22), new Vector2(-34, -22),
+            new Vector2(-30, -58), new Vector2(30, -58), new Vector2(30, -22),
+            new Vector2(52, -22), new Vector2(0, 26), new Vector2(-52, -22), new Vector2(-30, -22),
         };
-        _worldMarker.AddChild(new Polygon2D { Polygon = Outset(chevron, 7f), Color = Ink });
-        _worldMarker.AddChild(new Polygon2D { Polygon = chevron, Color = Amber });
-        _worldMarker.AddChild(new Polygon2D
+        _worldMarker.AddChild(new Polygon2D { Polygon = chevron, Color = UiTheme.Shadow, Position = new Vector2(0, 6) });
+        _worldMarker.AddChild(new Polygon2D { Polygon = chevron, Color = UiTheme.PillFill });
+        _worldMarker.AddChild(new Line2D
         {
-            // Highlight on the upper-left, so it reads as a glossy object, not a flat icon.
-            Polygon = new[] { new Vector2(-26, -50), new Vector2(-4, -50), new Vector2(-4, -30), new Vector2(-26, -30) },
-            Color = new Color(1f, 1f, 1f, 0.45f),
+            Points = chevron, Closed = true, Width = 5f, DefaultColor = UiTheme.PillEdge,
+            JointMode = Line2D.LineJointMode.Round, Antialiased = true,
         });
 
         // Edge arrow lives in screen space, above the world and below the HUD panels.
@@ -81,17 +81,14 @@ public partial class ObjectiveGuide : Node2D
 
         _edgeArrow = new Node2D { Name = "Arrow" };
         _edge.AddChild(_edgeArrow);
-        var disc = Circle(44f, 40);
+        // Amber disc with an ink arrowhead, pointing right at rotation 0.
         _edgeArrow.AddChild(new Polygon2D { Polygon = Circle(50f, 40), Color = Ink });
-        _edgeArrow.AddChild(new Polygon2D { Polygon = disc, Color = Amber });
+        _edgeArrow.AddChild(new Polygon2D { Polygon = Circle(44f, 40), Color = UiTheme.Guide });
         var head = new[] { new Vector2(30, 0), new Vector2(-10, -24), new Vector2(-2, 0), new Vector2(-10, 24) };
         _edgeArrow.AddChild(new Polygon2D { Polygon = head, Color = Ink });
 
-        _edgeDistance = UiTheme.Role(UiTheme.TypeRole.Name, "");
-        _edgeDistance.HorizontalAlignment = HorizontalAlignment.Center;
-        _edgeDistance.AddThemeColorOverride("font_color", Amber);
-        _edgeDistance.AddThemeColorOverride("font_outline_color", Ink);
-        _edgeDistance.AddThemeConstantOverride("outline_size", 8);
+        _edgeDistance = UiTheme.WorldRole(UiTheme.TypeRole.Name, "");
+        _edgeDistance.AddThemeColorOverride("font_color", UiTheme.Guide);
         _edgeDistance.Size = new Vector2(160, 40);
         _edge.AddChild(_edgeDistance);
     }
@@ -200,17 +197,5 @@ public partial class ObjectiveGuide : Node2D
         for (int i = 0; i < segments; i++)
             points[i] = Vector2.FromAngle(Mathf.Tau * i / segments) * radius;
         return points;
-    }
-
-    /// Crude outline: push every vertex away from the centroid.
-    private static Vector2[] Outset(Vector2[] shape, float amount)
-    {
-        Vector2 centroid = Vector2.Zero;
-        foreach (var p in shape) centroid += p;
-        centroid /= shape.Length;
-        var result = new Vector2[shape.Length];
-        for (int i = 0; i < shape.Length; i++)
-            result[i] = shape[i] + (shape[i] - centroid).Normalized() * amount;
-        return result;
     }
 }

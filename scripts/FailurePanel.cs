@@ -15,7 +15,7 @@ public partial class FailurePanel : Control
         ProcessMode = ProcessModeEnum.Always;
 
         // ── Deep-sea glass panel background ──────────────────────────────────
-        var box = GetNodeOrNull<Panel>("Box");
+        var box = GetNodeOrNull<PanelContainer>("Box");
         if (box != null)
         {
             box.CustomMinimumSize = new Vector2(640, 390);
@@ -31,8 +31,7 @@ public partial class FailurePanel : Control
         if (label != null)
         {
             label.Text = GameStrings.Tr("FAILURE_LABEL");
-            UiTheme.ApplyDisplayFont(label, UiTheme.FontH1);
-            label.AddThemeColorOverride("font_color", UiTheme.Accent);
+            UiTheme.Style(label, UiTheme.TypeRole.Heading);
             label.HorizontalAlignment = HorizontalAlignment.Center;
         }
 
@@ -41,8 +40,7 @@ public partial class FailurePanel : Control
         if (hint != null)
         {
             hint.Text = GameStrings.Tr("RESTART_HINT");
-            UiTheme.ApplyFont(hint, UiTheme.FontSmall);
-            hint.AddThemeColorOverride("font_color", UiTheme.InkDim);
+            UiTheme.Style(hint, UiTheme.TypeRole.Meta);
             hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             hint.HorizontalAlignment = HorizontalAlignment.Center;
         }
@@ -52,7 +50,7 @@ public partial class FailurePanel : Control
         if (restart != null)
         {
             restart.Pressed += OnRestartPressed;
-            UiTheme.StyleButton(restart, UiTheme.FontBody);
+            UiTheme.StyleButton(restart);
         }
 
         // ── Quit-to-title button (secondary, non-primary colour) ──────────────
@@ -60,14 +58,14 @@ public partial class FailurePanel : Control
         if (quit != null)
         {
             quit.Pressed += OnQuitToTitlePressed;
-            UiTheme.StyleButton(quit, UiTheme.FontBody, primary: false);
+            UiTheme.StyleButton(quit, primary: false);
         }
     }
 
     public void ShowFailure()
     {
         var dim = GetNodeOrNull<ColorRect>("Dim");
-        if (dim != null) dim.Color = new Color(0.04f, 0.12f, 0.18f, 0.90f);
+        if (dim != null) dim.Color = UiTheme.Scrim(0.90f).BgColor;
         Visible = true;
         GetTree().Paused = true;
         AudioManager.Instance?.PlaySfx("player_defeat");

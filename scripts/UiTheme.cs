@@ -75,14 +75,6 @@ public static class UiTheme
     public const int SizeMeta = 21;      // what it is / secondary numbers
     public const int SizeEyebrow = 17;   // tracked uppercase kicker labels
 
-    // Legacy names, kept as aliases onto the scale above.
-    public const int FontDisplay = SizeDisplay;
-    public const int FontH1 = 46;
-    public const int FontH2 = SizeHeading;
-    public const int FontBody = SizeBody;
-    public const int FontSmall = SizeName;
-    public const int FontTiny = SizeEyebrow;
-
     /// Last resort if the bundled face is missing. Most macOS families only expose one
     /// face to SystemFont ("Avenir Next" returned Bold for every weight), so this
     /// sticks to families verified to resolve both weights.
@@ -100,27 +92,34 @@ public static class UiTheme
     // from the outside edge and already include that allowance: with the old 12px
     // insets the text sat about 2px off the ink line.
     public const int PadSurfaceX = 32;   // every panel that holds text in play
-    public const int PadSurfaceY = 24;
+    public const int PadSurfaceY = 32;   // = X: the painted frame's edge sits ~7px inside the rect, so 24 read as ~16
     public const int PadScreen = 48;     // full-screen panels: journal, results, tutorial
     public const int PadPillX = 16;      // key prompts
     public const int PadPillY = 8;
+    public const int PadKeyX = 8;        // the key cap inside a prompt
+    public const int PadKeyY = 4;
     public const int GapPair = 8;        // kicker → value, name → subtitle, line → line
     public const int GapBlock = 16;      // between blocks inside one surface
     public const int GapSection = 24;    // between sections of a full-screen panel
+    public const int SafeArea = 72;      // screen edge → HUD surfaces
 
-    public const int Space1 = 4;
-    public const int Space2 = 8;
-    public const int Space3 = 12;
-    public const int Space4 = 16;
-    public const int Space6 = 24;
-    public const int Space8 = 32;
-    public const int Space12 = 48;
-    public const int SafeArea = 72;
+    /// Outline on text drawn straight over the painting (names, distances).
+    public const int OutlineWorld = 6;
 
     public static readonly Color Ink = new(0.88f, 0.96f, 0.89f);
     public static readonly Color InkDim = new(0.66f, 0.82f, 0.76f);
     public static readonly Color InkFaint = new(0.54f, 0.70f, 0.66f, 0.76f);
+    /// Dark ink for text on light fills (key caps, primary buttons).
+    public static readonly Color InkOnLight = new(0.035f, 0.14f, 0.15f);
+    /// Outline behind world text; the same charcoal as the backdrop line art.
+    public static readonly Color OutlineInk = new(0.01f, 0.05f, 0.07f, 0.94f);
     public static readonly Color Accent = new(0.58f, 0.91f, 0.76f);
+    /// "Go here / you are here": the one warm colour in a teal world. The edge pointer,
+    /// the current step pip and examinable glints all use it and nothing else does.
+    public static readonly Color Guide = new(1.00f, 0.78f, 0.22f);
+    /// Primary button fill and its ink edge; the world target marker reuses them.
+    public static readonly Color PillFill = new(.64f, .84f, .68f, .98f);
+    public static readonly Color PillEdge = new(.07f, .25f, .24f);
     public static readonly Color Teal = Palette.PollutedTeal;
     public static readonly Color Hairline = new(0.46f, 0.74f, 0.64f, 0.88f);
     public static readonly Color GlassBg = new(0.045f, 0.12f, 0.14f, 0.94f);
@@ -207,7 +206,7 @@ public static class UiTheme
         PaintedStyle(bg, border, 14, seed);
 
     public static StyleBoxTexture PillNormal() =>
-        ButtonBase(new Color(.64f,.84f,.68f,.98f), new Color(.07f,.25f,.24f,1f), 103);
+        ButtonBase(PillFill, PillEdge, 103);
 
     public static StyleBoxTexture PillHover() =>
         ButtonBase(new Color(.76f,.91f,.72f,1f), new Color(.12f,.34f,.28f,1f), 107);
@@ -221,69 +220,27 @@ public static class UiTheme
     private static StyleBoxTexture SecondaryNormal() =>
         ButtonBase(new Color(.055f,.14f,.15f,.94f), new Color(.43f,.67f,.57f,.92f), 127);
 
-    public static Button StyleButton(Button btn, int fontSize = FontBody, bool primary = true)
+    public const int ButtonHeight = 64;
+
+    /// Every button: one height, one text size, one text face. `primary` only swaps
+    /// the light fill for the dark one.
+    public static Button StyleButton(Button btn, bool primary = true)
     {
-        btn.CustomMinimumSize = new Vector2(0, 64);
+        btn.CustomMinimumSize = new Vector2(0, ButtonHeight);
         btn.AddThemeStyleboxOverride("normal", primary ? PillNormal() : SecondaryNormal());
         btn.AddThemeStyleboxOverride("hover", PillHover());
         btn.AddThemeStyleboxOverride("pressed", PillPressed());
         btn.AddThemeStyleboxOverride("focus", PillHover());
         btn.AddThemeStyleboxOverride("disabled", PillDisabled());
-        btn.AddThemeColorOverride("font_color", primary ? new Color(.045f,.18f,.18f) : Ink);
-        btn.AddThemeColorOverride("font_hover_color", new Color(.035f,.15f,.15f));
-        btn.AddThemeColorOverride("font_pressed_color", new Color(.03f,.12f,.13f));
-        btn.AddThemeColorOverride("font_focus_color", new Color(.035f,.15f,.15f));
+        btn.AddThemeColorOverride("font_color", primary ? InkOnLight : Ink);
+        btn.AddThemeColorOverride("font_hover_color", InkOnLight);
+        btn.AddThemeColorOverride("font_pressed_color", InkOnLight);
+        btn.AddThemeColorOverride("font_focus_color", InkOnLight);
         btn.AddThemeColorOverride("font_disabled_color", InkFaint);
-        ApplyStrongFont(btn, fontSize);
+        btn.AddThemeFontOverride("font", StrongFont);
+        btn.AddThemeFontSizeOverride("font_size", SizeBody);
         UiFx.AnimateButton(btn);
         return btn;
-    }
-
-    public static void ApplyFont(Control c, int size)
-    {
-        c.AddThemeFontOverride("font", BodyFont);
-        c.AddThemeFontSizeOverride("font_size", size);
-    }
-
-    public static void ApplyStrongFont(Control c, int size)
-    {
-        c.AddThemeFontOverride("font", StrongFont);
-        c.AddThemeFontSizeOverride("font_size", size);
-    }
-
-    public static void ApplyDisplayFont(Control c, int size)
-    {
-        Font display = DisplayFont != null ? DisplayFont : StrongFont;
-        c.AddThemeFontOverride("font", display);
-        c.AddThemeFontSizeOverride("font_size", size);
-    }
-
-    public static Label MakeLabel(string text, int size, Color color, bool wrap = false)
-    {
-        var l = new Label { Text = text };
-        if (wrap)
-        {
-            l.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            l.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        }
-        l.AddThemeColorOverride("font_color", color);
-        l.AddThemeConstantOverride("line_spacing", Mathf.RoundToInt(size * 0.38f));
-        ApplyFont(l, size);
-        return l;
-    }
-
-    public static Label MakeStrongLabel(string text, int size, Color color, bool wrap = false)
-    {
-        var label = MakeLabel(text, size, color, wrap);
-        ApplyStrongFont(label, size);
-        return label;
-    }
-
-    public static Label MakeDisplayLabel(string text, int size, Color color, bool wrap = false)
-    {
-        var label = MakeLabel(text, size, color, wrap);
-        ApplyDisplayFont(label, size);
-        return label;
     }
 
     // --- Semantic type roles -----------------------------------------------------
@@ -319,10 +276,23 @@ public static class UiTheme
 
     public static Label Role(TypeRole role, string text, bool wrap = false)
     {
+        var label = new Label { Text = text };
+        if (wrap)
+        {
+            label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            label.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        }
+        return Style(label, role);
+    }
+
+    /// Apply a role to a label that already exists (one authored in a .tscn).
+    public static Label Style(Label label, TypeRole role)
+    {
         var (size, font, ink, upper) = role switch
         {
             TypeRole.Display => (SizeDisplay, (Font)(DisplayFont ?? (Font)StrongFont), Accent, false),
-            TypeRole.Heading => (SizeHeading, (Font)StrongFont, Ink, false),
+            // Screen and panel titles share the display ink, so every title reads alike.
+            TypeRole.Heading => (SizeHeading, (Font)StrongFont, Accent, false),
             TypeRole.Primary => (SizePrimary, (Font)StrongFont, Ink, false),
             TypeRole.Speaker => (SizeSpeaker, (Font)StrongFont, Accent, false),
             TypeRole.Body => (SizeBody, (Font)BodyFont, Ink, false),
@@ -334,12 +304,7 @@ public static class UiTheme
             _ => (SizeBody, (Font)BodyFont, Ink, false),
         };
 
-        var label = new Label { Text = upper ? text.ToUpperInvariant() : text };
-        if (wrap)
-        {
-            label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            label.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        }
+        if (upper) label.Text = label.Text.ToUpperInvariant();
         label.AddThemeFontOverride("font", font);
         label.AddThemeFontSizeOverride("font_size", size);
         label.AddThemeColorOverride("font_color", ink);
@@ -361,9 +326,35 @@ public static class UiTheme
         var label = Role(role, text);
         label.HorizontalAlignment = HorizontalAlignment.Center;
         label.MouseFilter = Control.MouseFilterEnum.Ignore;
-        label.AddThemeColorOverride("font_outline_color", new Color(0.01f, 0.05f, 0.07f, 0.94f));
-        label.AddThemeConstantOverride("outline_size", role == TypeRole.Name ? 6 : 5);
+        label.AddThemeColorOverride("font_outline_color", OutlineInk);
+        label.AddThemeConstantOverride("outline_size", OutlineWorld);
         return label;
+    }
+
+    /// The one nameplate for anything in the world you can talk to or use: name, an
+    /// optional accent subtitle, and the key prompt, stacked under the host at `y`.
+    /// Returns the prompt, hidden until the player is in range; the plate is its parent.
+    public static Control WorldPlate(Node2D host, float y, string name, string? subtitle, string action)
+    {
+        const float width = 360f;
+        var plate = new VBoxContainer
+        {
+            Name = "Plate", Position = new Vector2(-width / 2f, y), Size = new Vector2(width, 0),
+            ZIndex = 4, MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        plate.AddThemeConstantOverride("separation", GapPair);
+        plate.AddChild(WorldRole(TypeRole.Name, name));
+        if (subtitle != null)
+        {
+            var sub = WorldRole(TypeRole.Meta, subtitle);
+            sub.AddThemeColorOverride("font_color", Accent);
+            plate.AddChild(sub);
+        }
+        var prompt = new CenterContainer { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
+        prompt.AddChild(KeyPrompt("E", action));
+        plate.AddChild(prompt);
+        host.AddChild(plate);
+        return prompt;
     }
 
     /// The one interaction prompt used everywhere: a light key-cap carrying the key,
@@ -374,7 +365,7 @@ public static class UiTheme
         var pill = new PanelContainer { Name = "KeyPrompt", MouseFilter = Control.MouseFilterEnum.Ignore };
         var pillStyle = new StyleBoxFlat
         {
-            BgColor = new Color(0.02f, 0.07f, 0.09f, 0.90f),
+            BgColor = GlassBgDeep,
             BorderColor = new Color(Accent, 0.55f),
             CornerRadiusTopLeft = 20, CornerRadiusTopRight = 20,
             CornerRadiusBottomLeft = 20, CornerRadiusBottomRight = 20,
@@ -394,13 +385,13 @@ public static class UiTheme
             BgColor = Ink,
             CornerRadiusTopLeft = 6, CornerRadiusTopRight = 6,
             CornerRadiusBottomLeft = 6, CornerRadiusBottomRight = 6,
-            ContentMarginLeft = GapPair, ContentMarginRight = GapPair,
-            ContentMarginTop = Space1, ContentMarginBottom = Space1,
+            ContentMarginLeft = PadKeyX, ContentMarginRight = PadKeyX,
+            ContentMarginTop = PadKeyY, ContentMarginBottom = PadKeyY,
         };
         cap.AddThemeStyleboxOverride("panel", capStyle);
         var keyLabel = Role(TypeRole.Name, key);
         keyLabel.AddThemeFontSizeOverride("font_size", SizeMeta);
-        keyLabel.AddThemeColorOverride("font_color", new Color(0.03f, 0.10f, 0.12f));
+        keyLabel.AddThemeColorOverride("font_color", InkOnLight);
         keyLabel.HorizontalAlignment = HorizontalAlignment.Center;
         cap.AddChild(keyLabel);
         row.AddChild(cap);
@@ -467,7 +458,7 @@ public static class UiTheme
     {
         var theme = new Theme();
         theme.DefaultFont = BodyFont;
-        theme.DefaultFontSize = FontBody;
+        theme.DefaultFontSize = SizeBody;
         theme.SetColor("font_color", "Label", Ink);
         theme.SetColor("font_color", "Button", Ink);
         theme.SetStylebox("normal", "Button", SecondaryNormal());

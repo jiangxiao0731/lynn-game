@@ -62,7 +62,7 @@ public partial class TutorialController : Control
         StyleScreen();
 
         _next.Pressed += OnNextPressed;
-        UiTheme.StyleButton(_next, UiTheme.FontBody);
+        UiTheme.StyleButton(_next);
         ShowPage(0);
     }
 
@@ -88,15 +88,12 @@ public partial class TutorialController : Control
             vb.Alignment = BoxContainer.AlignmentMode.Begin;
         }
 
-        UiTheme.ApplyDisplayFont(_title, UiTheme.FontH1);
-        _title.AddThemeColorOverride("font_color", UiTheme.Accent);
+        UiTheme.Style(_title, UiTheme.TypeRole.Heading);
         _title.HorizontalAlignment = HorizontalAlignment.Left;
         _title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _title.CustomMinimumSize = new Vector2(0, 112);
 
-        UiTheme.ApplyFont(_body, UiTheme.FontBody);
-        _body.AddThemeColorOverride("font_color", UiTheme.Ink);
-        _body.AddThemeConstantOverride("line_spacing", 10);
+        UiTheme.Style(_body, UiTheme.TypeRole.Body);
         _body.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _body.HorizontalAlignment = HorizontalAlignment.Left;
         _body.SizeFlagsVertical = Control.SizeFlags.ExpandFill;

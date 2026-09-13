@@ -254,7 +254,7 @@ public partial class ChapterLevelController : Node2D
         var sprite = new Sprite2D { Texture = AssetLoader.Texture(AssetLoader.NpcPortrait(ice ? "lantern" : "shoal")), ZIndex = 1 };
         if (sprite.Texture != null) PlaceholderArt.FitSprite(sprite, 152f);
         _guide.AddChild(sprite);
-        _guidePrompt = WorldPlate(_guide, 88f, ice ? "Lanternfish" : "Lost Shoal",
+        _guidePrompt = UiTheme.WorldPlate(_guide, 88f, ice ? "Lanternfish" : "Lost Shoal",
             ice ? "Thaw guide" : "Circuit guide", "Talk");
         _guidePrompt.Visible = false;
         StartBob(_guide, 8f, 1.7f);
@@ -277,7 +277,7 @@ public partial class ChapterLevelController : Node2D
             node.AddChild(sprite);
 
             float labelY = member.DisplaySize * 0.56f + 16f;
-            var prompt = WorldPlate(node, labelY, member.DisplayName, null, "Talk");
+            var prompt = UiTheme.WorldPlate(node, labelY, member.DisplayName, null, "Talk");
             prompt.Visible = false;
 
             StartBob(node, 6f, 2.1f + _residents.Count * 0.13f);
@@ -304,7 +304,7 @@ public partial class ChapterLevelController : Node2D
             };
             PlaceholderArt.FitSprite(icon, 88f);
             node.AddChild(icon);
-            var prompt = WorldPlate(node, 72f, ChapterId == 2 ? "Thaw Anchor" : "Tide Relay",
+            var prompt = UiTheme.WorldPlate(node, 72f, ChapterId == 2 ? "Thaw Anchor" : "Tide Relay",
                 $"{i + 1} of 3", "Restore");
             prompt.Visible = false;
             _restoreNodes.Add(node);
@@ -749,34 +749,6 @@ public partial class ChapterLevelController : Node2D
             }
         }
         return points.ToArray();
-    }
-
-    /// Name, optional subtitle and the key prompt, stacked under a world object.
-    /// They used to sit at fixed pixel offsets, so any face with tall ascenders ran
-    /// the name into the subtitle; a VBox stacks them by their real line heights.
-    /// An accent subtitle marks something the player has to interact with.
-    /// Returns the prompt, which starts hidden and is shown in range.
-    private static Control WorldPlate(Node2D host, float y, string name, string? subtitle, string action)
-    {
-        const float width = 360f;
-        var plate = new VBoxContainer
-        {
-            Name = "Plate", Position = new Vector2(-width / 2f, y), Size = new Vector2(width, 0),
-            ZIndex = 4, MouseFilter = Control.MouseFilterEnum.Ignore,
-        };
-        plate.AddThemeConstantOverride("separation", UiTheme.Space1);
-        plate.AddChild(UiTheme.WorldRole(UiTheme.TypeRole.Name, name));
-        if (subtitle != null)
-        {
-            var sub = UiTheme.WorldRole(UiTheme.TypeRole.Meta, subtitle);
-            sub.AddThemeColorOverride("font_color", UiTheme.Accent);
-            plate.AddChild(sub);
-        }
-        var prompt = new CenterContainer { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
-        prompt.AddChild(UiTheme.KeyPrompt("E", action));
-        plate.AddChild(prompt);
-        host.AddChild(plate);
-        return prompt;
     }
 
     private static void StartBob(Node2D node, float amount, float seconds)

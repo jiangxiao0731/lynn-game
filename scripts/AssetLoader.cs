@@ -59,7 +59,6 @@ public static class AssetLoader
 
     // --- Story-first overhaul assets (graceful fallback to procedural placeholders) ---
     public const string MemoryIcon = "res://assets/img/icon_memory.png";
-    public const string NoteIcon = "res://assets/img/icon_note.png";
 
     /// Background for a narrative zone ("浅滩" / "沉积带" / "巢母深处").
     /// Chapter one owns these three zones, so it reads its own painted panels.

@@ -126,7 +126,7 @@ public partial class HudController : CanvasLayer
     }
 
     private static StyleBox BarTrack() =>
-        UiTheme.BrushBar(new Color(.025f,.075f,.085f,.88f), track: true);
+        UiTheme.BrushBar(new Color(UiTheme.GlassBgDeep, .88f), track: true);
 
     private static StyleBox BarFill(Color color) => UiTheme.BrushBar(color);
 
@@ -202,7 +202,7 @@ public partial class HudController : CanvasLayer
         _hpLabel.HorizontalAlignment = HorizontalAlignment.Right;
         healthTop.AddChild(_hpLabel);
         _hpBar = new ProgressBar { CustomMinimumSize = new Vector2(0, 8), MinValue = 0 };
-        StyleBar(_hpBar, new Color(0.47f, 0.90f, 0.78f));
+        StyleBar(_hpBar, UiTheme.Accent);
         healthBox.AddChild(_hpBar);
 
         // Ability charges appear only after the mechanic is unlocked.
@@ -233,12 +233,12 @@ public partial class HudController : CanvasLayer
             var key = UiTheme.Role(UiTheme.TypeRole.Hint, skills[i].Item1);
             key.VerticalAlignment = VerticalAlignment.Center;
             slot.AddChild(key);
+
             var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, skills[i].Item2);
             name.AddThemeColorOverride("font_color", skills[i].Item3);
             name.VerticalAlignment = VerticalAlignment.Center;
             slot.AddChild(name);
             var count = UiTheme.Role(UiTheme.TypeRole.Numeral, "0");
-            count.AddThemeFontSizeOverride("font_size", UiTheme.SizeName);
             count.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             count.HorizontalAlignment = HorizontalAlignment.Right;
             _skillCounts[i] = count;
@@ -288,14 +288,12 @@ public partial class HudController : CanvasLayer
 
         _pausePanel = Surface("PauseFeedbackPanel", new Vector2(360, 0), 0.94f);
         Pin(_pausePanel, Control.LayoutPreset.Center);
-        _pausePanel.Position = new Vector2(-180, -56);
         _pausePanel.Visible = false;
         _pausePanel.ProcessMode = ProcessModeEnum.Always;
         AddChild(_pausePanel);
         var pauseBox = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
-        pauseBox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         pauseBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
-        _pausePanel.AddChild(pauseBox);
+        Inset(_pausePanel, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY).AddChild(pauseBox);
         var pauseLabel = UiTheme.Role(UiTheme.TypeRole.Heading, "Paused");
         pauseLabel.HorizontalAlignment = HorizontalAlignment.Center;
         pauseBox.AddChild(pauseLabel);
@@ -371,7 +369,6 @@ public partial class HudController : CanvasLayer
         return row;
     }
 
-    private static readonly Color StepAmber = new(1.00f, 0.78f, 0.22f);
 
     private void UpdateStepPips(int current)
     {
@@ -380,8 +377,8 @@ public partial class HudController : CanvasLayer
             bool done = i < current, now = i == current;
             var style = new StyleBoxFlat
             {
-                BgColor = done ? UiTheme.Accent : now ? StepAmber : Colors.Transparent,
-                BorderColor = done ? UiTheme.Accent : now ? StepAmber : new Color(UiTheme.InkDim, 0.6f),
+                BgColor = done ? UiTheme.Accent : now ? UiTheme.Guide : Colors.Transparent,
+                BorderColor = done ? UiTheme.Accent : now ? UiTheme.Guide : new Color(UiTheme.InkDim, 0.6f),
                 BorderWidthLeft = 2, BorderWidthTop = 2, BorderWidthRight = 2, BorderWidthBottom = 2,
                 CornerRadiusTopLeft = 12, CornerRadiusTopRight = 12,
                 CornerRadiusBottomLeft = 12, CornerRadiusBottomRight = 12,

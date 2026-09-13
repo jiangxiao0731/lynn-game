@@ -43,7 +43,7 @@ public partial class LogPanel : CanvasLayer
         outer.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         _panel.AddChild(outer);
 
-        outer.AddChild(UiTheme.MakeDisplayLabel(GameStrings.Tr("LOG_TITLE"), UiTheme.FontH1, Palette.CoastalCyan));
+        outer.AddChild(UiTheme.Role(UiTheme.TypeRole.Heading, GameStrings.Tr("LOG_TITLE")));
         outer.AddChild(UiTheme.Role(UiTheme.TypeRole.Hint, GameStrings.Tr("LOG_HINT")));
         outer.AddChild(UiTheme.Divider());
 
@@ -127,7 +127,7 @@ public partial class LogPanel : CanvasLayer
 
     private void AddSection(string text)
     {
-        _content.AddChild(new Control { CustomMinimumSize = new Vector2(0, 6) });
+        _content.AddChild(new Control { CustomMinimumSize = new Vector2(0, UiTheme.GapPair) });
         _content.AddChild(UiTheme.Role(UiTheme.TypeRole.Eyebrow, text, wrap: true));
         _content.AddChild(UiTheme.Divider(0.18f));
     }
@@ -144,7 +144,7 @@ public partial class LogPanel : CanvasLayer
             var text = UiTheme.Role(UiTheme.TypeRole.Meta, body, wrap: true);
             entry.AddChild(text);
         }
-        _content.AddChild(new Control { CustomMinimumSize = new Vector2(0, UiTheme.Space2) });
+        _content.AddChild(new Control { CustomMinimumSize = new Vector2(0, UiTheme.GapPair) });
     }
 
     private static string ConversationTitle(string id) => id switch

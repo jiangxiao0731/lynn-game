@@ -28,6 +28,23 @@ public static class PlaceholderArt
         };
     }
 
+    /// Soft radial glow: `color` at the centre fading smoothly to clear at the edge.
+    public static GradientTexture2D SoftGlow(Color color, int size = 128)
+    {
+        var gradient = new Gradient
+        {
+            InterpolationMode = Gradient.InterpolationModeEnum.Cubic,
+            Offsets = new[] { 0f, 0.3f, 1f },
+            Colors = new[] { color, new Color(color, color.A * 0.4f), new Color(color, 0f) },
+        };
+        return new GradientTexture2D
+        {
+            Gradient = gradient, Width = size, Height = size,
+            Fill = GradientTexture2D.FillEnum.Radial,
+            FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1f, 0.5f),
+        };
+    }
+
     public static ImageTexture RoundBlob(int size, Color color)
     {
         var img = Image.CreateEmpty(size, size, false, Image.Format.Rgba8);

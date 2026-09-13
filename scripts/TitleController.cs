@@ -72,7 +72,7 @@ public partial class TitleController : Control
 
         // Clear the bare .tscn placeholder children; rebuild styled to the central theme.
         foreach (var c in menu.GetChildren()) c.QueueFree();
-        menu.AddThemeConstantOverride("separation", UiTheme.Space4);
+        menu.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         menu.Alignment = BoxContainer.AlignmentMode.Begin;
 
         var saved = SaveManager.Instance?.LoadState();
@@ -94,27 +94,25 @@ public partial class TitleController : Control
         menu.AddChild(title);
         StartTitlePulse(title);
 
-        var subtitle = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "An ocean restoration story");
-        subtitle.AddThemeFontSizeOverride("font_size", UiTheme.SizeMeta);
-        subtitle.AddThemeColorOverride("font_color", UiTheme.InkDim);
+        var subtitle = UiTheme.Role(UiTheme.TypeRole.Meta, "An ocean restoration story");
         subtitle.HorizontalAlignment = HorizontalAlignment.Left;
         menu.AddChild(subtitle);
 
         var premise = UiTheme.Role(UiTheme.TypeRole.Body, "Protect the last light. Help a polluted ocean recover.", wrap: true);
         premise.CustomMinimumSize = new Vector2(620, 64);
         menu.AddChild(premise);
-        menu.AddChild(new Control { CustomMinimumSize = new Vector2(0, UiTheme.Space8) });
+        menu.AddChild(new Control { CustomMinimumSize = new Vector2(0, UiTheme.GapSection) });
 
         var actions = new VBoxContainer { CustomMinimumSize = new Vector2(380, 0) };
         actions.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
-        actions.AddThemeConstantOverride("separation", UiTheme.Space3);
+        actions.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         menu.AddChild(actions);
 
         bool hasSave = SaveManager.Instance?.HasSave() ?? false;
 
         var begin = new Button { Text = hasSave ? "Continue Journey" : "Start Game", Name = "BeginButton" };
         begin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        UiTheme.StyleButton(begin, UiTheme.FontBody);
+        UiTheme.StyleButton(begin);
         begin.Pressed += OnBeginPressed;
         actions.AddChild(begin);
 
@@ -122,14 +120,14 @@ public partial class TitleController : Control
         {
             var newGame = new Button { Text = "Start New Game", Name = "NewGameButton" };
             newGame.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            UiTheme.StyleButton(newGame, UiTheme.FontBody, primary: false);
+            UiTheme.StyleButton(newGame, primary: false);
             newGame.Pressed += OnNewGamePressed;
             actions.AddChild(newGame);
         }
 
         var exit = new Button { Text = "Exit Game", Name = "ExitButton" };
         exit.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        UiTheme.StyleButton(exit, UiTheme.FontBody, primary: false);
+        UiTheme.StyleButton(exit, primary: false);
         exit.Pressed += OnExitPressed;
         actions.AddChild(exit);
 

@@ -17,7 +17,7 @@ public partial class SettlementPanel : Control
         ProcessMode = ProcessModeEnum.Always;
 
         // ── Deep-sea glass panel background ──────────────────────────────────
-        var box = GetNodeOrNull<Panel>("Box");
+        var box = GetNodeOrNull<PanelContainer>("Box");
         if (box != null)
         {
             box.CustomMinimumSize = new Vector2(840, 440);
@@ -33,8 +33,7 @@ public partial class SettlementPanel : Control
         if (title != null)
         {
             title.Text = GameStrings.Tr("SETTLEMENT_TITLE");
-            UiTheme.ApplyDisplayFont(title, UiTheme.FontH1);
-            title.AddThemeColorOverride("font_color", UiTheme.Accent);
+            UiTheme.Style(title, UiTheme.TypeRole.Heading);
             title.HorizontalAlignment = HorizontalAlignment.Center;
         }
 
@@ -42,13 +41,11 @@ public partial class SettlementPanel : Control
         _summary = GetNodeOrNull<Label>("Box/VBox/Summary");
         if (_summary != null)
         {
-            UiTheme.ApplyFont(_summary, UiTheme.FontBody);
-            _summary.AddThemeColorOverride("font_color", UiTheme.Ink);
+            UiTheme.Style(_summary, UiTheme.TypeRole.Body);
             _summary.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             _summary.CustomMinimumSize = new Vector2(744, 150);
             _summary.HorizontalAlignment = HorizontalAlignment.Center;
             _summary.VerticalAlignment = VerticalAlignment.Center;
-            _summary.AddThemeConstantOverride("line_spacing", 10);
         }
 
         // ── Continue button ───────────────────────────────────────────────────
@@ -61,14 +58,14 @@ public partial class SettlementPanel : Control
                 : ChapterRuntime.CurrentChapter == 2 ? "Go to the Silent Lighthouse"
                 : "View the Restored Sea";
             btn.Pressed += OnContinuePressed;
-            UiTheme.StyleButton(btn, UiTheme.FontBody);
+            UiTheme.StyleButton(btn);
         }
     }
 
     public void ShowResult(string summary)
     {
         var dim = GetNodeOrNull<ColorRect>("Dim");
-        if (dim != null) dim.Color = new Color(0.04f, 0.12f, 0.18f, 0.85f);
+        if (dim != null) dim.Color = UiTheme.Scrim(0.85f).BgColor;
         Visible = true;
         if (_summary != null) _summary.Text = summary;
         GetTree().Paused = true;

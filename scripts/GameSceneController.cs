@@ -540,7 +540,7 @@ public partial class GameSceneController : Node2D
         var npcSprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(80, tint) };
         if (portrait != null) PlaceholderArt.FitSprite(npcSprite, displaySize);
         node.AddChild(npcSprite);
-        var identity = DecorateNpc(node, npcSprite, displayName, tint);
+        var prompt = DecorateNpc(node, npcSprite, displayName, tint);
 
         _interactables.Add(new Interactable
         {
@@ -548,8 +548,8 @@ public partial class GameSceneController : Node2D
             Timeline = timeline,
             OnFirstDone = onDone,
             FollowUp = followUp,
-            Identity = identity,
-            Prompt = AddWorldPrompt(node, "E", "Talk"),
+            Identity = prompt.GetParent<Control>(),
+            Prompt = prompt,
         });
     }
 
@@ -563,13 +563,13 @@ public partial class GameSceneController : Node2D
         var runtimeSprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(80, tint) };
         if (portrait != null) PlaceholderArt.FitSprite(runtimeSprite, displaySize);
         node.AddChild(runtimeSprite);
-        var identity = DecorateNpc(node, runtimeSprite, displayName, tint);
+        var prompt = DecorateNpc(node, runtimeSprite, displayName, tint);
         _interactables.Add(new Interactable
         {
             Node = node,
             Timeline = timeline,
-            Identity = identity,
-            Prompt = AddWorldPrompt(node, "E", "Talk"),
+            Identity = prompt.GetParent<Control>(),
+            Prompt = prompt,
         });
     }
 
@@ -604,11 +604,10 @@ public partial class GameSceneController : Node2D
         haloTween.TweenProperty(halo, "modulate:a", 0.92f, 1.5f)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 
-        var name = UiTheme.WorldRole(UiTheme.TypeRole.Name, displayName);
-        name.Name = "NpcName";
-        name.Position = new Vector2(-150, -108);
-        name.Size = new Vector2(300, 30);
-        node.AddChild(name);
+        // The same nameplate chapters two and three use: name, then the prompt,
+        // under the portrait rather than a bare label floating above it.
+        float plateY = sprite.Texture != null ? sprite.Texture.GetHeight() * sprite.Scale.Y * 0.5f + 16f : 56f;
+        var prompt = UiTheme.WorldPlate(node, plateY, displayName, null, "Talk");
 
         float baseY = sprite.Position.Y;
         float duration = 1.65f + (node.GetInstanceId() % 7) * 0.09f;
@@ -617,7 +616,7 @@ public partial class GameSceneController : Node2D
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
         bob.TweenProperty(sprite, "position:y", baseY + 6f, duration)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-        return name;
+        return prompt;
     }
 
     /// The shared key-cap prompt (UiTheme.KeyPrompt), centred under a world object.
@@ -656,12 +655,19 @@ public partial class GameSceneController : Node2D
             if (!positions.TryGetValue(note.Id, out var pos)) continue;
             var node = new Node2D { Name = "Lore_" + note.Id, Position = pos };
             node.AddToGroup("lore");
-            var noteTex = AssetLoader.Texture(AssetLoader.NoteIcon)
-                          ?? PlaceholderArt.RoundBlob(40, new Color(0.55f, 0.5f, 0.32f));
-            var noteSprite = new Sprite2D { Texture = noteTex };
-            if (AssetLoader.Has(AssetLoader.NoteIcon)) PlaceholderArt.FitSprite(noteSprite, 64f);
-            node.AddChild(noteSprite);
+            // A fragment reads as a faint glint on the seabed. There is no painted
+            // note art (icon_note.png was a crop of a sand-tile sheet, filename and all).
+            var glint = new Sprite2D { Texture = PlaceholderArt.SoftGlow(new Color(UiTheme.Guide, 0.85f)) };
+            node.AddChild(glint);
+            node.AddChild(new Sprite2D
+            {
+                Texture = PlaceholderArt.SoftGlow(new Color(1f, 1f, 0.95f)),
+                Scale = Vector2.One * 0.22f,
+            });
             AddChild(node);
+            var breathe = glint.CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine);
+            breathe.TweenProperty(glint, "scale", Vector2.One * 1.15f, 1.4f);
+            breathe.TweenProperty(glint, "scale", Vector2.One * 0.8f, 1.4f);
             _interactables.Add(new Interactable
             {
                 Node = node,

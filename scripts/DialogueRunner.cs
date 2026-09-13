@@ -112,6 +112,10 @@ public partial class DialogueRunner : CanvasLayer
 
         _textLabel = UiTheme.Role(UiTheme.TypeRole.Body, "", wrap: true);
         _textLabel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        // The default (chars *before* shaping) lays out only the typed part, so the
+        // bubble was measured at one line and the rest of the line, the hint and the
+        // bottom padding spilled out of it. After shaping = the full line is laid out.
+        _textLabel.VisibleCharactersBehavior = TextServer.VisibleCharactersBehavior.CharsAfterShaping;
         vbox.AddChild(_textLabel);
 
         _choiceBox = new VBoxContainer { Name = "Choices" };
@@ -332,7 +336,7 @@ public partial class DialogueRunner : CanvasLayer
         }
         _portraitFrame.Visible = true;
         var tex = AssetLoader.Texture(AssetLoader.NpcPortrait(portraitId));
-        _portrait.Texture = tex ?? PlaceholderArt.RoundBlob(160, new Color(0.45f, 0.7f, 0.78f));
+        _portrait.Texture = tex ?? PlaceholderArt.RoundBlob(160, UiTheme.Accent);
     }
 
     private void OpenChoices(IReadOnlyList<DialogueChoice> choices)
@@ -347,8 +351,7 @@ public partial class DialogueRunner : CanvasLayer
         {
             var btn = new Button { Text = choice.Text };
             btn.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            UiTheme.StyleButton(btn, UiTheme.FontSmall, primary: false);
-            btn.CustomMinimumSize = new Vector2(0, 48);
+            UiTheme.StyleButton(btn, primary: false);
             var captured = choice;
             btn.Pressed += () => OnChoicePicked(captured);
             _choiceBox.AddChild(btn);
