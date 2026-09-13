@@ -11,6 +11,14 @@ public partial class Player : CharacterBody2D
     [Signal] public delegate void FormChangedEventHandler(int form);
 
     [Export] public float Speed = GameConstants.Speed;
+    /// Shift-to-sprint factor; tuned so a full chapter crossing stays under a minute.
+    [Export] public float SprintMultiplier = 5.2f;
+    /// Contractions per second while swimming.
+    [Export] public float PulseRate = 1.45f;
+    /// Speed kept during the coast, as a fraction of full thrust.
+    [Export] public float PulseFloor = 0.22f;
+
+    private float _pulse;
     [Export] public int MaxHealthValue = GameConstants.MaxHealth;
 
     public int CurrentHealth { get; private set; } = GameConstants.MaxHealth;
@@ -93,10 +101,28 @@ public partial class Player : CharacterBody2D
             return;
         }
         var dir = Input.GetVector("Move_Left", "Move_Right", "Move_Up", "Move_Down");
-        Velocity = dir * Speed;
+        // Hold Shift to sprint. The chapters are ~17000px across, so crossing one at
+        // the base pace is a long swim; sprint keeps the scale without the slog.
+        bool sprinting = Input.IsKeyPressed(Key.Shift);
+
+        // Jellyfish propulsion: a hard contraction, then a coast. The cycle only runs
+        // while a direction is held, so releasing the keys stops mid-glide instead of
+        // snapping. Sprinting beats faster rather than simply moving faster.
+        bool moving = dir.LengthSquared() > 0.01f;
+        float rate = sprinting ? PulseRate * 1.7f : PulseRate;
+        if (moving) _pulse += (float)delta * rate;
+        else _pulse = 0f;
+
+        // 0..1 saw, shaped so the first third is the push and the rest is the drift.
+        float phase = _pulse - Mathf.Floor(_pulse);
+        float burst = phase < 0.34f
+            ? Mathf.Sin(phase / 0.34f * Mathf.Pi)          // contraction
+            : 0.18f * (1f - (phase - 0.34f) / 0.66f);      // decaying coast
+        float thrust = Mathf.Lerp(PulseFloor, 1f, burst);
+
+        Velocity = dir * Speed * (sprinting ? SprintMultiplier : 1f) * thrust;
         MoveAndSlide();
 
-        bool moving = dir.LengthSquared() > 0.01f;
         if (_sprites.TryGetValue(CurrentForm, out var active))
         {
             string anim = moving ? "Walk" : "Idle";
