@@ -51,7 +51,7 @@ public partial class BossController : CharacterBody2D
         _sprite = new AnimatedSprite2D { Name = "BossSprite" };
         var tex = AssetLoader.Texture(SpritePath);
         _sprite.SpriteFrames = tex != null
-            ? PlaceholderArt.SliceCreatureSheet(tex, 3, 2)
+            ? PlaceholderArt.CreatureFrames(tex)
             : PlaceholderArt.BlobFrames(Palette.PollutedTeal, 180);
         var frame = _sprite.SpriteFrames.GetFrameTexture("Idle", 0);
         if (frame != null)
@@ -62,7 +62,9 @@ public partial class BossController : CharacterBody2D
         _sprite.Play("Idle");
         AddChild(_sprite);
 
-        var shape = new CollisionShape2D { Shape = new CircleShape2D { Radius = 58f } };
+        // Scale with the drawing: a fixed 58px body left the enlarged guardians with a
+        // hitbox floating in the middle of their silhouette.
+        var shape = new CollisionShape2D { Shape = new CircleShape2D { Radius = DisplaySize * 0.26f } };
         AddChild(shape);
     }
 

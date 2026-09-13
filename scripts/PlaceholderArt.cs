@@ -59,7 +59,11 @@ public static class PlaceholderArt
         {
             int cx = (i % cols) * cw, cy = (i / cols) * ch;
             var cell = img.GetRegion(new Rect2I(cx, cy, cw, ch));
-            SoftKeyPresentationBackground(cell);
+            // Artist-ready transparent sheets already carry authored alpha. Running
+            // the luminance key again would thin dark ink and translucent washes.
+            // Only key legacy presentation sheets whose cell corners are opaque.
+            if (!HasTransparentCorners(cell))
+                SoftKeyPresentationBackground(cell);
             cells.Add(ImageTexture.CreateFromImage(cell));
         }
 
@@ -144,12 +148,36 @@ public static class PlaceholderArt
     }
 
     /// Form sheet from the selected supplied PNG if present, else a tinted fallback.
+    /// Both retained visual packs are supported: the earlier hand-painted/Godogen
+    /// edition uses a portrait 2x3 grid, while the current folder-art edition uses
+    /// a landscape 3x2 grid.
     public static SpriteFrames FormFrames(ElementForm form)
     {
         var tex = AssetLoader.Texture(AssetLoader.RawFormSheet(form));
         if (tex != null)
-            return SliceFormSheet(tex, 3, 2);
+        {
+            bool landscape = tex.GetWidth() >= tex.GetHeight();
+            return SliceFormSheet(tex, landscape ? 3 : 2, landscape ? 2 : 3);
+        }
         return BlobFrames(Palette.ForForm(form));
+    }
+
+    /// Accept either a six-frame 3x2 guardian sheet or a single square guardian
+    /// painting. This lets the Handpaint and Current editions share identical game
+    /// logic while retaining their intentionally different visual libraries.
+    public static SpriteFrames CreatureFrames(Texture2D source)
+    {
+        float aspect = source.GetHeight() <= 0 ? 1f : (float)source.GetWidth() / source.GetHeight();
+        if (aspect is > 1.35f and < 1.65f)
+            return SliceCreatureSheet(source, 3, 2);
+
+        var result = new SpriteFrames();
+        result.AddAnimation("Idle");
+        result.SetAnimationSpeed("Idle", 1.0);
+        result.SetAnimationLoop("Idle", true);
+        result.AddFrame("Idle", KeyPresentationTexture(source));
+        result.RemoveAnimation("default");
+        return result;
     }
 
     /// Slice a 3x2 hand-painted creature presentation sheet and key out its paper
@@ -167,7 +195,10 @@ public static class PlaceholderArt
         foreach (int index in order)
         {
             var cell = source.GetRegion(new Rect2I((index % cols) * cw, (index / cols) * ch, cw, ch));
-            KeyOpaquePresentationBackground(cell);
+            // Preserve transparent hand-painted replacements losslessly; legacy
+            // presentation sheets still receive the existing colour-distance key.
+            if (!HasTransparentCorners(cell))
+                KeyOpaquePresentationBackground(cell);
             result.AddFrame("Idle", ImageTexture.CreateFromImage(cell));
         }
         result.RemoveAnimation("default");

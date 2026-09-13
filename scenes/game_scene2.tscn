@@ -51,8 +51,8 @@ position = Vector2(3160, 540)
 script = ExtResource("3")
 MonsterName = "Frostshell Guardian"
 EffectiveElement = 2
-SpritePath = "res://assets/sprites/legacy/ice_monster_idle_sheet.png"
-DisplaySize = 290.0
+SpritePath = "res://assets/sprites/boss_ch2.png"
+DisplaySize = 580.0
 NextUnlockedElement = 3
 
 [node name="SkillSystem" type="Node" parent="."]

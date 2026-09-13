@@ -170,12 +170,12 @@ public static class NarrativeData
         });
         d[Chapter2Guardian] = new DialogueTimeline(Chapter2Guardian, new List<DialogueLine>
         {
-            new(F, "Stay back... I have to keep freezing, or the polluted water will get through...", "boss"),
+            new(F, "Stay back... I have to keep freezing, or the polluted water will get through...", "boss2"),
             new(S, "You have guarded this place for too long. Let my Ice current loosen the shell."),
         });
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>
         {
-            new(F, "The tide is moving again. I thought protection meant freezing everything in place.", "boss"),
+            new(F, "The tide is moving again. I thought protection meant freezing everything in place.", "boss2"),
             new(L, "Frostbound Trench is bright again. But the sea ahead has lost all power.", "lantern"),
             new(S, "Then I will carry this light into the next circuit."),
         });
@@ -187,16 +187,20 @@ public static class NarrativeData
         });
         d[Chapter3Guardian] = new DialogueTimeline(Chapter3Guardian, new List<DialogueLine>
         {
-            new(C, "Too hot... I cannot shut down... smoke is blocking the circuit and the water...", "boss"),
+            new(C, "Too hot... I cannot shut down... smoke is blocking the circuit and the water...", "boss3"),
             new(S, "I will not destroy you. I will guide the loose current back to the lighthouse."),
         });
         d[Chapter3Ending] = new DialogueTimeline(Chapter3Ending, new List<DialogueLine>
         {
-            new(C, "The furnace is cooling. Its warmth can help coral grow instead of burning the water.", "boss"),
+            new(C, "The furnace is cooling. Its warmth can help coral grow instead of burning the water.", "boss3"),
             new(Sh, "Look. Each light shines only where it is needed. The shoal can see itself again.", "shoal"),
             new(S, "Protecting the ocean is not one heroic act. It is choosing not to hide our costs underwater."),
             new(S, "As long as people keep repairing what was harmed, one light can lead to another."),
         });
+
+        // Residents painted for each chapter register their own timelines, so new art
+        // only has to be listed once, in ChapterCast.
+        foreach (var entry in ChapterCast.Timelines()) d[entry.Key] = entry.Value;
 
         return d;
     }

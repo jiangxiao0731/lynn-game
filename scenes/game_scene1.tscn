@@ -55,6 +55,8 @@ limit_bottom = 1080
 [node name="BroodMother" type="CharacterBody2D" parent="." groups=["monster"]]
 position = Vector2(3100, 540)
 script = ExtResource("3")
+SpritePath = "res://assets/sprites/boss_ch1.png"
+DisplaySize = 600.0
 
 [node name="GasolineBarrel" type="StaticBody2D" parent="." groups=["box"]]
 

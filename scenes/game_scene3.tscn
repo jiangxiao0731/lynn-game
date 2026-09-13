@@ -48,8 +48,8 @@ position = Vector2(3160, 540)
 script = ExtResource("3")
 MonsterName = "Overheated Core"
 EffectiveElement = 3
-SpritePath = "res://assets/sprites/legacy/factory_monster_idle_sheet.png"
-DisplaySize = 300.0
+SpritePath = "res://assets/sprites/boss_ch3.png"
+DisplaySize = 600.0
 EmitNextElementUnlock = false
 
 [node name="SkillSystem" type="Node" parent="."]
