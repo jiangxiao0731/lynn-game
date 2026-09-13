@@ -15,13 +15,26 @@ namespace ShallowSeaDream;
 /// One branch button: label shown to player; optional flag to set; optional jump target.
 public sealed record DialogueChoice(string Text, string? SetFlag = null, string? GotoLabel = null);
 
+/// A picture shown inside a line's bubble. Either the game's own art (who to find,
+/// what to pick up, where you are going next) or a real photograph that shows the
+/// harm the line is talking about. Photos always carry a credit; art never does.
+public sealed record DialoguePicture(string Path, string Caption, string? Credit = null)
+{
+    public bool IsPhoto => Credit != null;
+
+    /// A public-domain photo from res://assets/photos (see assets/photos/CREDITS.md).
+    public static DialoguePicture Photo(string file, string caption, string credit) =>
+        new($"res://assets/photos/{file}", caption, credit);
+}
+
 /// One dialogue line. PortraitId selects the speaker art; Label allows choice jumps.
 public sealed record DialogueLine(
     string Speaker,
     string Text,
     string? PortraitId = null,
     IReadOnlyList<DialogueChoice>? Choices = null,
-    string? Label = null);
+    string? Label = null,
+    DialoguePicture? Picture = null);
 
 public sealed record DialogueTimeline(string Id, IReadOnlyList<DialogueLine> Lines);
 
@@ -78,7 +91,9 @@ public static class DialogueData
                 new("I'm still scared.", SetFlag: "granny_hesitate", GotoLabel: "granny_soft"),
             }),
             new(SpeakerGranny, "That makes sense. You do not have to be fearless. I will guide you through the first current.", "npc1giving", Label: "granny_soft"),
-            new(SpeakerGranny, "Collect the Water Shards nearby. At the Brood Mother, press 1 to release Water.", "npc1giving", Label: "granny_yes"),
+            new(SpeakerGranny, "The Water Shards are hiding inside the rubbish that drifted in. Gather them and the water will answer you.", "npc1giving", Label: "granny_yes",
+                Picture: new(AssetLoader.ChapterElement(1), "Look for these · 8 are scattered through the Shallows")),
+            new(SpeakerGranny, "Then, at the Brood Mother, press 1 to release Water.", "npc1giving"),
             new(SpeakerGranny, "Ice and Electric currents wait farther below. One step at a time.", "npc1giving"),
             new(SpeakerShimmer, "I will remember every light we bring back.", "npc1giving"),
         });
@@ -86,8 +101,12 @@ public static class DialogueData
         d[Starfish] = new DialogueTimeline(Starfish, new List<DialogueLine>
         {
             new(SpeakerStarfish, "I have not seen another living light in a long time.", "starfish"),
-            new(SpeakerStarfish, "Plastic can trap animals or be mistaken for food.", "starfish"),
-            new(SpeakerStarfish, "Seaweed heard something moving below. Talk to them before you go deeper.", "starfish"),
+            new(SpeakerStarfish, "Plastic can trap animals, or be mistaken for food.", "starfish"),
+            new(SpeakerStarfish, "Far above us, seabirds feed it to their chicks without knowing. Their stomachs fill up, and there is no room left for real food.", "starfish",
+                Picture: DialoguePicture.Photo("ch1_albatross_debris.jpg",
+                    "A Laysan albatross chick among plastic debris on Midway Atoll.", "NOAA Marine Debris Program")),
+            new(SpeakerStarfish, "Seaweed heard something moving below. Talk to them before you go deeper.", "starfish",
+                Picture: new(AssetLoader.NpcPortrait("seaweed"), "Seaweed · a little further along the reef")),
         });
 
         d[Seaweed] = new DialogueTimeline(Seaweed, new List<DialogueLine>

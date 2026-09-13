@@ -17,7 +17,9 @@ public sealed record CastMember(
     /// On-screen height in pixels. Set per character: a drifting fume is small, a
     /// pipe mouth or drum is heavy scenery. Not decoration — size is how the player
     /// reads what matters before reading any text.
-    float DisplaySize = 118f);
+    float DisplaySize = 118f,
+    /// Pictures keyed by line index (see DialoguePicture), for lines about a real harm.
+    Dictionary<int, DialoguePicture>? Pictures = null);
 
 /// res://scripts/ChapterCast.cs
 /// The supplied character paintings, placed as residents rather than enemies.
@@ -76,9 +78,13 @@ public static class ChapterCast
             new[]
             {
                 "I am not smoke. I am what the water grew when it was fed too much.",
-                "Runoff carried nitrogen and phosphorus down here, and the algae bloomed on it.",
+                "Rivers washed fertiliser off the fields and carried it down here, and the algae bloomed on it.",
                 "Then the bloom died, and rotting it used up the oxygen. That is the part nobody sees.",
-            }, 140f),
+            }, 140f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_sediment_plume.jpg",
+                    "River water loaded with soil and nutrients pours into the Gulf of Mexico.", "NASA Goddard Space Flight Center"),
+            }),
 
         new("ch2_radiodrum", "Marked Drum", "ch2_radiodrum", 2,
             new Vector2(1330, 845), new Color(0.80f, 0.76f, 0.36f),
@@ -105,7 +111,11 @@ public static class ChapterCast
                 "I keep this mask on because the water here is not breathable any more.",
                 "Low oxygen does not look like poison. It looks like an empty place where things used to live.",
                 "The eggs in the nursery cannot wear a mask. That is why the current has to come back.",
-            }, 158f),
+            }, 158f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_dead_zone.jpg",
+                    "A 2011 survey of the Gulf of Mexico 'dead zone'. Red marks seabed water with too little oxygen for most life.", "NOAA"),
+            }),
 
         new("ch2_flask", "Cracked Flask", "ch2_flask", 2,
             new Vector2(2090, 300), new Color(0.76f, 0.88f, 0.48f),
@@ -145,7 +155,11 @@ public static class ChapterCast
                 "Careful. I spread when I am touched, and I do not come apart again.",
                 "Oil does three things at once: it coats bodies, it ruins eggs, and it stays in the habitat.",
                 "The reef here was already too warm. I was just the part that finally showed.",
-            }, 138f),
+            }, 138f, new()
+            {
+                [1] = DialoguePicture.Photo("ch3_oiled_pelican.jpg",
+                    "A wildlife officer reaches an oiled brown pelican after the 2010 Deepwater Horizon spill.", "U.S. Fish and Wildlife Service"),
+            }),
 
         new("ch3_reddrum", "Fuel Drum", "ch3_reddrum", 3,
             new Vector2(830, 845), new Color(0.90f, 0.44f, 0.36f),
@@ -163,7 +177,11 @@ public static class ChapterCast
                 "I puff up to look dangerous. Down here it just makes me easier to coat.",
                 "The coral went pale one summer and never got its colour back. We call it bleaching now.",
                 "It was not sudden. The water was too warm for too long, and the coral let go of what fed it.",
-            }, 130f),
+            }, 130f, new()
+            {
+                [1] = DialoguePicture.Photo("ch3_bleaching.jpg",
+                    "A bleached brain coral in the Florida Keys during the 2023 marine heatwave.", "NOAA"),
+            }),
 
         new("ch3_seahorse", "Pump Seahorse", "ch3_seahorse", 3,
             new Vector2(1430, 640), new Color(0.88f, 0.58f, 0.40f),
@@ -190,7 +208,12 @@ public static class ChapterCast
                 "People see the colours on my back and think something beautiful is happening.",
                 "It is a film of oil one drop thick, spread over everything I swim past.",
                 "The prettiest part of this damage is the part that tells you how far it has already gone.",
-            }, 156f),
+            }, 156f, new()
+            {
+                [1] = DialoguePicture.Photo("ch3_oil_slick.jpg",
+                    "Oil from the Deepwater Horizon spill smoothing the surface of the Gulf, seen by satellite in June 2010.",
+                    "NASA Goddard Space Flight Center"),
+            }),
 
         new("ch3_coraltar", "Tarred Coral", "ch3_coraltar", 3,
             new Vector2(2310, 855), new Color(0.78f, 0.46f, 0.38f),
@@ -206,9 +229,14 @@ public static class ChapterCast
             new[]
             {
                 "I am what burning looks like when it happens under water instead of over it.",
+                "Up there, a rig once burned for a day and a half. The oil that leaked afterwards hurt the water for years.",
                 "Greenhouse gases hold the heat in, and the ocean takes up most of what is trapped.",
                 "You are not here to put me out. You are here to stop the reason I was lit.",
-            }, 164f),
+            }, 164f, new()
+            {
+                [1] = DialoguePicture.Photo("ch3_rig_fire.jpg",
+                    "The Deepwater Horizon rig burning, April 2010. It sank two days later, and oil leaked for 87 days.", "U.S. Coast Guard"),
+            }),
 
     };
 
@@ -224,7 +252,8 @@ public static class ChapterCast
         foreach (var m in Members)
         {
             var lines = m.Lines
-                .Select(text => new DialogueLine(m.DisplayName, text, m.PortraitId))
+                .Select((text, i) => new DialogueLine(m.DisplayName, text, m.PortraitId,
+                    Picture: m.Pictures != null && m.Pictures.TryGetValue(i, out var pic) ? pic : null))
                 .ToList();
             yield return new KeyValuePair<string, DialogueTimeline>(m.Id, new DialogueTimeline(m.Id, lines));
         }

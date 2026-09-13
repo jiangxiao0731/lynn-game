@@ -14,7 +14,9 @@ namespace ShallowSeaDream;
 public sealed record MemoryVignette(string Id, string Title, IReadOnlyList<string> Lines, string Zone);
 
 /// An examinable 「残片笔记」 / lore object the player reads with E.
-public sealed record LoreNote(string Id, string Title, IReadOnlyList<string> Lines, string Zone);
+/// `Picture` is shown on the note's last line.
+public sealed record LoreNote(string Id, string Title, IReadOnlyList<string> Lines, string Zone,
+    DialoguePicture? Picture = null);
 
 /// A monster / creature codex entry unlocked by proximity.
 public sealed record CodexEntry(string Id, string Name, string Body, string Weakness);
@@ -73,7 +75,9 @@ public static class NarrativeData
             new(S, "Tidepool Nursery. I was born here, when every corner still glowed."),
             new(S, "Now the water is cloudy, and one light after another has gone out."),
             new(S, "Most of this pollution came from land, carried here through drains and rivers."),
-            new(S, "Mine is still here. Maybe it is enough to start bringing them back."),
+            new(S, "My light is still here. Maybe it is enough to start bringing them back."),
+            new(S, "First I need Granny Lan. She has watched over this nursery longer than anyone.", null,
+                Picture: new(AssetLoader.NpcPortrait("npc1giving"), "Granny Lan · she waits in the Shallows")),
         });
 
         // --- 岚婆婆 multi-stage: mid (during collecting) ---
@@ -88,6 +92,9 @@ public static class NarrativeData
         d[GrannyAfter] = new DialogueTimeline(GrannyAfter, new List<DialogueLine>
         {
             new(G, "You treated her as a life to protect. You loosened the waste that trapped her.", "npc1giving"),
+            new(G, "Up on land, some people do this work too. They haul lost nets out of the sea, tonne by tonne.", "npc1giving",
+                Picture: DialoguePicture.Photo("ch1_cleanup.jpg",
+                    "A clean-up crew lifts a tangle of derelict fishing nets on Midway Atoll.", "U.S. Fish and Wildlife Service")),
             new(G, "That is what restoration means. Remember it as you enter colder water.", "npc1giving"),
             new(S, "I will carry the Tidal Key into the next sea.", "npc1giving"),
         });
@@ -156,7 +163,8 @@ public static class NarrativeData
         // --- Ending beat: hand over the tidal key, tease next sea ---
         d[Ending] = new DialogueTimeline(Ending, new List<DialogueLine>
         {
-            new(G, "The Tidal Key chose you. It will lead you to Frostbound Trench.", "npc1giving"),
+            new(G, "The Tidal Key chose you. It will lead you to Frostbound Trench.", "npc1giving",
+                Picture: new(AssetLoader.ChapterBackground(2, 0), "Next · Frostbound Trench")),
             new(G, "The pollution there is locked in ice. Water alone will not be enough.", "npc1giving"),
             new(S, "I will leave part of Tidepool Nursery's light here, so everyone can find home."),
             new(S, "I will carry the rest into the next sea."),
@@ -166,7 +174,12 @@ public static class NarrativeData
         {
             new(L, "Shimmer! The current has stopped. Eggs and sea grass are trapped under polluted ice.", "lantern"),
             new(S, "The cold is not the real threat. Runoff fed an algal bloom, and its decay used up the oxygen."),
-            new(L, "Wake the three Thaw Anchors along the ridge. Give the current a path.", "lantern"),
+            new(S, "It happens in real lakes and seas too. From space, a bloom looks like green paint poured into the water.", null,
+                Picture: DialoguePicture.Photo("ch2_algal_bloom.jpg",
+                    "An algal bloom spreading across Lake Erie, seen by satellite in September 2017.",
+                    "NOAA Great Lakes Environmental Research Laboratory")),
+            new(L, "Wake the three Thaw Anchors along the ridge. Give the current a path.", "lantern",
+                Picture: new(AssetLoader.MemoryIcon, "Thaw Anchor · three along the ridge")),
         });
         d[Chapter2Guardian] = new DialogueTimeline(Chapter2Guardian, new List<DialogueLine>
         {
@@ -176,14 +189,16 @@ public static class NarrativeData
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>
         {
             new(F, "The tide is moving again. I thought protection meant freezing everything in place.", "boss2"),
-            new(L, "Frostbound Trench is bright again. But the sea ahead has lost all power.", "lantern"),
+            new(L, "Frostbound Trench is bright again. But the sea ahead has lost all power.", "lantern",
+                Picture: new(AssetLoader.ChapterBackground(3, 0), "Next · The Silent Lighthouse")),
             new(S, "Then I will carry this light into the next circuit."),
         });
         d[Chapter3Opening] = new DialogueTimeline(Chapter3Opening, new List<DialogueLine>
         {
             new(Sh, "The ocean carried the heat here. The coral turned pale, and the old grid failed.", "shoal"),
             new(S, "Greenhouse gases trap extra heat. The ocean absorbs most of it."),
-            new(Sh, "Reconnect the three relays. Give the lighthouse clean, controlled power.", "shoal"),
+            new(Sh, "Reconnect the three relays. Give the lighthouse clean, controlled power.", "shoal",
+                Picture: new(AssetLoader.MemoryIcon, "Tide Relay · three to reconnect")),
         });
         d[Chapter3Guardian] = new DialogueTimeline(Chapter3Guardian, new List<DialogueLine>
         {
@@ -195,6 +210,10 @@ public static class NarrativeData
             new(C, "The furnace is cooling. Its warmth can help coral grow instead of burning the water.", "boss3"),
             new(Sh, "Look. Each light shines only where it is needed. The shoal can see itself again.", "shoal"),
             new(S, "Protecting the ocean is not one heroic act. It is choosing not to hide our costs underwater."),
+            new(S, "Out there, people wash oil from seabirds one feather at a time. It is slow, and many of those birds fly again.", null,
+                Picture: DialoguePicture.Photo("ch3_pelican_cleaned.jpg",
+                    "A brown pelican after being cleaned at an oiled-bird rehabilitation centre in Alabama, 2010.",
+                    "U.S. Fish and Wildlife Service")),
             new(S, "As long as people keep repairing what was harmed, one light can lead to another."),
         });
 
@@ -245,7 +264,8 @@ public static class NarrativeData
     public static readonly IReadOnlyList<LoreNote> LoreNotes = new List<LoreNote>
     {
         new("lore_barrel", "Fragment · Oil Barrel", new[] { "A faded factory label is still visible:", "Recycle safely after use. No one did." }, ZoneShallows),
-        new("lore_net", "Fragment · Abandoned Net", new[] { "A torn fishing net lies across the reef.", "Even without a fisher, lost gear can keep trapping animals for years." }, ZoneShallows),
+        new("lore_net", "Fragment · Abandoned Net", new[] { "A torn fishing net lies across the reef.", "Lost nets like this are called ghost nets. They keep catching animals for years, with no one aboard." }, ZoneShallows,
+            DialoguePicture.Photo("ch1_seal_net.jpg", "A Hawaiian monk seal caught in a derelict fishing net.", "NOAA Fisheries")),
         new("lore_bottle", "Fragment · Message Bottle", new[] { "Inside is a child's drawing:", "a blue ocean and a fish that gives off light." }, ZoneShallows),
         new("lore_pipe", "Fragment · Drain Pipe", new[] { "Runoff and wastewater still leak from the rusted pipe.", "The nursery became cloudy from pollution that began on land." }, ZoneSediment),
         new("lore_shell", "Fragment · Empty Shells", new[] { "Empty shells are stacked in the silt.", "Old Zheng calls them homes too heavy to move." }, ZoneSediment),

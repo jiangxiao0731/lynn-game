@@ -403,6 +403,46 @@ public static class UiTheme
         return pill;
     }
 
+    /// A small framed picture used beside HUD text (objective target, player, boss,
+    /// element). Same frame as the dialogue portrait, so pictures read as one family.
+    public static PanelContainer Thumbnail(float size, out TextureRect image)
+    {
+        var frame = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        // The painted frame needs ~56px to draw its corners; smaller icons go bare
+        // rather than get a squashed edge.
+        frame.AddThemeStyleboxOverride("panel",
+            size >= 56 ? GlassPanel(8, 0.28f, GapPair) : new StyleBoxEmpty());
+        frame.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
+        image = new TextureRect
+        {
+            CustomMinimumSize = new Vector2(size, size),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        frame.AddChild(image);
+        return frame;
+    }
+
+    /// The picture a world node is drawn with: its own sprite, else its first visible
+    /// sprite child. Lets the HUD show "who/what" without a lookup table per chapter.
+    public static Texture2D? PictureOf(Node? node)
+    {
+        static Texture2D? Own(Node n) => n switch
+        {
+            Sprite2D { Texture: not null, Visible: true } s => s.Texture,
+            AnimatedSprite2D { SpriteFrames: not null, Visible: true } a
+                when a.SpriteFrames.HasAnimation(a.Animation) && a.SpriteFrames.GetFrameCount(a.Animation) > 0
+                => a.SpriteFrames.GetFrameTexture(a.Animation, 0),
+            _ => null,
+        };
+        if (node == null || !GodotObject.IsInstanceValid(node)) return null;
+        if (Own(node) is { } own) return own;
+        foreach (var child in node.GetChildren())
+            if (Own(child) is { } found) return found;
+        return null;
+    }
+
     public static ColorRect Divider(float alpha = 0.18f)
     {
         var r = new ColorRect

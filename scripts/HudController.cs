@@ -14,6 +14,11 @@ public partial class HudController : CanvasLayer
     private readonly List<Panel> _stepPips = new();
     private const int StepCount = 6;   // FindNpc .. ExitLevel
     private Label _objectiveMeta = null!;
+    /// What the current step is about (who to find, what to collect), next to the text.
+    private PanelContainer _objectiveThumbFrame = null!;
+    private TextureRect _objectiveThumb = null!;
+    private TextureRect _playerThumb = null!;
+    private float _pictureTimer;
     private ProgressBar _objectiveProgress = null!;
     private Label _zoneLabel = null!;
     private PanelContainer _locationPanel = null!;
@@ -145,9 +150,15 @@ public partial class HudController : CanvasLayer
         objective.Position = new Vector2(UiTheme.SafeArea, UiTheme.SafeArea);
         AddChild(objective);
         var objectiveInset = Inset(objective, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
-        var objectiveBox = new VBoxContainer();
+        var objectiveRow = new HBoxContainer();
+        objectiveRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
+        objectiveInset.AddChild(objectiveRow);
+        _objectiveThumbFrame = UiTheme.Thumbnail(72, out _objectiveThumb);
+        _objectiveThumbFrame.Visible = false;
+        objectiveRow.AddChild(_objectiveThumbFrame);
+        var objectiveBox = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
         objectiveBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
-        objectiveInset.AddChild(objectiveBox);
+        objectiveRow.AddChild(objectiveBox);
         _objectiveStep = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "Step 1 of 6");
         objectiveBox.AddChild(_objectiveStep);
         _objectiveLabel = UiTheme.Role(UiTheme.TypeRole.Primary, "", wrap: true);
@@ -193,7 +204,9 @@ public partial class HudController : CanvasLayer
         healthBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         healthInset.AddChild(healthBox);
         var healthTop = new HBoxContainer();
+        healthTop.AddThemeConstantOverride("separation", UiTheme.GapPair);
         healthBox.AddChild(healthTop);
+        healthTop.AddChild(UiTheme.Thumbnail(32, out _playerThumb));
         var hpKicker = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "Shimmer");
         hpKicker.VerticalAlignment = VerticalAlignment.Center;
         healthTop.AddChild(hpKicker);
@@ -233,7 +246,11 @@ public partial class HudController : CanvasLayer
             var key = UiTheme.Role(UiTheme.TypeRole.Hint, skills[i].Item1);
             key.VerticalAlignment = VerticalAlignment.Center;
             slot.AddChild(key);
-
+            var formIcon = UiTheme.Thumbnail(32, out var formImage);
+            var frames = PlaceholderArt.FormFrames((ElementForm)(i + 1));
+            var anim = frames.GetAnimationNames();
+            if (anim.Length > 0 && frames.GetFrameCount(anim[0]) > 0) formImage.Texture = frames.GetFrameTexture(anim[0], 0);
+            slot.AddChild(formIcon);
             var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, skills[i].Item2);
             name.AddThemeColorOverride("font_color", skills[i].Item3);
             name.VerticalAlignment = VerticalAlignment.Center;
@@ -257,7 +274,12 @@ public partial class HudController : CanvasLayer
         bossBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         bossInset.AddChild(bossBox);
         var bossTop = new HBoxContainer();
+        bossTop.AddThemeConstantOverride("separation", UiTheme.GapPair);
         bossBox.AddChild(bossTop);
+        var bossThumb = UiTheme.Thumbnail(40, out var bossImage);
+        bossImage.Texture = AssetLoader.Texture(AssetLoader.ChapterBossPortrait(ChapterRuntime.CurrentChapter));
+        bossThumb.Visible = bossImage.Texture != null;
+        bossTop.AddChild(bossThumb);
         _bossNameLabel = UiTheme.Role(UiTheme.TypeRole.Name, ChapterRuntime.BossName);
         bossTop.AddChild(_bossNameLabel);
         _bossHpLabel = UiTheme.Role(UiTheme.TypeRole.Numeral, "");
@@ -300,6 +322,20 @@ public partial class HudController : CanvasLayer
         var pauseHint = UiTheme.Role(UiTheme.TypeRole.Hint, "Esc to resume");
         pauseHint.HorizontalAlignment = HorizontalAlignment.Center;
         pauseBox.AddChild(pauseHint);
+    }
+
+    /// Thumbnails follow the world rather than a per-chapter table: whatever the guide
+    /// arrow points at, and whatever form Shimmer is in. Polled a few times a second.
+    public override void _Process(double delta)
+    {
+        _pictureTimer -= (float)delta;
+        if (_pictureTimer > 0f) return;
+        _pictureTimer = 0.25f;
+        var guide = GetTree().CurrentScene?.FindChild("ObjectiveGuide", true, false) as ObjectiveGuide;
+        var target = guide?.TargetPicture();
+        _objectiveThumb.Texture = target;
+        _objectiveThumbFrame.Visible = target != null;
+        _playerThumb.Texture = UiTheme.PictureOf(GetTree().GetFirstNodeInGroup("player"));
     }
 
     private void OnPlayerHealthChanged(int current, int max)

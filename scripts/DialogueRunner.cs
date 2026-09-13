@@ -24,6 +24,22 @@ public partial class DialogueRunner : CanvasLayer
     private Label _textLabel = null!;
     private Label _hintLabel = null!;
     private VBoxContainer _choiceBox = null!;
+    /// A line's picture: who or what it is about, or a real photo of the harm.
+    private PanelContainer _pictureCard = null!;
+    private VBoxContainer _photoStack = null!;
+    private TextureRect _picture = null!;
+    private Label _pictureCaption = null!;
+    private Label _pictureCredit = null!;
+    private HBoxContainer _artRow = null!;
+    private TextureRect _artImage = null!;
+    private Label _artTitle = null!;
+    private Label _artSubtitle = null!;
+    /// Width a photo gets inside the card: the bubble minus its padding, the speaker
+    /// portrait column and the card's own padding.
+    private static float PictureWidth =>
+        BubbleSize.X - 2 * UiTheme.PadSurfaceX - 96 - UiTheme.GapBlock - 2 * UiTheme.GapBlock;
+    private const float PhotoMaxHeight = 340f;
+    private const float ArtSize = 120f;
     private Polygon2D _tail = null!;
     private Node2D? _speakerAnchor;
 
@@ -118,6 +134,8 @@ public partial class DialogueRunner : CanvasLayer
         _textLabel.VisibleCharactersBehavior = TextServer.VisibleCharactersBehavior.CharsAfterShaping;
         vbox.AddChild(_textLabel);
 
+        BuildPictureCard(vbox);
+
         _choiceBox = new VBoxContainer { Name = "Choices" };
         _choiceBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         vbox.AddChild(_choiceBox);
@@ -125,6 +143,77 @@ public partial class DialogueRunner : CanvasLayer
         _hintLabel = UiTheme.Role(UiTheme.TypeRole.Hint, "Space / Enter  ·  Continue");
         _hintLabel.HorizontalAlignment = HorizontalAlignment.Right;
         vbox.AddChild(_hintLabel);
+    }
+
+    /// Two layouts share one card. A real photo runs full width with its caption and
+    /// credit underneath; a picture of someone or something in the game sits beside
+    /// its name, like a character card ("Granny Lan · she waits in the Shallows").
+    private void BuildPictureCard(VBoxContainer column)
+    {
+        _pictureCard = new PanelContainer { Name = "Picture", Visible = false };
+        _pictureCard.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(8, 0.28f, UiTheme.GapBlock));
+        column.AddChild(_pictureCard);
+        var layers = new VBoxContainer();
+        _pictureCard.AddChild(layers);
+
+        _photoStack = new VBoxContainer();
+        _photoStack.AddThemeConstantOverride("separation", UiTheme.GapPair);
+        layers.AddChild(_photoStack);
+        _picture = new TextureRect
+        {
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+        };
+        _photoStack.AddChild(_picture);
+        _photoStack.AddChild(UiTheme.Role(UiTheme.TypeRole.Eyebrow, "Real photo"));
+        _pictureCaption = UiTheme.Role(UiTheme.TypeRole.Meta, "", wrap: true);
+        _photoStack.AddChild(_pictureCaption);
+        _pictureCredit = UiTheme.Role(UiTheme.TypeRole.Hint, "");
+        _photoStack.AddChild(_pictureCredit);
+
+        _artRow = new HBoxContainer();
+        _artRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
+        layers.AddChild(_artRow);
+        _artImage = new TextureRect
+        {
+            CustomMinimumSize = new Vector2(ArtSize, ArtSize),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+        };
+        _artRow.AddChild(_artImage);
+        var names = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        names.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        names.AddThemeConstantOverride("separation", UiTheme.GapPair);
+        _artRow.AddChild(names);
+        _artTitle = UiTheme.Role(UiTheme.TypeRole.Name, "");
+        names.AddChild(_artTitle);
+        _artSubtitle = UiTheme.Role(UiTheme.TypeRole.Meta, "", wrap: true);
+        names.AddChild(_artSubtitle);
+    }
+
+    private void SetPicture(DialoguePicture? picture)
+    {
+        var texture = picture != null ? AssetLoader.Texture(picture.Path) : null;
+        _pictureCard.Visible = texture != null;
+        if (texture == null || picture == null) return;
+
+        _photoStack.Visible = picture.IsPhoto;
+        _artRow.Visible = !picture.IsPhoto;
+        if (picture.IsPhoto)
+        {
+            _picture.Texture = texture;
+            // Fill the column's width; only very tall photos are held back.
+            float aspect = texture.GetWidth() / (float)Mathf.Max(1, texture.GetHeight());
+            _picture.CustomMinimumSize = new Vector2(0, Mathf.Min(PhotoMaxHeight, PictureWidth / aspect));
+            _pictureCaption.Text = picture.Caption;
+            _pictureCredit.Text = $"{picture.Credit} · public domain".ToUpperInvariant();
+            return;
+        }
+        _artImage.Texture = texture;
+        var parts = picture.Caption.Split(" · ", 2);
+        _artTitle.Text = parts[0];
+        _artSubtitle.Text = parts.Length > 1 ? parts[1] : "";
+        _artSubtitle.Visible = parts.Length > 1;
     }
 
     /// Begin a registered timeline by id; onComplete fires once after the last line.
@@ -147,10 +236,13 @@ public partial class DialogueRunner : CanvasLayer
     }
 
     /// Show an ad-hoc vignette (memory / lore note) as a titled, speaker-less timeline.
-    public void ShowVignette(string title, IReadOnlyList<string> lines, string speaker, Action? onComplete = null)
+    /// `picture`, if any, is shown on the last line.
+    public void ShowVignette(string title, IReadOnlyList<string> lines, string speaker,
+        Action? onComplete = null, DialoguePicture? picture = null)
     {
         var built = new List<DialogueLine>();
-        foreach (var ln in lines) built.Add(new DialogueLine(speaker, ln));
+        for (int i = 0; i < lines.Count; i++)
+            built.Add(new DialogueLine(speaker, lines[i], Picture: i == lines.Count - 1 ? picture : null));
         _timeline = new DialogueTimeline("__vignette__", built);
         _onComplete = onComplete;
         _lineIndex = -1;
@@ -205,6 +297,7 @@ public partial class DialogueRunner : CanvasLayer
         // Lines rarely carry an explicit PortraitId, so fall back to mapping the
         // speaker name → portrait asset id (npc_{id}.png) for a meaningful frame.
         SetPortrait(line.PortraitId ?? PortraitForSpeaker(line.Speaker));
+        SetPicture(line.Picture);
         StartTypewriter(line.Text);
         AnimateBubbleEntry();
         Events.Instance?.EmitSignal(Events.SignalName.DialogueLineStarted, line.Speaker, line.Text);

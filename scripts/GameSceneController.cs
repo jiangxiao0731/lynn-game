@@ -733,7 +733,7 @@ public partial class GameSceneController : Node2D
                 Events.Instance?.EmitSignal(Events.SignalName.LoreNoteFound, it.Note.Id);
                 Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                     string.Format(GameStrings.Tr("NOTE_FOUND_TEMPLATE"), it.Note.Title));
-                _dialogue.ShowVignette(it.Note.Title, it.Note.Lines, "Fragment");
+                _dialogue.ShowVignette(it.Note.Title, it.Note.Lines, "Fragment", picture: it.Note.Picture);
                 return;
             }
 

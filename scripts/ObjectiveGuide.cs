@@ -46,6 +46,9 @@ public partial class ObjectiveGuide : Node2D
     private Label _edgeDistance = null!;
     private float _time;
 
+    /// What the current target looks like, for the objective panel's thumbnail.
+    public Texture2D? TargetPicture() => UiTheme.PictureOf(Target());
+
     public static ObjectiveGuide Attach(Node parent, Func<Node2D?> target, Func<bool>? suppressed = null)
     {
         var guide = new ObjectiveGuide { Name = "ObjectiveGuide", Target = target };
