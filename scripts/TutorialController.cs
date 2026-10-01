@@ -22,12 +22,12 @@ public partial class TutorialController : Control
 
     private static readonly (string Title, string Body)[] Pages =
     {
-        ("Chapter 1 The Starting Tide Pool",
-         "The ocean carries memories through its currents.\n\nPollution settles into the deep sea, altering the creatures that dwell there. They are not enemies; once the flow of water is restored, they can be reborn."),
-        ("Controls",
-         "Move\nInteract E\nElements 1 Water  2 Ice  3 Electricity\n\nR Base Form T Restart Chapter Esc Pause"),
-        ("Water Element",
-         "Guide the water flow through the polluted gaps to awaken the light trapped within.\n\nFirst, find Granny Lan. Listen to the residents, collect Water Shards, and restore life to the deep sea."),
+        ("Hi, I'm Shimmer",
+         "I was born in this tide pool.\n\nIt used to glow at night. Now the water feels heavy, and a lot of my neighbors are hiding.\n\nI'm small, but I still have my light. So... I'm going to try."),
+        ("How I Move",
+         "Use the arrow keys or WASD to swim.\n\nPress E when I get close to someone or something. That's how I talk, check things, and listen.\n\nIf I learn an element, press 1, 2, or 3 to use it. Press R if I need to go back to just being me."),
+        ("First, Granny Lan",
+         "Granny Lan knows this bay better than anyone.\n\nIf I can find her, she can help me understand what happened here.\n\nThen I can collect the glowing pieces, bring water back through the gaps, and help this place breathe again."),
     };
 
     public override void _Ready()
