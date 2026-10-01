@@ -244,8 +244,6 @@ public partial class Player : CharacterBody2D
         PlayDamageImpact();
         Events.Instance?.EmitSignal(Events.SignalName.PlayerDamaged, amount);
         Events.Instance?.EmitSignal(Events.SignalName.PlayerHealthChanged, CurrentHealth, MaxHealthValue);
-        Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-            string.Format(GameStrings.Tr("DAMAGE_RECEIVED_TEMPLATE"), amount));
         AudioManager.Instance?.PlaySfx("player_hit");
         if (CurrentHealth == 0)
             SoftRespawn();

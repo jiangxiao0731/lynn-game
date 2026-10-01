@@ -363,13 +363,14 @@ public partial class ChapterLevelController : Node2D
         UpdateZone();
         UpdatePrompts();
         UpdateFragments();
-        if (_stage == ObjectiveStage.DefeatBoss && !_guardianBeatPlayed && _player.GlobalPosition.DistanceTo(_boss.GlobalPosition) < 520f)
+        if (_stage == ObjectiveStage.DefeatBoss && !_guardianBeatPlayed &&
+            _player.GlobalPosition.DistanceTo(_boss.GlobalPosition) <= _boss.EffectiveWarningRange)
         {
             _guardianBeatPlayed = true;
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 ChapterId == 2
-                    ? "The Chemical Waste Monster is close. Keep distance; press 2 only after it hits."
-                    : "The Oil Monster is close. Keep distance; press 3 only after it hits.");
+                    ? "The Chemical Waste Monster has noticed Shimmer. Keep moving—counter after it strikes."
+                    : "The Oil Monster has noticed Shimmer. Keep moving—counter after it strikes.");
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
             CompleteChapter();
@@ -614,6 +615,7 @@ public partial class ChapterLevelController : Node2D
         {
             ClearRemainingFragments();
             _boss.CombatEnabled = true;
+            _boss.AggressionEnabled = true;
             Advance(ObjectiveStage.DefeatBoss);
             Events.Instance?.EmitSignal(Events.SignalName.BossHealthChanged, _boss.CurrentHealth, _boss.MaxHealthValue);
         }
@@ -646,11 +648,10 @@ public partial class ChapterLevelController : Node2D
 
         gate.CreateTween().TweenProperty(gate, "modulate:a", 0f, 0.65f)
             .Finished += gate.QueueFree;
-        _boss.AggressionEnabled = true;
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
             ChapterId == 2
-                ? "The three Flow Switches have opened the nursery gate."
-                : "The three Power Relays have opened the lighthouse gate.");
+                ? "The three Flow Switches opened the nursery gate. Clean the remaining chemical waste before facing the monster."
+                : "The three Power Relays opened the lighthouse gate. Clean the remaining oil before facing the monster.");
     }
 
     private void OnGuardianHealthChanged(int current, int max)
@@ -782,7 +783,7 @@ public partial class ChapterLevelController : Node2D
             "Progress restored. This chapter's restoration route begins at the entrance." );
     }
 
-    private void RunSmokeComplete()
+    private async void RunSmokeComplete()
     {
         Advance(ObjectiveStage.TalkStarfish);
         RestoreNode(0); RestoreNode(1); RestoreNode(2);
@@ -797,6 +798,10 @@ public partial class ChapterLevelController : Node2D
         for (int i = 0; i < RequiredFragments && i < copy.Length; i++) CollectFragment(copy[i]);
         _guardianBeatPlayed = true;
         _boss.ApplyDamage(_boss.MaxHealthValue);
+        // The visible defeat animation owns the timing of the chapter key spawn.
+        // Wait for it instead of checking on the same frame and reporting a false
+        // failure while the guardian is still fading out.
+        await ToSignal(GetTree().CreateTimer(0.9f), SceneTreeTimer.SignalName.Timeout);
         if (ChapterId == 2)
         {
             if (_boss.NextElementDrop == null)
@@ -818,6 +823,7 @@ public partial class ChapterLevelController : Node2D
         Advance(ObjectiveStage.ExitLevel);
         CompleteChapter();
         GD.Print($"CHAPTER_SMOKE_OK level={ChapterId} stage={_stage} fragments={_fragments} nodes={_restoredNodes}");
+        GetTree().Quit(0);
     }
 
     private void PreviewGuardian()
@@ -827,6 +833,7 @@ public partial class ChapterLevelController : Node2D
         for (int i = 0; i < 3; i++) SetZoneRestored(i);
         OpenArenaGate();
         _boss.CombatEnabled = true;
+        _boss.AggressionEnabled = true;
         _player.GlobalPosition = _boss.GlobalPosition + new Vector2(-300f, 0f);
         for (int i = 0; i < 5; i++) _skills.AddCharge(RequiredForm);
         _player.SetForm(RequiredForm);

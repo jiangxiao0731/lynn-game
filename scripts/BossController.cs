@@ -44,8 +44,14 @@ public partial class BossController : CharacterBody2D
     private Vector2 _dropRestPosition;
     private bool _dialogueActive;
     private Vector2 _spriteBaseScale = Vector2.One;
-    public float EffectiveAttackRange => Mathf.Max(AutoAttackRange, DisplaySize * 1.12f);
-    public float EffectiveWarningRange => EffectiveAttackRange + Mathf.Max(180f, DisplaySize * 0.32f);
+    // Distances are measured from the centre of the large painted guardian, not from
+    // its visible edge. Scale the ranges with the artwork so chapter-two's 580 px
+    // monster starts acting while Shimmer is still clearly outside its body.
+    public float EffectiveAttackRange => Mathf.Max(AutoAttackRange, DisplaySize * 1.45f);
+    // A counter is intentionally more forgiving than the monster's own reach. If the
+    // guardian can hit Shimmer, the chapter key must always be able to hit back.
+    public float EffectiveCounterRange => EffectiveAttackRange + Mathf.Max(240f, DisplaySize * 0.45f);
+    public float EffectiveWarningRange => EffectiveCounterRange + 140f;
 
     public override void _Ready()
     {
@@ -111,10 +117,10 @@ public partial class BossController : CharacterBody2D
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "Danger ahead. Keep distance; press 2 if it hits you."
+                ? "The Chemical Waste Monster noticed Shimmer. Keep moving and stay outside its body."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "Danger ahead. Keep distance; press 3 if it hits you."
-                    : "Danger ahead. Keep distance; press 1 if it hits you.";
+                    ? "The Oil Monster noticed Shimmer. Keep moving and stay outside its body."
+                    : "The Plastic Monster noticed Shimmer. Keep moving and stay outside its body.";
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint, hint);
         }
 
@@ -150,9 +156,9 @@ public partial class BossController : CharacterBody2D
 
     private string AttackInstruction() => EffectiveElement switch
     {
-        ElementForm.Ice => "HIT! Back up, then press 2 to seal it with cleanup power.",
-        ElementForm.Electric => "HIT! Back up, then press 3 to pull it apart.",
-        _ => "HIT! Back up, then press 1 to wash the plastic apart.",
+        ElementForm.Ice => $"-{AttackDamage} SHIMMER · Back up and seal it with cleanup power.",
+        ElementForm.Electric => $"-{AttackDamage} SHIMMER · Back up and pull it apart with cleanup power.",
+        _ => $"-{AttackDamage} SHIMMER · Back up and wash the plastic apart.",
     };
 
     private void AnimateAttack()

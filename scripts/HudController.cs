@@ -46,6 +46,7 @@ public partial class HudController : CanvasLayer
     private int _combatRevision;
     private int _shardCollected;
     private int _shardRequired = GameConstants.ShardThresholdForBoss;
+    private ObjectiveStage _currentObjective = ObjectiveStage.FindNpc;
 
     private SettlementPanel? _settlement;
     private FailurePanel? _failure;
@@ -84,6 +85,10 @@ public partial class HudController : CanvasLayer
         OnObjectiveAdvanced((int)ObjectiveStage.FindNpc);
         OnPlayerHealthChanged(GameConstants.MaxHealth, GameConstants.MaxHealth);
         OnStatusHint(GameStrings.Tr("STATUS_DEFAULT_HINT"));
+        // Boss nodes are earlier than the HUD in the scene tree and can broadcast
+        // their initial HP before this HUD subscribes. Read the authoritative value
+        // once the scene is ready so the chapter-two bar is never blank.
+        CallDeferred(nameof(SyncBossHealth));
     }
 
     /// A HUD surface that grows to fit its text. These used to be fixed-size Panels,
@@ -312,28 +317,28 @@ public partial class HudController : CanvasLayer
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         statusBox.AddChild(_statusLabel);
 
-        // Combat prompt is deliberately NOT the normal toast. It uses the warning
-        // colour, a key badge and urgent wording so players know this is an action.
-        _combatPanel = Track(Surface("CombatPrompt", new Vector2(500, 0), 0.86f));
-        Pin(_combatPanel, Control.LayoutPreset.CenterBottom);
-        _combatPanel.Position = new Vector2(-250, -334);
+        // A compact bottom-right counter card stays clear of the objective, boss HP,
+        // player HP, status toast and the centre-bottom cleanup-power dock.
+        _combatPanel = Track(Surface("CombatPrompt", new Vector2(390, 0), 0.78f));
+        Pin(_combatPanel, Control.LayoutPreset.BottomRight);
+        _combatPanel.Position = new Vector2(-(390f + UiTheme.SafeArea), -126f);
         _combatPanel.Visible = false;
         AddChild(_combatPanel);
         _combatPanel.AddThemeStyleboxOverride("panel", CombatPanelStyle());
-        var combatInset = Inset(_combatPanel, 18, 12);
+        var combatInset = Inset(_combatPanel, 14, 10);
         var combatRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         combatRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         combatInset.AddChild(combatRow);
         var combatText = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
         combatText.AddThemeConstantOverride("separation", 4);
         combatRow.AddChild(combatText);
-        var combatKicker = UiTheme.Role(UiTheme.TypeRole.Hint, "HIT");
-        combatKicker.AddThemeColorOverride("font_color", new Color(Palette.WarningAmber, 0.82f));
+        var combatKicker = UiTheme.Role(UiTheme.TypeRole.Hint, "COUNTER NOW");
+        combatKicker.AddThemeColorOverride("font_color", UiTheme.Accent);
         combatText.AddChild(combatKicker);
         _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Body, "", wrap: true);
         _combatTextLabel.AddThemeColorOverride("font_color", UiTheme.Ink);
         combatText.AddChild(_combatTextLabel);
-        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(54, 48) };
+        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(46, 42) };
         keyFrame.AddThemeStyleboxOverride("panel", CombatKeyStyle());
         combatRow.AddChild(keyFrame);
         _combatKeyLabel = UiTheme.Role(UiTheme.TypeRole.Name, "1");
@@ -402,6 +407,7 @@ public partial class HudController : CanvasLayer
     private void OnObjectiveAdvanced(int stage)
     {
         var current = (ObjectiveStage)stage;
+        _currentObjective = current;
         _objectiveLabel.Text = GameStrings.ObjectiveLabel(current);
         int step = Mathf.Clamp(stage, 0, StepCount);
         _objectiveStep.Text = current == ObjectiveStage.Complete
@@ -420,7 +426,10 @@ public partial class HudController : CanvasLayer
         bool restorationChapter = ChapterRuntime.CurrentChapter >= 2;
         _skillDock.Visible = current >= ObjectiveStage.CollectShards ||
                              (restorationChapter && current >= ObjectiveStage.TalkStarfish);
-        _bossPanel.Visible = current == ObjectiveStage.DefeatBoss;
+        if (current == ObjectiveStage.DefeatBoss)
+            SyncBossHealth();
+        else
+            _bossPanel.Visible = false;
 
         _objectiveLabel.Modulate = new Color(1.08f, 1.08f, 1.08f, 1f);
         var tween = CreateTween();
@@ -465,10 +474,21 @@ public partial class HudController : CanvasLayer
 
     private void OnBossHealthChanged(int current, int max)
     {
-        _bossPanel.Visible = current > 0;
+        _bossPanel.Visible = _currentObjective == ObjectiveStage.DefeatBoss && current > 0;
         _bossHpLabel.Text = $"{current} / {max}";
         _bossBar.MaxValue = max;
         _bossBar.Value = current;
+    }
+
+    private void SyncBossHealth()
+    {
+        var boss = GetTree().GetFirstNodeInGroup("monster") as BossController;
+        if (boss == null || !IsInstanceValid(boss)) return;
+        _bossNameLabel.Text = boss.MonsterName;
+        _bossHpLabel.Text = $"{boss.CurrentHealth} / {boss.MaxHealthValue}";
+        _bossBar.MaxValue = boss.MaxHealthValue;
+        _bossBar.Value = boss.CurrentHealth;
+        _bossPanel.Visible = _currentObjective == ObjectiveStage.DefeatBoss && !boss.IsDefeated;
     }
 
     private void OnZoneEntered(string zoneName)
@@ -490,28 +510,28 @@ public partial class HudController : CanvasLayer
 
     private static StyleBoxFlat CombatPanelStyle() => new()
     {
-        BgColor = new Color(UiTheme.GlassBgDeep, 0.88f),
-        BorderColor = new Color(Palette.WarningAmber, 0.50f),
-        BorderWidthLeft = 2,
-        BorderWidthTop = 2,
-        BorderWidthRight = 2,
-        BorderWidthBottom = 2,
+        BgColor = new Color(UiTheme.GlassBgDeep, 0.78f),
+        BorderColor = new Color(UiTheme.Accent, 0.44f),
+        BorderWidthLeft = 1,
+        BorderWidthTop = 1,
+        BorderWidthRight = 1,
+        BorderWidthBottom = 1,
         CornerRadiusTopLeft = 14,
         CornerRadiusTopRight = 14,
         CornerRadiusBottomLeft = 14,
         CornerRadiusBottomRight = 14,
-        ShadowColor = new Color(0f, 0f, 0f, 0.22f),
-        ShadowSize = 6,
+        ShadowColor = new Color(0f, 0f, 0f, 0.16f),
+        ShadowSize = 4,
     };
 
     private static StyleBoxFlat CombatKeyStyle() => new()
     {
-        BgColor = new Color(Palette.WarningAmber, 0.82f),
-        BorderColor = new Color(Colors.White, 0.72f),
-        BorderWidthLeft = 2,
-        BorderWidthTop = 2,
-        BorderWidthRight = 2,
-        BorderWidthBottom = 2,
+        BgColor = new Color(UiTheme.Accent, 0.20f),
+        BorderColor = new Color(UiTheme.Accent, 0.78f),
+        BorderWidthLeft = 1,
+        BorderWidthTop = 1,
+        BorderWidthRight = 1,
+        BorderWidthBottom = 1,
         CornerRadiusTopLeft = 12,
         CornerRadiusTopRight = 12,
         CornerRadiusBottomLeft = 12,
@@ -552,13 +572,11 @@ public partial class HudController : CanvasLayer
         _combatKeyLabel.Text = key;
         _combatTextLabel.Text = text;
         _combatPanel.Visible = true;
-        _combatPanel.Modulate = Colors.White;
-        _combatPanel.Scale = new Vector2(0.96f, 0.96f);
-        var enter = CreateTween().SetParallel();
-        enter.TweenProperty(_combatPanel, "scale", Vector2.One, 0.14f)
-            .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-        enter.TweenProperty(_combatPanel, "modulate", new Color(1.12f, 1.12f, 1.12f, 1f), 0.08f);
-        await ToSignal(GetTree().CreateTimer(2.2), SceneTreeTimer.SignalName.Timeout);
+        _combatPanel.Modulate = new Color(1f, 1f, 1f, 0f);
+        var enter = CreateTween();
+        enter.TweenProperty(_combatPanel, "modulate:a", 1f, 0.14f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        await ToSignal(GetTree().CreateTimer(2.4), SceneTreeTimer.SignalName.Timeout);
         if (revision != _combatRevision || !IsInstanceValid(_combatPanel)) return;
         var tween = CreateTween();
         tween.TweenProperty(_combatPanel, "modulate:a", 0f, 0.25f)

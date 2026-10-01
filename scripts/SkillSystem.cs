@@ -88,7 +88,9 @@ public partial class SkillSystem : Node
         LaunchProjectileAndDamage(target, damage, form);
     }
 
-    /// Nearest monster within search radius whose profile has been viewed.
+    /// Nearest active monster within its forgiving counter radius. Targeting must not
+    /// depend on a separate codex/profile flag: that made the number key fail even
+    /// while a large guardian was visibly attacking the player.
     private BossController? FindTarget()
     {
         if (_player == null) return null;
@@ -96,9 +98,9 @@ public partial class SkillSystem : Node
         float bestDist = float.MaxValue;
         foreach (var node in GetTree().GetNodesInGroup("monster"))
         {
-            if (node is not BossController boss || !boss.CombatEnabled || boss.IsDefeated || !boss.ProfileViewed) continue;
+            if (node is not BossController boss || !boss.CombatEnabled || boss.IsDefeated) continue;
             float d = boss.GlobalPosition.DistanceTo(_player.GlobalPosition);
-            float allowed = Mathf.Max(TargetSearchRadius, boss.EffectiveWarningRange);
+            float allowed = Mathf.Max(TargetSearchRadius, boss.EffectiveCounterRange);
             if (d <= allowed && d <= bestDist)
             {
                 bestDist = d;
