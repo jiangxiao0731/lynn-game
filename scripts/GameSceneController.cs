@@ -880,18 +880,18 @@ public partial class GameSceneController : Node2D
         if (!_bossPrePlayed && current == max)
         {
             _bossPrePlayed = true;
-            Events.Instance?.EmitSignal(Events.SignalName.CombatHint, GameStrings.Tr("BOSS_PURIFY_HINT"));
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint, GameStrings.Tr("BOSS_PURIFY_HINT"));
         }
         else if (current < max && current > 0)
         {
             _bossPrePlayed = true;
-            Events.Instance?.EmitSignal(Events.SignalName.CombatHint,
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 "Back up, then press 1 when the Plastic Monster is in range.");
         }
         if (!_bossMidPlayed && current > 0 && current <= max / 2)
         {
             _bossMidPlayed = true;
-            Events.Instance?.EmitSignal(Events.SignalName.CombatHint,
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 "The pile is loosening. Back up, then press 1 again.");
         }
     }

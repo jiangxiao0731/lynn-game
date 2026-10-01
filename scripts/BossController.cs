@@ -111,11 +111,11 @@ public partial class BossController : CharacterBody2D
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "The Chemical Waste Monster is attacking. Back up, then press 2 with your cleanup power."
+                ? "Danger ahead. Keep distance; press 2 if it hits you."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "The Oil Monster is attacking. Back up, then press 3 with your cleanup power."
-                    : "The Plastic Monster is attacking. Back up, then press 1 with your cleanup power.";
-            Events.Instance?.EmitSignal(Events.SignalName.CombatHint, hint);
+                    ? "Danger ahead. Keep distance; press 3 if it hits you."
+                    : "Danger ahead. Keep distance; press 1 if it hits you.";
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint, hint);
         }
 
         _attackCooldown -= (float)delta;

@@ -366,10 +366,10 @@ public partial class ChapterLevelController : Node2D
         if (_stage == ObjectiveStage.DefeatBoss && !_guardianBeatPlayed && _player.GlobalPosition.DistanceTo(_boss.GlobalPosition) < 520f)
         {
             _guardianBeatPlayed = true;
-            Events.Instance?.EmitSignal(Events.SignalName.CombatHint,
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 ChapterId == 2
-                    ? "The Chemical Waste Monster is attacking. Back up, then press 2 with your cleanup power."
-                    : "The Oil Monster is attacking. Back up, then press 3 with your cleanup power.");
+                    ? "The Chemical Waste Monster is close. Keep distance; press 2 only after it hits."
+                    : "The Oil Monster is close. Keep distance; press 3 only after it hits.");
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
             CompleteChapter();

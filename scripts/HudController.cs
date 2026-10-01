@@ -314,29 +314,29 @@ public partial class HudController : CanvasLayer
 
         // Combat prompt is deliberately NOT the normal toast. It uses the warning
         // colour, a key badge and urgent wording so players know this is an action.
-        _combatPanel = Track(Surface("CombatPrompt", new Vector2(660, 0), 0.94f));
+        _combatPanel = Track(Surface("CombatPrompt", new Vector2(500, 0), 0.86f));
         Pin(_combatPanel, Control.LayoutPreset.CenterBottom);
-        _combatPanel.Position = new Vector2(-330, -382);
+        _combatPanel.Position = new Vector2(-250, -334);
         _combatPanel.Visible = false;
         AddChild(_combatPanel);
         _combatPanel.AddThemeStyleboxOverride("panel", CombatPanelStyle());
-        var combatInset = Inset(_combatPanel, 24, 18);
+        var combatInset = Inset(_combatPanel, 18, 12);
         var combatRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         combatRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         combatInset.AddChild(combatRow);
         var combatText = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
         combatText.AddThemeConstantOverride("separation", 4);
         combatRow.AddChild(combatText);
-        var combatKicker = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "COMBAT");
-        combatKicker.AddThemeColorOverride("font_color", Palette.WarningAmber);
+        var combatKicker = UiTheme.Role(UiTheme.TypeRole.Hint, "HIT");
+        combatKicker.AddThemeColorOverride("font_color", new Color(Palette.WarningAmber, 0.82f));
         combatText.AddChild(combatKicker);
-        _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Primary, "", wrap: true);
-        _combatTextLabel.AddThemeColorOverride("font_color", Colors.White);
+        _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Body, "", wrap: true);
+        _combatTextLabel.AddThemeColorOverride("font_color", UiTheme.Ink);
         combatText.AddChild(_combatTextLabel);
-        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(78, 66) };
+        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(54, 48) };
         keyFrame.AddThemeStyleboxOverride("panel", CombatKeyStyle());
         combatRow.AddChild(keyFrame);
-        _combatKeyLabel = UiTheme.Role(UiTheme.TypeRole.Heading, "1");
+        _combatKeyLabel = UiTheme.Role(UiTheme.TypeRole.Name, "1");
         _combatKeyLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _combatKeyLabel.VerticalAlignment = VerticalAlignment.Center;
         keyFrame.AddChild(_combatKeyLabel);
@@ -490,24 +490,24 @@ public partial class HudController : CanvasLayer
 
     private static StyleBoxFlat CombatPanelStyle() => new()
     {
-        BgColor = new Color(0.24f, 0.035f, 0.035f, 0.94f),
-        BorderColor = new Color(Palette.WarningAmber, 0.86f),
-        BorderWidthLeft = 3,
-        BorderWidthTop = 3,
-        BorderWidthRight = 3,
-        BorderWidthBottom = 3,
+        BgColor = new Color(UiTheme.GlassBgDeep, 0.88f),
+        BorderColor = new Color(Palette.WarningAmber, 0.50f),
+        BorderWidthLeft = 2,
+        BorderWidthTop = 2,
+        BorderWidthRight = 2,
+        BorderWidthBottom = 2,
         CornerRadiusTopLeft = 14,
         CornerRadiusTopRight = 14,
         CornerRadiusBottomLeft = 14,
         CornerRadiusBottomRight = 14,
-        ShadowColor = new Color(0f, 0f, 0f, 0.35f),
-        ShadowSize = 12,
+        ShadowColor = new Color(0f, 0f, 0f, 0.22f),
+        ShadowSize = 6,
     };
 
     private static StyleBoxFlat CombatKeyStyle() => new()
     {
-        BgColor = Palette.WarningAmber,
-        BorderColor = Colors.White,
+        BgColor = new Color(Palette.WarningAmber, 0.82f),
+        BorderColor = new Color(Colors.White, 0.72f),
         BorderWidthLeft = 2,
         BorderWidthTop = 2,
         BorderWidthRight = 2,
@@ -558,7 +558,7 @@ public partial class HudController : CanvasLayer
         enter.TweenProperty(_combatPanel, "scale", Vector2.One, 0.14f)
             .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         enter.TweenProperty(_combatPanel, "modulate", new Color(1.12f, 1.12f, 1.12f, 1f), 0.08f);
-        await ToSignal(GetTree().CreateTimer(3.2), SceneTreeTimer.SignalName.Timeout);
+        await ToSignal(GetTree().CreateTimer(2.2), SceneTreeTimer.SignalName.Timeout);
         if (revision != _combatRevision || !IsInstanceValid(_combatPanel)) return;
         var tween = CreateTween();
         tween.TweenProperty(_combatPanel, "modulate:a", 0f, 0.25f)
