@@ -274,7 +274,7 @@ public partial class ChapterLevelController : Node2D
     {
         Vector2[] positions = ChapterId == 2
             ? new[] { SX(new Vector2(900, 220)), SX(new Vector2(1680, 880)), SX(new Vector2(2420, 230)) }
-            : new[] { SX(new Vector2(980, 850)), SX(new Vector2(1850, 250)), SX(new Vector2(2820, 690)) };
+            : new[] { SX(new Vector2(980, 850)), SX(new Vector2(1850, 250)), SX(new Vector2(2820, 820)) };
         for (int i = 0; i < positions.Length; i++)
         {
             var node = new Node2D { Name = ChapterId == 2 ? $"FlowSwitch{i + 1}" : $"PowerRelay{i + 1}", Position = positions[i] };
