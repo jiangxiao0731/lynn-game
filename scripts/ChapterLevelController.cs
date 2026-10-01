@@ -186,6 +186,8 @@ public partial class ChapterLevelController : Node2D
             _veils.Add(veil);
 
         }
+        MapSeamBlender.Add(map, ChapterMap.PanelStart(ChapterId, 1), MapHeight, -94, Palette.ArenaTint(ChapterId), ChapterId * 100 + 1);
+        MapSeamBlender.Add(map, ChapterMap.PanelStart(ChapterId, 2), MapHeight, -94, Palette.ArenaTint(ChapterId), ChapterId * 100 + 2);
     }
 
     private void BuildBoundsAndMaze(Node2D map)

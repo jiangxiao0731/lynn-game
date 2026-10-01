@@ -28,6 +28,24 @@ public static class PlaceholderArt
         };
     }
 
+    /// Horizontal transparent→colour→transparent wash, useful for hiding map-panel
+    /// joins without drawing a hard vertical bar.
+    public static GradientTexture2D HorizontalBand(Color edge, Color center)
+    {
+        var gradient = new Gradient
+        {
+            InterpolationMode = Gradient.InterpolationModeEnum.Cubic,
+            Offsets = new[] { 0f, 0.5f, 1f },
+            Colors = new[] { edge, center, edge },
+        };
+        return new GradientTexture2D
+        {
+            Gradient = gradient, Width = 384, Height = 1,
+            Fill = GradientTexture2D.FillEnum.Linear,
+            FillFrom = new Vector2(0f, 0f), FillTo = new Vector2(1f, 0f),
+        };
+    }
+
     /// Soft radial glow: `color` at the centre fading smoothly to clear at the edge.
     public static GradientTexture2D SoftGlow(Color color, int size = 128)
     {

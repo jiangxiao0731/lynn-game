@@ -399,6 +399,8 @@ public partial class GameSceneController : Node2D
         AddZoneArt(map, 0, 0f, ZoneSedimentX, NarrativeData.ZoneShallows);
         AddZoneArt(map, 1, ZoneSedimentX, ZoneDepthsX, NarrativeData.ZoneSediment);
         AddZoneArt(map, 2, ZoneDepthsX, MapWidth, NarrativeData.ZoneDepths);
+        MapSeamBlender.Add(map, ZoneSedimentX, MapHeight, BackgroundZ + 5, Palette.ArenaTint(1), 101);
+        MapSeamBlender.Add(map, ZoneDepthsX, MapHeight, BackgroundZ + 5, Palette.ArenaTint(1), 102);
     }
 
     private void AddZoneArt(Node2D map, int zone, float x0, float x1, string zoneName)
