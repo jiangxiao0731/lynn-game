@@ -45,6 +45,7 @@ public partial class HudController : CanvasLayer
     private PanelContainer _pausePanel = null!;
     private int _statusRevision;
     private int _combatRevision;
+    private int _lastPlayerHealth = GameConstants.MaxHealth;
     private int _shardCollected;
     private int _shardRequired = GameConstants.ShardThresholdForBoss;
     private ObjectiveStage _currentObjective = ObjectiveStage.FindNpc;
@@ -73,6 +74,7 @@ public partial class HudController : CanvasLayer
             bus.ShardProgressChanged += OnShardProgressChanged;
             bus.ObjectiveAdvanced += OnObjectiveAdvanced;
             bus.BossHealthChanged += OnBossHealthChanged;
+            bus.BossAttacked += OnBossAttacked;
             bus.StatusHint += OnStatusHint;
             bus.CombatHint += OnCombatHint;
             bus.ZoneEntered += OnZoneEntered;
@@ -317,8 +319,8 @@ public partial class HudController : CanvasLayer
         // the lower-right play area after a hit, but leaves the movement button and
         // cleanup dock readable.
         _combatPanel = Track(Surface("CombatPrompt", new Vector2(430, 0), 0.78f));
-        Pin(_combatPanel, Control.LayoutPreset.BottomRight);
-        _combatRestPosition = new Vector2(-560f, -178f);
+        Pin(_combatPanel, Control.LayoutPreset.TopLeft);
+        _combatRestPosition = new Vector2(1180f, 790f);
         _combatPanel.Position = _combatRestPosition;
         _combatPanel.Visible = false;
         AddChild(_combatPanel);
@@ -374,9 +376,14 @@ public partial class HudController : CanvasLayer
 
     private void OnPlayerHealthChanged(int current, int max)
     {
+        bool tookBossDamage = current < _lastPlayerHealth &&
+                              current < max;
         _hpLabel.Text = $"{current} / {max}";
         _hpBar.MaxValue = max;
         _hpBar.Value = current;
+        _lastPlayerHealth = current;
+        if (tookBossDamage)
+            OnCombatHint("");
     }
 
     private void OnChargesChanged(int water, int ice, int electric)
@@ -486,6 +493,8 @@ public partial class HudController : CanvasLayer
         _bossBar.Value = boss.CurrentHealth;
         _bossPanel.Visible = _currentObjective == ObjectiveStage.DefeatBoss && !boss.IsDefeated;
     }
+
+    private void OnBossAttacked(int damage) => OnCombatHint("");
 
     private void OnZoneEntered(string zoneName)
     {

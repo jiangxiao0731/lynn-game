@@ -6,9 +6,11 @@ namespace ShallowSeaDream;
 /// report: one restored sea, one hero, one emotional thought, then a clean exit.
 public partial class EndingController : Control
 {
+    private const float HeroDisplayScale = 0.16f;
+
     private VBoxContainer _story = null!;
-    private TextureRect _hero = null!;
-    private TextureRect _heroGlow = null!;
+    private Sprite2D _hero = null!;
+    private Sprite2D _heroGlow = null!;
 
     public override void _Ready()
     {
@@ -140,25 +142,19 @@ public partial class EndingController : Control
         };
         composition.AddChild(heroStage);
 
-        _heroGlow = new TextureRect
+        _heroGlow = new Sprite2D
         {
             Texture = PlaceholderArt.SoftGlow(new Color(0.54f, 0.94f, 0.90f, 0.72f), 256),
-            Position = new Vector2(40, 96),
-            Size = new Vector2(340, 340),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.Scale,
-            MouseFilter = MouseFilterEnum.Ignore,
+            Position = new Vector2(230, 260),
+            Scale = Vector2.One * 1.45f,
         };
         heroStage.AddChild(_heroGlow);
 
-        _hero = new TextureRect
+        _hero = new Sprite2D
         {
             Texture = AssetLoader.Texture(AssetLoader.FormSheet(ElementForm.Water)),
-            Position = new Vector2(68, 116),
-            Size = new Vector2(284, 284),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            MouseFilter = MouseFilterEnum.Ignore,
+            Position = new Vector2(230, 282),
+            Scale = Vector2.One * HeroDisplayScale,
         };
         heroStage.AddChild(_hero);
 
@@ -177,8 +173,7 @@ public partial class EndingController : Control
 
         _hero.Modulate = Colors.Transparent;
         _heroGlow.Modulate = Colors.Transparent;
-        _hero.PivotOffset = _hero.Size * 0.5f;
-        _hero.Scale = Vector2.One * 0.94f;
+        _hero.Scale = Vector2.One * HeroDisplayScale * 0.94f;
 
         var reveal = CreateTween();
         reveal.TweenProperty(_story, "modulate", Colors.White, 0.65f)
@@ -189,7 +184,7 @@ public partial class EndingController : Control
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
         reveal.Parallel().TweenProperty(_hero, "modulate", Colors.White, 0.48f)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-        reveal.Parallel().TweenProperty(_hero, "scale", Vector2.One, 0.68f)
+        reveal.Parallel().TweenProperty(_hero, "scale", Vector2.One * HeroDisplayScale, 0.68f)
             .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
         reveal.TweenCallback(Callable.From(StartHeroFloat));
     }

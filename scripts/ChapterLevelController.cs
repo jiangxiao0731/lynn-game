@@ -873,6 +873,7 @@ public partial class ChapterLevelController : Node2D
         _player.SetForm(RequiredForm);
         Advance(ObjectiveStage.DefeatBoss);
         Events.Instance?.EmitSignal(Events.SignalName.BossHealthChanged, _boss.CurrentHealth, _boss.MaxHealthValue);
+        Events.Instance?.EmitSignal(Events.SignalName.CombatHint, "");
     }
 
     private static void AddWall(StaticBody2D body, Rect2 rect)
