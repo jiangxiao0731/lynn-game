@@ -19,9 +19,10 @@ public partial class ChapterLevelController : Node2D
     private const int RequiredFragments = 8;
     private const float InteractionRange = 210f;
 
-    /// The pickup is the chapter's pollution item, so it reads as an object rather
-    /// than a mote, while staying smaller than the smallest resident (126px).
-    private const float FragmentDisplaySize = 96f;
+    /// Chemical waste stays compact; chapter three's oil is a broad slick rather
+    /// than a tiny collectible, so every oil patch is deliberately much larger.
+    private const float ChemicalFragmentDisplaySize = 96f;
+    private const float OilFragmentDisplaySize = 176f;
 
     /// Keep a fragment this far from any resident or objective node centre.
     private const float FragmentClearance = 190f;
@@ -347,7 +348,8 @@ public partial class ChapterLevelController : Node2D
                 // unmodulated; a tint here only greys the painting out.
                 Position = point, ZIndex = 3,
             };
-            PlaceholderArt.FitSprite(shard, FragmentDisplaySize);
+            PlaceholderArt.FitSprite(shard,
+                ChapterId == 3 ? OilFragmentDisplaySize : ChemicalFragmentDisplaySize);
             // Same group chapter one uses, so tooling and audits see one kind of pickup.
             shard.AddToGroup("element");
             map.AddChild(shard);
