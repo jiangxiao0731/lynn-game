@@ -167,20 +167,16 @@ public partial class DialogueRunner : CanvasLayer
         _photoStack.AddChild(_picture);
 
         var captionPanel = new PanelContainer { Name = "PhotoCaption" };
-        captionPanel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(UiTheme.GlassBgDeep, 0.40f),
-            BorderColor = new Color(UiTheme.Accent, 0.36f),
-            BorderWidthLeft = 3,
-            ContentMarginLeft = UiTheme.GapBlock,
-            ContentMarginRight = UiTheme.GapPair,
-            ContentMarginTop = UiTheme.GapPair,
-            ContentMarginBottom = UiTheme.GapPair,
-        });
+        // Same painted-paper language as the rest of the UI, but quieter than the
+        // speech bubble so it reads as a caption, not dialogue.
+        captionPanel.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(9, 0.18f, UiTheme.GapPair));
         _photoStack.AddChild(captionPanel);
         var captionStack = new VBoxContainer();
         captionStack.AddThemeConstantOverride("separation", 2);
         captionPanel.AddChild(captionStack);
+        var captionKicker = UiTheme.Role(UiTheme.TypeRole.Hint, "Field note");
+        captionKicker.AddThemeColorOverride("font_color", new Color(UiTheme.Accent, 0.68f));
+        captionStack.AddChild(captionKicker);
         _pictureCaption = UiTheme.Role(UiTheme.TypeRole.Meta, "", wrap: true);
         _pictureCaption.AddThemeColorOverride("font_color", UiTheme.InkDim);
         captionStack.AddChild(_pictureCaption);
