@@ -166,7 +166,7 @@ public partial class LogPanel : CanvasLayer
         NarrativeData.BossMid => "Plastic Monster · Breaking Apart",
         NarrativeData.Ending => "Finale · Clean Current",
         NarrativeData.Chapter2Opening => "Opening · Frozen Trench",
-        NarrativeData.Chapter2Guardian => "Chemical Waste Monster · First Contact",
+        NarrativeData.Chapter2Guardian => "Dead Zone Bloom · First Contact",
         NarrativeData.Chapter2Ending => "Frozen Trench · Restored",
         NarrativeData.Chapter3Opening => "Opening · The Old Lighthouse",
         NarrativeData.Chapter3Guardian => "Oil Monster · First Contact",

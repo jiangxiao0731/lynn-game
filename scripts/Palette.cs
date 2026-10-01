@@ -19,7 +19,7 @@ public static class Palette
     /// Atmosphere around a chapter guardian, keyed to that chapter's pollution.
     public static Color ArenaTint(int chapter) => chapter switch
     {
-        2 => new Color(0.58f, 0.72f, 0.18f),   // chemical
+        2 => new Color(0.58f, 0.72f, 0.18f),   // nutrient bloom
         3 => new Color(0.82f, 0.36f, 0.12f),   // oil
         _ => new Color(0.30f, 0.52f, 0.72f),   // plastic
     };

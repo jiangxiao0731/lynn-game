@@ -120,7 +120,7 @@ public static class DialogueData
     public const string SpeakerLantern = "Lanternfish";
     public const string SpeakerShoal = "Lost Shoal";
     public const string SpeakerBoss = "Plastic Monster";
-    public const string SpeakerFrostshell = "Chemical Waste Monster";
+    public const string SpeakerFrostshell = "Dead Zone Bloom";
     public const string SpeakerCore = "Oil Monster";
 
     private static readonly Dictionary<string, DialogueTimeline> Timelines = Build();

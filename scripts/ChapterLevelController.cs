@@ -328,7 +328,7 @@ public partial class ChapterLevelController : Node2D
             if (_restoreNodes.Exists(n => n.GlobalPosition.DistanceTo(point) < FragmentClearance)) continue;
             var shard = new Sprite2D
             {
-                Name = ChapterId == 2 ? "ChemicalLeak" : "OilPatch",
+                Name = ChapterId == 2 ? "NutrientRunoff" : "OilPatch",
                 Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterId))
                           ?? AssetLoader.Texture(AssetLoader.ShardIcon)
                           ?? PlaceholderArt.RoundBlob(56, Palette.ForForm(RequiredForm)),
@@ -368,7 +368,7 @@ public partial class ChapterLevelController : Node2D
             _guardianBeatPlayed = true;
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 ChapterId == 2
-                    ? "The Chemical Waste Monster is close. Keep distance; press 2 only after it hits."
+                    ? "The Dead Zone Bloom is close. Keep distance; press 2 only after it hits."
                     : "The Oil Monster is close. Keep distance; press 3 only after it hits.");
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
@@ -600,8 +600,8 @@ public partial class ChapterLevelController : Node2D
         {
             string message = ChapterId == 2
                 ? (_fragments >= RequiredFragments
-                    ? "Enough leaking waste is contained. Shimmer can face the Chemical Waste Monster now."
-                    : "Leaking waste contained. Shimmer's cleanup power is building.")
+                    ? "Enough nutrient runoff is cleaned. Shimmer can face the Dead Zone Bloom now."
+                    : "Nutrient runoff cleaned. Shimmer's cleanup power is building.")
                 : (_fragments >= RequiredFragments
                     ? "Enough oil is cleaned. Shimmer can face the Oil Monster now."
                     : "Oil patch cleaned. Shimmer's cleanup power is building.");
@@ -675,7 +675,7 @@ public partial class ChapterLevelController : Node2D
         else
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 ChapterId == 2
-                    ? "The Chemical Waste Monster is contained. Follow the clean current toward the lighthouse."
+                    ? "The Dead Zone Bloom is contained. Follow the oxygen current toward the lighthouse."
                     : "The Oil Monster is gone. Light the Silent Lighthouse.");
     }
 
@@ -694,7 +694,7 @@ public partial class ChapterLevelController : Node2D
         if (_smokeMode) return;
         PersistProgress();
         _settlement?.ShowResult(ChapterId == 2
-            ? "The three Flow Switches are moving oxygen through the nursery again. The small leaks and the Chemical Waste Monster have been contained.\nRunoff begins on land. Restoring flow gives this habitat time to heal."
+            ? "The three Flow Switches are moving oxygen through the nursery again. The nutrient runoff and Dead Zone Bloom have been contained.\nRunoff begins on land. Restoring flow gives this habitat time to heal."
             : "The safe circuit is running, and the oil monster has been pulled away from the reef. Coral recovery will take time.\nProtecting the ocean means stopping pollution at its source, not only cleaning it up later." );
     }
 
@@ -727,8 +727,8 @@ public partial class ChapterLevelController : Node2D
     {
         string? text = null;
         string device = ChapterId == 2 ? "Flow Switch" : "Power Relay";
-        string pollutant = ChapterId == 2 ? "leaking waste" : "oil patches";
-        string boss = ChapterId == 2 ? "Chemical Waste Monster" : "Oil Monster";
+        string pollutant = ChapterId == 2 ? "nutrient runoff" : "oil patches";
+        string boss = ChapterId == 2 ? "Dead Zone Bloom" : "Oil Monster";
 
         if (_stage == ObjectiveStage.TalkStarfish || _stage == ObjectiveStage.TalkSeaweed)
         {

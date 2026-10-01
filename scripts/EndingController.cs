@@ -70,7 +70,7 @@ public partial class EndingController : Control
         chapters.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         main.AddChild(chapters);
         chapters.AddChild(ChapterCard(1, "TIDEPOOL NURSERY", Count(1), "plastic cleared", "light returned"));
-        chapters.AddChild(ChapterCard(2, "FROZEN TRENCH", Count(2), "chemical waste contained", "oxygen moving"));
+        chapters.AddChild(ChapterCard(2, "FROZEN TRENCH", Count(2), "runoff bloom contained", "oxygen moving"));
         chapters.AddChild(ChapterCard(3, "THE OLD LIGHTHOUSE", Count(3), "oil cleaned", "safe lights returned"));
 
         var total = new PanelContainer();
