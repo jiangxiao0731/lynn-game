@@ -502,7 +502,7 @@ public partial class GameSceneController : Node2D
             new Color(0.7f, 0.5f, 0.35f), "hermit", DialogueData.SpeakerHermit);
         WireRuntimeNpc("ShoalNPC", NarrativeData.Shoal, SX(new Vector2(2150, 500)),
             new Color(0.5f, 0.7f, 0.8f), "shoal", DialogueData.SpeakerShoal);
-        WireRuntimeNpc("LanternNPC", NarrativeData.Lantern, SX(new Vector2(2900, 420)),
+        WireRuntimeNpc("LanternNPC", NarrativeData.Lantern, SX(new Vector2(2550, 420)),
             new Color(0.85f, 0.8f, 0.45f), "lantern", DialogueData.SpeakerLantern);
 
         // Residents painted for chapter one but not hand-placed above.
@@ -538,6 +538,11 @@ public partial class GameSceneController : Node2D
         var node = GetNodeOrNull<Node2D>(nodeName);
         if (node == null) return;
         node.Position = pos;
+        if (IsBossAreaOrAfter(pos))
+        {
+            node.Visible = false;
+            return;
+        }
 
         var portrait = AssetLoader.Texture(AssetLoader.NpcPortrait(timeline));
         var npcSprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(80, tint) };
@@ -560,6 +565,8 @@ public partial class GameSceneController : Node2D
     private void WireRuntimeNpc(string name, string timeline, Vector2 pos, Color tint,
         string portraitId, string displayName, float displaySize = 112f)
     {
+        if (IsBossAreaOrAfter(pos)) return;
+
         var node = new Node2D { Name = name, Position = pos };
         node.AddToGroup("npc");
         AddChild(node);
@@ -627,13 +634,14 @@ public partial class GameSceneController : Node2D
             ["lore_pipe"] = SX(new Vector2(1620, 880)),
             ["lore_shell"] = SX(new Vector2(2000, 760)),
             ["lore_log"] = SX(new Vector2(2300, 280)),
-            ["lore_plastic_sheet"] = SX(new Vector2(2800, 820)),
-            ["lore_lantern"] = SX(new Vector2(3250, 560)),
+            ["lore_plastic_sheet"] = SX(new Vector2(2460, 820)),
+            ["lore_lantern"] = SX(new Vector2(2600, 560)),
         };
         foreach (var note in NarrativeData.LoreNotes)
         {
             if (note.Id == "lore_barrel") continue; // represented by the barrel prop
             if (!positions.TryGetValue(note.Id, out var pos)) continue;
+            if (IsBossAreaOrAfter(pos)) continue;
             var node = new Node2D { Name = "Lore_" + note.Id, Position = pos };
             node.AddToGroup("lore");
             // A fragment reads as a faint glint on the seabed. There is no painted
@@ -678,11 +686,12 @@ public partial class GameSceneController : Node2D
         if (_player == null) return;
         foreach (var it in _interactables)
         {
+            bool ordinaryInteractionAllowed = !IsBossAreaOrAfter(it.Node.GlobalPosition);
             float distance = it.Node.GlobalPosition.DistanceTo(_player.GlobalPosition);
             if (it.Prompt != null)
-                it.Prompt.Visible = !_dialogue.IsActive && distance <= 170f;
+                it.Prompt.Visible = ordinaryInteractionAllowed && !_dialogue.IsActive && distance <= 170f;
             if (it.Identity != null)
-                it.Identity.Modulate = distance <= 260f ? Colors.White : new Color(1f, 1f, 1f, 0.78f);
+                it.Identity.Modulate = ordinaryInteractionAllowed && distance <= 260f ? Colors.White : new Color(1f, 1f, 1f, 0.78f);
         }
     }
 
@@ -706,6 +715,7 @@ public partial class GameSceneController : Node2D
         if (_player == null || _dialogue.IsActive) return;
         foreach (var it in _interactables)
         {
+            if (IsBossAreaOrAfter(it.Node.GlobalPosition)) continue;
             if (it.Node.GlobalPosition.DistanceTo(_player.GlobalPosition) > 150f) continue;
 
             InteractionSpacing.FrameConversation(_player, it.Node,
@@ -731,6 +741,9 @@ public partial class GameSceneController : Node2D
             return;
         }
     }
+
+    private static bool IsBossAreaOrAfter(Vector2 worldPosition)
+        => worldPosition.X >= ChapterMap.ArenaGateX(1) - 1f;
 
     public override void _UnhandledInput(InputEvent @event)
     {

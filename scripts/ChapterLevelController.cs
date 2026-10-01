@@ -249,7 +249,10 @@ public partial class ChapterLevelController : Node2D
     {
         foreach (var member in ChapterCast.For(ChapterId))
         {
-            var node = new Node2D { Name = $"Cast_{member.Id}", Position = SX(member.Position) };
+            var position = SX(member.Position);
+            if (IsBossAreaOrAfter(position)) continue;
+
+            var node = new Node2D { Name = $"Cast_{member.Id}", Position = position };
             node.AddToGroup("npc");
             AddChild(node);
 
@@ -375,7 +378,7 @@ public partial class ChapterLevelController : Node2D
         for (int i = 0; i < _restoreNodes.Count; i++)
             _restorePrompts[i].Visible = dialogueFree && IsNodeAvailable(i) && Near(_restoreNodes[i]);
         for (int i = 0; i < _residents.Count; i++)
-            _residentPrompts[i].Visible = dialogueFree && Near(_residents[i]);
+            _residentPrompts[i].Visible = dialogueFree && !IsBossAreaOrAfter(_residents[i].GlobalPosition) && Near(_residents[i]);
     }
 
     private void UpdateFragments()
@@ -431,6 +434,7 @@ public partial class ChapterLevelController : Node2D
         // required is in reach.
         for (int i = 0; i < _residents.Count; i++)
         {
+            if (IsBossAreaOrAfter(_residents[i].GlobalPosition)) continue;
             if (Near(_residents[i]))
             {
                 InteractionSpacing.FrameConversation(_player, _residents[i], InteractionSpacing.NpcConversationDistance);
@@ -440,6 +444,9 @@ public partial class ChapterLevelController : Node2D
             }
         }
     }
+
+    private bool IsBossAreaOrAfter(Vector2 worldPosition)
+        => worldPosition.X >= ChapterMap.ArenaGateX(ChapterId) - 1f;
 
     /// What the guide arrow points at for the current step.
     private Node2D? CurrentTarget() => _stage switch

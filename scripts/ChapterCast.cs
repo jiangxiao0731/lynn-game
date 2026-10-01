@@ -137,7 +137,7 @@ public static class ChapterCast
 
 
         new("ch2_vent", "Drainpipe", "ch2_vent", 2,
-            new Vector2(2750, 815), new Color(0.66f, 0.78f, 0.46f),
+            new Vector2(2520, 815), new Color(0.66f, 0.78f, 0.46f),
             new[]
             {
                 "Almost everything you see here came through me.",
