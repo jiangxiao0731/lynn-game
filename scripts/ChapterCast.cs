@@ -260,8 +260,8 @@ public static class ChapterCast
                 string continueLabel = $"{m.Id}_continue";
                 lines.Add(new DialogueLine(m.DisplayName, ChoicePrompt(m), m.PortraitId, new List<DialogueChoice>
                 {
-                    new("Yes, tell me.", SetFlag: $"{m.Id}_asked", GotoLabel: detailLabel),
-                    new("I get it.", SetFlag: $"{m.Id}_ready", GotoLabel: continueLabel),
+                    new(ChoiceA(m), SetFlag: $"{m.Id}_asked", GotoLabel: detailLabel),
+                    new(ChoiceB(m), SetFlag: $"{m.Id}_ready", GotoLabel: continueLabel),
                 }));
                 lines.Add(new DialogueLine(m.DisplayName, ChoiceDetail(m), m.PortraitId, Label: detailLabel));
                 lines.Add(MakeLine(m, 1, continueLabel));
@@ -276,17 +276,103 @@ public static class ChapterCast
         new(member.DisplayName, member.Lines[index], member.PortraitId, Label: label,
             Picture: member.Pictures != null && member.Pictures.TryGetValue(index, out var pic) ? pic : null);
 
-    private static string ChoicePrompt(CastMember member) => member.Chapter switch
+    private static string ChoicePrompt(CastMember member) => member.Id switch
     {
-        2 => "Do you want the short version?",
-        3 => "Do you want the part people usually miss?",
-        _ => "Do you want me to say it plainly?",
+        "ch2_testtube" => "Should I trace where you came from?",
+        "ch2_drumcone" => "Is the green water the real problem?",
+        "ch2_gascloud" => "How did you grow so fast?",
+        "ch2_radiodrum" => "Did the warning label help anyone?",
+        "ch2_jerrycan" => "Can a small leak really matter?",
+        "ch2_maskbeast" => "Why does low oxygen feel so scary?",
+        "ch2_flask" => "What should I do with what leaked out?",
+        "ch2_wastebag" => "If you are hidden, are you still dangerous?",
+        "ch2_vent" => "So this all came through the drain?",
+        "ch3_slickblob" => "What makes oil so hard to clean?",
+        "ch3_reddrum" => "Was this lighthouse always powered this way?",
+        "ch3_pufferfish" => "What happened to the coral?",
+        "ch3_seahorse" => "Why are you holding onto trash?",
+        "ch3_cancrab" => "Is that can really your shell?",
+        "ch3_slickray" => "Are those colors oil?",
+        "ch3_coraltar" => "Can the coral still recover?",
+        "ch3_oilflame" => "What does this fire mean?",
+        "bannerfish" => "Do you still remember the path?",
+        _ => member.Chapter switch
+        {
+            3 => "Do you want the part people usually miss?",
+            _ => "Do you want me to say it plainly?",
+        },
     };
 
-    private static string ChoiceDetail(CastMember member) => member.Chapter switch
+    private static string ChoiceA(CastMember member) => member.Id switch
     {
-        2 => "A lot of small leaks became one big problem. That is why this place feels empty.",
-        3 => "The reef is not weak. It is being hit by oil, heat, and time all at once.",
-        _ => "People threw things away, and the ocean had to carry them.",
+        "ch2_testtube" => "Yes. Find the source.",
+        "ch2_drumcone" => "Explain the green water.",
+        "ch2_gascloud" => "Tell me what fed you.",
+        "ch2_radiodrum" => "Tell me what went wrong.",
+        "ch2_jerrycan" => "Yes, small leaks count.",
+        "ch2_maskbeast" => "Explain low oxygen.",
+        "ch2_flask" => "Tell me the safe way.",
+        "ch2_wastebag" => "Yes, hiding is not fixing.",
+        "ch2_vent" => "Trace the pipe.",
+        "ch3_slickblob" => "Explain the oil.",
+        "ch3_reddrum" => "Talk about the fuel.",
+        "ch3_pufferfish" => "Tell me about bleaching.",
+        "ch3_seahorse" => "Explain the missing seagrass.",
+        "ch3_cancrab" => "Tell me about the shell.",
+        "ch3_slickray" => "Explain the slick.",
+        "ch3_coraltar" => "Tell me if it can heal.",
+        "ch3_oilflame" => "Explain the heat.",
+        "bannerfish" => "Tell me the path.",
+        _ => "Yes, tell me.",
+    };
+
+    private static string ChoiceB(CastMember member) => member.Id switch
+    {
+        "ch2_testtube" => "I'll keep moving upstream.",
+        "ch2_drumcone" => "I see. The trench can't breathe.",
+        "ch2_gascloud" => "I get it. Too many nutrients.",
+        "ch2_radiodrum" => "The warning came too late.",
+        "ch2_jerrycan" => "I'll clean the leak.",
+        "ch2_maskbeast" => "I'll restore the current.",
+        "ch2_flask" => "I'll contain it.",
+        "ch2_wastebag" => "I'll stop the next one.",
+        "ch2_vent" => "I'll clean what came through.",
+        "ch3_slickblob" => "I'll keep my distance.",
+        "ch3_reddrum" => "The lighthouse needs safer power.",
+        "ch3_pufferfish" => "The reef needs time.",
+        "ch3_seahorse" => "I'll bring safer current back.",
+        "ch3_cancrab" => "Trash is not protection.",
+        "ch3_slickray" => "I'll clean the oil.",
+        "ch3_coraltar" => "I'll give it a chance.",
+        "ch3_oilflame" => "I'll stop the source.",
+        "bannerfish" => "I'll clean the plastic.",
+        _ => "I get it.",
+    };
+
+    private static string ChoiceDetail(CastMember member) => member.Id switch
+    {
+        "ch2_testtube" => "Pollution here did not start in the trench. It rode down from somewhere people thought was far away.",
+        "ch2_drumcone" => "The green water looks alive, but too much of it can make the whole place run out of oxygen.",
+        "ch2_gascloud" => "I did not appear from nowhere. Extra nutrients fed me until I covered the water.",
+        "ch2_radiodrum" => "A warning sign only helps if people still choose to handle the waste safely.",
+        "ch2_jerrycan" => "One leak is small. A hundred small leaks become the water everyone has to live in.",
+        "ch2_maskbeast" => "Low oxygen is quiet. Fish do not always get a dramatic warning; they just cannot breathe.",
+        "ch2_flask" => "Do not scatter it. Contain it first, then let the current carry it to a safer place.",
+        "ch2_wastebag" => "Throwing something out of sight only moves the problem to someone else's home.",
+        "ch2_vent" => "The drain connects land and sea. What goes in upstream can become a monster down here.",
+        "ch3_slickblob" => "Oil spreads thin and fast. Even a small patch can coat feathers, gills, and coral.",
+        "ch3_reddrum" => "Old fuel solved one problem and created another. The lighthouse needs a cleaner way to shine.",
+        "ch3_pufferfish" => "Bleaching means the coral lost the tiny helpers it depends on for food.",
+        "ch3_seahorse" => "When seagrass dies, small animals lose the places they use to rest and hide.",
+        "ch3_cancrab" => "Using trash as shelter is survival, but it should not be normal.",
+        "ch3_slickray" => "A rainbow film can look pretty, but it is still a sign that oil is spreading.",
+        "ch3_coraltar" => "Coral can fight back slowly, but only if oil and heat stop hitting it again and again.",
+        "ch3_oilflame" => "Burning fuel adds heat to a sea that is already carrying too much.",
+        "bannerfish" => "The path is still here. It is just hidden under plastic that should never have reached the reef.",
+        _ => member.Chapter switch
+        {
+            3 => "The reef is not weak. It is being hit by oil, heat, and time all at once.",
+            _ => "People threw things away, and the ocean had to carry them.",
+        },
     };
 }
