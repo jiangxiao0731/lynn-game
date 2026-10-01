@@ -87,9 +87,41 @@ public partial class Player : CharacterBody2D
             // tint at half strength so the art stays legible, not washed dark.
             sprite.Modulate = FormModulate(form);
             sprite.Play("Idle");
+            StartNaturalIdle(sprite, form);
             _sprites[form] = sprite;
         }
         ShowActiveForm();
+    }
+
+    private static void StartNaturalIdle(AnimatedSprite2D sprite, ElementForm form)
+    {
+        Vector2 restPosition = sprite.Position;
+        Vector2 restScale = sprite.Scale;
+        float drift = form switch
+        {
+            ElementForm.Ice => 4.5f,
+            ElementForm.Electric => 5.2f,
+            _ => 6.0f,
+        };
+        float seconds = form switch
+        {
+            ElementForm.Ice => 2.9f,
+            ElementForm.Electric => 2.15f,
+            _ => 2.55f,
+        };
+        float delay = ((int)form + 1) * 0.13f;
+
+        var upScale = new Vector2(restScale.X * 1.018f, restScale.Y * 0.992f);
+        var downScale = new Vector2(restScale.X * 0.994f, restScale.Y * 1.014f);
+        var tween = sprite.CreateTween().SetLoops();
+        tween.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        tween.TweenInterval(delay);
+        tween.TweenProperty(sprite, "position:y", restPosition.Y - drift, seconds * 0.5f);
+        tween.Parallel().TweenProperty(sprite, "scale", upScale, seconds * 0.5f);
+        tween.TweenProperty(sprite, "position:y", restPosition.Y + drift * 0.65f, seconds);
+        tween.Parallel().TweenProperty(sprite, "scale", downScale, seconds);
+        tween.TweenProperty(sprite, "position:y", restPosition.Y, seconds * 0.5f);
+        tween.Parallel().TweenProperty(sprite, "scale", restScale, seconds * 0.5f);
     }
 
     public override void _PhysicsProcess(double delta)

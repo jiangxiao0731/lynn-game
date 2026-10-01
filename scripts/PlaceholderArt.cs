@@ -137,6 +137,24 @@ public static class PlaceholderArt
         return frames;
     }
 
+    /// Build simple frames from one complete character painting. The shared jellyfish
+    /// files are square transparent PNGs, not sprite sheets; node-level tweening gives
+    /// them their gentle float without cutting the art into cells.
+    public static SpriteFrames SingleFormFrames(Texture2D source)
+    {
+        var frames = new SpriteFrames();
+        foreach (var (anim, speed) in new[] { ("Idle", 4.0), ("Walk", 6.0) })
+        {
+            frames.AddAnimation(anim);
+            frames.SetAnimationSpeed(anim, speed);
+            frames.SetAnimationLoop(anim, true);
+            frames.AddFrame(anim, source);
+            frames.AddFrame(anim, source);
+        }
+        frames.RemoveAnimation("default");
+        return frames;
+    }
+
     public static Texture2D KeyPresentationTexture(Texture2D source, float cropFraction = 0f)
     {
         var image = source.GetImage();
@@ -208,6 +226,8 @@ public static class PlaceholderArt
         var tex = AssetLoader.Texture(AssetLoader.RawFormSheet(form));
         if (tex != null)
         {
+            if (form != ElementForm.Base)
+                return SingleFormFrames(tex);
             bool landscape = tex.GetWidth() >= tex.GetHeight();
             return SliceFormSheet(tex, landscape ? 3 : 2, landscape ? 2 : 3);
         }
