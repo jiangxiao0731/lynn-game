@@ -442,39 +442,9 @@ public partial class GameSceneController : Node2D
 
         var invaders = new System.Collections.Generic.List<Sprite2D>();
         _zoneInvaders.Add(invaders);
-        var placements = new[]
-        {
-            new Vector2(x0 + (x1 - x0) * 0.24f, 270),
-            new Vector2(x0 + (x1 - x0) * 0.55f, 720),
-            new Vector2(x0 + (x1 - x0) * 0.82f, 420),
-        };
-        for (int i = 0; i < placements.Length; i++)
-        {
-            var invaderTex = AssetLoader.Texture(AssetLoader.Invader(i + 1));
-            if (invaderTex == null) continue;
-            if (!_keyedInvaders.TryGetValue(i, out var keyedInvader))
-            {
-                keyedInvader = PlaceholderArt.KeyPresentationTexture(invaderTex, 0.035f);
-                _keyedInvaders[i] = keyedInvader;
-            }
-            var sprite = new Sprite2D
-            {
-                Name = $"PollutionInvader_{zone}_{i}",
-                Texture = keyedInvader,
-                Position = placements[i],
-                ZIndex = BackgroundZ + 8,
-                Modulate = new Color(0.68f, 0.84f, 0.84f, 0.42f),
-            };
-            PlaceholderArt.FitSprite(sprite, 110f + i * 14f);
-            map.AddChild(sprite);
-            invaders.Add(sprite);
-            float baseY = sprite.Position.Y;
-            var tween = sprite.CreateTween().SetLoops();
-            tween.TweenProperty(sprite, "position:y", baseY - 16f, 1.8f + i * 0.25f)
-                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-            tween.TweenProperty(sprite, "position:y", baseY + 16f, 1.8f + i * 0.25f)
-                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-        }
+        // The old translucent pollution invaders looked like stray interactive
+        // elements from another chapter, especially near the guardian. Keep the
+        // pollution readable through the map wash and actual pickups instead.
     }
 
     private static void AddWall(StaticBody2D walls, Rect2 rect)
@@ -916,13 +886,13 @@ public partial class GameSceneController : Node2D
         {
             _bossPrePlayed = true;
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                "Keep your distance. Press 1 when the Plastic Monster is in range.");
+                "Back up, then press 1 or E when the Plastic Monster is in range.");
         }
         if (!_bossMidPlayed && current > 0 && current <= max / 2)
         {
             _bossMidPlayed = true;
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                "The pile is loosening. Back up, then use Water again.");
+                "The pile is loosening. Back up, then press 1 or E again.");
         }
     }
 

@@ -43,6 +43,8 @@ public partial class BossController : CharacterBody2D
     private Vector2 _dropRestPosition;
     private bool _dialogueActive;
     private Vector2 _spriteBaseScale = Vector2.One;
+    public float EffectiveAttackRange => Mathf.Max(AutoAttackRange, DisplaySize * 1.12f);
+    public float EffectiveWarningRange => EffectiveAttackRange + Mathf.Max(180f, DisplaySize * 0.32f);
 
     public override void _Ready()
     {
@@ -104,19 +106,19 @@ public partial class BossController : CharacterBody2D
         if (!AggressionEnabled || IsDefeated || _player == null || _dialogueActive) return;
 
         float dist = GlobalPosition.DistanceTo(_player.GlobalPosition);
-        if (!ProfileViewed && dist <= AutoAttackRange + 120f)
+        if (!ProfileViewed && dist <= EffectiveWarningRange)
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "The Chemical Waste Monster is spreading toxic waste. Keep your distance and press 2 to release Ice."
+                ? "The Chemical Waste Monster is attacking. Back up, then press 2 or E to release Ice."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "The Oil Monster is covering the reef. Keep your distance and press 3 to release Electric."
-                    : "The Plastic Monster will attack if you get too close. Keep distance and press 1 to release Water.";
+                    ? "The Oil Monster is attacking. Back up, then press 3 or E to release Electric."
+                    : "The Plastic Monster is attacking. Back up, then press 1 or E to release Water.";
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint, hint);
         }
 
         _attackCooldown -= (float)delta;
-        if (_attackCooldown <= 0f && dist <= AutoAttackRange)
+        if (_attackCooldown <= 0f && dist <= EffectiveAttackRange)
         {
             PerformAttack();
             _attackCooldown = AutoAttackInterval;
@@ -141,8 +143,16 @@ public partial class BossController : CharacterBody2D
         AnimateAttack();
         _player?.TakeDamage(AttackDamage);
         Events.Instance?.EmitSignal(Events.SignalName.BossAttacked, AttackDamage);
+        Events.Instance?.EmitSignal(Events.SignalName.StatusHint, AttackInstruction());
         AudioManager.Instance?.PlaySfx("boss_attack");
     }
+
+    private string AttackInstruction() => EffectiveElement switch
+    {
+        ElementForm.Ice => "You were hit. Back up, then press 2 or E to release Ice.",
+        ElementForm.Electric => "You were hit. Back up, then press 3 or E to release Electric.",
+        _ => "You were hit. Back up, then press 1 or E to release Water.",
+    };
 
     private void AnimateAttack()
     {

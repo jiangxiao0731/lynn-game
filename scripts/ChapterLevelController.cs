@@ -365,8 +365,8 @@ public partial class ChapterLevelController : Node2D
             _guardianBeatPlayed = true;
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 ChapterId == 2
-                    ? "The Chemical Waste Monster is attacking. Keep distance and press 2 to release Ice."
-                    : "The Oil Monster is attacking. Keep distance and press 3 to release Electric.");
+                    ? "The Chemical Waste Monster is attacking. Back up, then press 2 or E to release Ice."
+                    : "The Oil Monster is attacking. Back up, then press 3 or E to release Electric.");
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
             CompleteChapter();
@@ -399,8 +399,8 @@ public partial class ChapterLevelController : Node2D
             if (!IsInstanceValid(shard)) { _fragmentsInWorld.RemoveAt(i); continue; }
             var origin = _fragmentOrigins[shard];
             shard.Position = origin + new Vector2(0, Mathf.Sin(_time * 2.2f + i * 0.7f) * 9f);
-            shard.Modulate = new Color(shard.Modulate.R, shard.Modulate.G, shard.Modulate.B,
-                _stage == ObjectiveStage.CollectShards ? 1f : 0.34f);
+            shard.Visible = _stage == ObjectiveStage.CollectShards;
+            shard.Modulate = new Color(shard.Modulate.R, shard.Modulate.G, shard.Modulate.B, 1f);
             if (_stage == ObjectiveStage.CollectShards && shard.GlobalPosition.DistanceTo(_player.GlobalPosition) <= GameConstants.ElementPickupDistance)
                 CollectFragment(shard);
         }
@@ -594,10 +594,20 @@ public partial class ChapterLevelController : Node2D
             .Finished += shard.QueueFree;
         if (_fragments >= RequiredFragments)
         {
+            ClearRemainingFragments();
             _boss.CombatEnabled = true;
             Advance(ObjectiveStage.DefeatBoss);
             Events.Instance?.EmitSignal(Events.SignalName.BossHealthChanged, _boss.CurrentHealth, _boss.MaxHealthValue);
         }
+    }
+
+    private void ClearRemainingFragments()
+    {
+        foreach (var shard in _fragmentsInWorld)
+            if (IsInstanceValid(shard))
+                shard.QueueFree();
+        _fragmentsInWorld.Clear();
+        _fragmentOrigins.Clear();
     }
 
     /// The three restoration nodes power this doorway, so the doorway opens with

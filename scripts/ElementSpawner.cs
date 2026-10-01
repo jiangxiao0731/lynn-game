@@ -89,6 +89,11 @@ public partial class ElementSpawner : Node2D
     {
         _bob += (float)delta * 3f;
         _lockedHintCooldown = Mathf.Max(0f, _lockedHintCooldown - (float)delta);
+        if (_objectives != null && _objectives.Stage >= ObjectiveStage.DefeatBoss)
+        {
+            ClearActiveShards();
+            return;
+        }
         for (int i = 0; i < _activeShards.Count; i++)
         {
             var shard = _activeShards[i];
@@ -97,6 +102,11 @@ public partial class ElementSpawner : Node2D
         }
 
         if (_player == null) return;
+        bool collectionOpen = _objectives == null || _objectives.Stage >= ObjectiveStage.CollectShards;
+        foreach (var shard in _activeShards)
+            if (IsInstanceValid(shard))
+                shard.Visible = collectionOpen;
+        if (!collectionOpen) return;
         for (int i = _activeShards.Count - 1; i >= 0; i--)
         {
             var shard = _activeShards[i];
@@ -117,9 +127,22 @@ public partial class ElementSpawner : Node2D
                 _shardPhases.Remove(shard);
                 shard.QueueFree();
                 CollectShard(ElementForm.Water);
-                SpawnNext(); // keep the map stocked
+                if (_objectives != null && _objectives.ShardsCollected >= ObjectiveManager.ShardThreshold)
+                    ClearActiveShards();
+                else
+                    SpawnNext(); // keep the map stocked until the boss objective opens
             }
         }
+    }
+
+    private void ClearActiveShards()
+    {
+        foreach (var shard in _activeShards)
+            if (IsInstanceValid(shard))
+                shard.QueueFree();
+        _activeShards.Clear();
+        _shardOrigins.Clear();
+        _shardPhases.Clear();
     }
 
     private void StockInitial()

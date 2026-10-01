@@ -28,7 +28,15 @@ public partial class SkillSystem : Node
         if (@event.IsActionPressed("skill_water")) TryCast(ElementForm.Water);
         else if (@event.IsActionPressed("skill_ice")) TryCast(ElementForm.Ice);
         else if (@event.IsActionPressed("skill_electric")) TryCast(ElementForm.Electric);
+        else if (@event.IsActionPressed("e")) TryCastContextualBossSkill();
         else if (@event.IsActionPressed("store_element")) _player?.StoreForm();
+    }
+
+    private void TryCastContextualBossSkill()
+    {
+        var target = FindTarget();
+        if (target == null) return;
+        TryCast(target.EffectiveElement);
     }
 
     /// Add charges from a shard pickup of the given form.
@@ -92,12 +100,13 @@ public partial class SkillSystem : Node
     {
         if (_player == null) return null;
         BossController? best = null;
-        float bestDist = TargetSearchRadius;
+        float bestDist = float.MaxValue;
         foreach (var node in GetTree().GetNodesInGroup("monster"))
         {
             if (node is not BossController boss || !boss.CombatEnabled || boss.IsDefeated || !boss.ProfileViewed) continue;
             float d = boss.GlobalPosition.DistanceTo(_player.GlobalPosition);
-            if (d <= bestDist)
+            float allowed = Mathf.Max(TargetSearchRadius, boss.EffectiveWarningRange);
+            if (d <= allowed && d <= bestDist)
             {
                 bestDist = d;
                 best = boss;
