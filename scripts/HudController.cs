@@ -380,7 +380,13 @@ public partial class HudController : CanvasLayer
         _objectiveProgress.Visible = collecting;
         if (collecting)
             OnShardProgressChanged(_shardCollected, _shardRequired);
-        _skillDock.Visible = current >= ObjectiveStage.CollectShards;
+        // Chapter two and three use the same middle objective stages for their
+        // restoration nodes (Flow Switches / Power Relays). Show the element dock
+        // during that work too, so chapter three clearly advertises Electric before
+        // the shard-collection beat begins.
+        bool restorationChapter = ChapterRuntime.CurrentChapter >= 2;
+        _skillDock.Visible = current >= ObjectiveStage.CollectShards ||
+                             (restorationChapter && current >= ObjectiveStage.TalkStarfish);
         _bossPanel.Visible = current == ObjectiveStage.DefeatBoss;
 
         _objectiveLabel.Modulate = new Color(1.08f, 1.08f, 1.08f, 1f);
