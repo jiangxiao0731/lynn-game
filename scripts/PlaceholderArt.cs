@@ -226,7 +226,8 @@ public static class PlaceholderArt
         var tex = AssetLoader.Texture(AssetLoader.RawFormSheet(form));
         if (tex != null)
         {
-            if (form != ElementForm.Base)
+            bool singleSquarePainting = Mathf.Abs(tex.GetWidth() - tex.GetHeight()) <= 4;
+            if (form != ElementForm.Base || singleSquarePainting)
                 return SingleFormFrames(tex);
             bool landscape = tex.GetWidth() >= tex.GetHeight();
             return SliceFormSheet(tex, landscape ? 3 : 2, landscape ? 2 : 3);
