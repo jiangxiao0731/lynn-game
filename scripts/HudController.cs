@@ -262,16 +262,16 @@ public partial class HudController : CanvasLayer
         skillRow.AddChild(count);
 
         // Boss name and health get the conventional top-centre focal position.
-        _bossPanel = Track(Surface("BossPanel", new Vector2(760, 0), 0.86f));
+        _bossPanel = Track(Surface("BossPanel", new Vector2(540, 0), 0.86f));
         Pin(_bossPanel, Control.LayoutPreset.CenterTop);
-        _bossPanel.Position = new Vector2(-380, UiTheme.SafeArea);
+        _bossPanel.Position = new Vector2(-270, UiTheme.SafeArea);
         _bossPanel.Visible = false;
         AddChild(_bossPanel);
         var bossInset = Inset(_bossPanel, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
-        var bossBox = new VBoxContainer();
+        var bossBox = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         bossBox.AddThemeConstantOverride("separation", UiTheme.GapPair);
         bossInset.AddChild(bossBox);
-        var bossTop = new HBoxContainer();
+        var bossTop = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         bossTop.AddThemeConstantOverride("separation", UiTheme.GapPair);
         bossBox.AddChild(bossTop);
         var bossThumb = UiTheme.Thumbnail(40, out var bossImage);
@@ -279,13 +279,14 @@ public partial class HudController : CanvasLayer
         bossThumb.Visible = bossImage.Texture != null;
         bossTop.AddChild(bossThumb);
         _bossNameLabel = UiTheme.Role(UiTheme.TypeRole.Name, ChapterRuntime.BossName);
+        _bossNameLabel.HorizontalAlignment = HorizontalAlignment.Center;
         bossTop.AddChild(_bossNameLabel);
         _bossHpLabel = UiTheme.Role(UiTheme.TypeRole.Numeral, "");
         _bossHpLabel.AddThemeColorOverride("font_color", UiTheme.InkDim);
-        _bossHpLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        _bossHpLabel.HorizontalAlignment = HorizontalAlignment.Right;
-        bossTop.AddChild(_bossHpLabel);
+        _bossHpLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        bossBox.AddChild(_bossHpLabel);
         _bossBar = new ProgressBar { CustomMinimumSize = new Vector2(0, 8), MinValue = 0 };
+        _bossBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         StyleBar(_bossBar, Palette.PollutedTeal);
         bossBox.AddChild(_bossBar);
 
