@@ -87,8 +87,9 @@ public partial class ChapterLevelController : Node2D
         _player = GetNode<Player>("Player");
         _skills = GetNode<SkillSystem>("SkillSystem");
         _boss = GetNode<BossController>("BroodMother");
-        // The third anchor/relay opens the physical route. Shards still gate the
-        // guardian encounter, so crossing early cannot start or damage the boss.
+        // The third anchor/relay opens the physical route. Cleaning smaller pollution
+        // objects still gates the guardian encounter, so crossing early cannot start
+        // or damage the boss.
         _boss.CombatEnabled = false;
         _boss.AggressionEnabled = false;
         _settlement = GetNodeOrNull<SettlementPanel>("HUD/SettlementPanel");
@@ -320,12 +321,12 @@ public partial class ChapterLevelController : Node2D
             var point = SX(authored);
             if (point.X >= _boss.GlobalPosition.X - 720f) continue;
             // Residents, the guide and the restore nodes are already in the tree, so a
-            // fragment that would sit on one is simply skipped.
+            // pollution object that would sit on one is simply skipped.
             if (!ChapterMap.IsClearOfOccupants(this, point, FragmentClearance, "npc")) continue;
             if (_restoreNodes.Exists(n => n.GlobalPosition.DistanceTo(point) < FragmentClearance)) continue;
             var shard = new Sprite2D
             {
-                Name = ChapterId == 2 ? "IceFragment" : "ElectricSpark",
+                Name = ChapterId == 2 ? "ChemicalLeak" : "OilPatch",
                 Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterId))
                           ?? AssetLoader.Texture(AssetLoader.ShardIcon)
                           ?? PlaceholderArt.RoundBlob(56, Palette.ForForm(RequiredForm)),
@@ -365,8 +366,8 @@ public partial class ChapterLevelController : Node2D
             _guardianBeatPlayed = true;
             Events.Instance?.EmitSignal(Events.SignalName.CombatHint,
                 ChapterId == 2
-                    ? "The Chemical Waste Monster is attacking. Back up, then press 2 to release Ice."
-                    : "The Oil Monster is attacking. Back up, then press 3 to release Electric.");
+                    ? "The Chemical Waste Monster is attacking. Back up, then press 2 with your cleanup power."
+                    : "The Oil Monster is attacking. Back up, then press 3 with your cleanup power.");
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
             CompleteChapter();
@@ -589,6 +590,17 @@ public partial class ChapterLevelController : Node2D
         _player.SetForm(RequiredForm);
         Events.Instance?.EmitSignal(Events.SignalName.ElementPickedUp, (int)RequiredForm);
         Events.Instance?.EmitSignal(Events.SignalName.ShardProgressChanged, _fragments, RequiredFragments);
+        if (_fragments == 1 || _fragments >= RequiredFragments)
+        {
+            string message = ChapterId == 2
+                ? (_fragments >= RequiredFragments
+                    ? "Enough leaking waste is contained. Shimmer can face the Chemical Waste Monster now."
+                    : "Leaking waste contained. Shimmer's cleanup power is building.")
+                : (_fragments >= RequiredFragments
+                    ? "Enough oil is cleaned. Shimmer can face the Oil Monster now."
+                    : "Oil patch cleaned. Shimmer's cleanup power is building.");
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint, message);
+        }
         AudioManager.Instance?.PlaySfx("pickup_water");
         shard.CreateTween().TweenProperty(shard, "scale", shard.Scale * 1.6f, 0.18f)
             .Finished += shard.QueueFree;
@@ -639,7 +651,7 @@ public partial class ChapterLevelController : Node2D
     {
         if (_stage == ObjectiveStage.DefeatBoss && current > 0 && current <= max / 2)
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                "The shell is loosening. Keep using the right element to guide the pollution out." );
+                "The shell is loosening. Keep your distance and use the cleanup power you earned." );
     }
 
     private void OnGuardianRestored()
@@ -657,11 +669,11 @@ public partial class ChapterLevelController : Node2D
             else
                 _dialogue.Play(GuardianTimeline, () =>
                     Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                        "The Chemical Waste Monster released a new current. Collect it to open the next area."));
+                        "The Chemical Waste Monster is contained. Swim to the clean current it left behind."));
         }
         else
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                "The Chemical Waste Monster released a new current. Collect it to open the next area.");
+                "The Chemical Waste Monster is contained. Swim to the clean current it left behind.");
     }
 
     private void OnNextLevelElementUnlocked(int form)
@@ -679,8 +691,8 @@ public partial class ChapterLevelController : Node2D
         if (_smokeMode) return;
         PersistProgress();
         _settlement?.ShowResult(ChapterId == 2
-            ? "The three Flow Switches are moving oxygen through the nursery again. The chemical waste has been contained.\nRunoff begins on land. Restoring flow gives this habitat time to heal."
-            : "The safe circuit is running, and waste heat is no longer spilling into the nursery. Coral recovery will take time.\nProtecting the ocean means stopping pollution at its source, not only cleaning it up later." );
+            ? "The three Flow Switches are moving oxygen through the nursery again. The small leaks and the Chemical Waste Monster have been contained.\nRunoff begins on land. Restoring flow gives this habitat time to heal."
+            : "The safe circuit is running, and the oil monster has been pulled away from the reef. Coral recovery will take time.\nProtecting the ocean means stopping pollution at its source, not only cleaning it up later." );
     }
 
     private void Advance(ObjectiveStage next)

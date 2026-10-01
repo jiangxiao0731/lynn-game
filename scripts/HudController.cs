@@ -257,7 +257,7 @@ public partial class HudController : CanvasLayer
         var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, skills[formIndex].Item2);
         name.AddThemeColorOverride("font_color", skills[formIndex].Item3);
         nameBox.AddChild(name);
-        var hint = UiTheme.Role(UiTheme.TypeRole.Hint, "ENERGY");
+        var hint = UiTheme.Role(UiTheme.TypeRole.Hint, "CLEANUP POWER");
         nameBox.AddChild(hint);
 
         var count = UiTheme.Role(UiTheme.TypeRole.Numeral, "× 0");

@@ -75,7 +75,7 @@ public static class NarrativeData
             new(S, "This is where I was born. It used to be full of light."),
             new(S, "But now the water is cloudy, and the lights are disappearing one by one."),
             new(S, "A lot of this pollution came from land, carried here by drains and rivers."),
-            new(S, "My light is still here. Maybe I can use it to bring the others back."),
+            new(S, "My light is still here. I can use it to clean what people left behind."),
             new(S, "First I need Granny Lan. She has watched over this bay longer than anyone.", null,
                 Picture: new(AssetLoader.NpcPortrait("npc1giving"), "Granny Lan · she waits in the Shallows")),
         });
@@ -83,9 +83,9 @@ public static class NarrativeData
         // --- 岚婆婆 multi-stage: mid (during collecting) ---
         d[GrannyMid] = new DialogueTimeline(GrannyMid, new List<DialogueLine>
         {
-            new(G, "Look—the fragments are glowing in your hands.", "npc1giving"),
-            new(G, "Each shard holds a clue about what happened here.", "npc1giving"),
-            new(G, "Collect them all, and you'll learn how the Plastic Monster was formed.", "npc1giving"),
+            new(G, "Look—the plastic you cleaned is no longer choking the water.", "npc1giving"),
+            new(G, "Each piece you process gives your light a little more strength.", "npc1giving"),
+            new(G, "Clean enough of it, and you'll be ready to face the Plastic Monster.", "npc1giving"),
         });
 
         // --- 岚婆婆 after boss ---
@@ -96,7 +96,7 @@ public static class NarrativeData
                 Picture: DialoguePicture.Photo("ch1_cleanup.jpg",
                     "A clean-up crew lifts a tangle of derelict fishing nets on Midway Atoll.", "U.S. Fish and Wildlife Service")),
             new(G, "That's what restoring the ocean means. Remember that when you reach the colder water.", "npc1giving"),
-            new(S, "I will. I'll take the Sea Key to the next area.", "npc1giving"),
+            new(S, "I will. I'll follow the clean current to the next area.", "npc1giving"),
         });
 
         // --- Deepened 海星 (optional follow-up) ---
@@ -112,7 +112,7 @@ public static class NarrativeData
         {
             new(Sw, "The Plastic Monster is getting bigger as more trash washes in.", "seaweed"),
             new(Sw, "It is made from plastic bottles, bags, and abandoned fishing gear.", "seaweed"),
-            new(Sw, "We are not here just to fight it. Clear away the trash and free the animals trapped inside.", "seaweed"),
+            new(Sw, "We are not here just to hit it. Clean the small trash first, then free the animals trapped inside.", "seaweed"),
         });
 
         // --- NEW NPC: 寄居蟹老郑 (沉积带) — practical, weary, comic-melancholy ---
@@ -126,7 +126,7 @@ public static class NarrativeData
                 new("Are you okay, Old Zheng?", SetFlag: "hermit_care", GotoLabel: "hermit_care"),
             }),
             new(H, "I'm okay. I just have to keep moving and find a safer home.", "hermit", Label: "hermit_care"),
-            new(H, "Head deeper into the bay. Aim at the loosest part of the Plastic Monster and use the current to wash the trash apart.", "hermit", Label: "hermit_route"),
+            new(H, "Head deeper into the bay. Clean the loose plastic first, then aim at the weakest part of the Plastic Monster.", "hermit", Label: "hermit_route"),
         });
 
         // --- NEW NPC: 灯笼鱼·盏 (巢母深处) — a dimming light, hopeful ---
@@ -170,24 +170,24 @@ public static class NarrativeData
                 new("Go in fast.", SetFlag: "boss1_rush", GotoLabel: "boss1_continue"),
             }),
             new(S, "I should not swim into it. I can help from outside the danger area.", Label: "boss1_careful"),
-            new(S, "I need to aim at the weakest part of the pile and use Water to wash the trash apart.", Label: "boss1_continue"),
+            new(S, "I need to use the cleanup power I saved from the plastic pieces.", Label: "boss1_continue"),
             new(S, "If I rush, I will just get caught too."),
         });
 
         d[BossMid] = new DialogueTimeline(BossMid, new List<DialogueLine>
         {
-            new(B, "(Plastic bottles and bags break loose and drift apart.)", "boss"),
+            new(B, "(Plastic bottles and bags break loose. Shimmer's light pulls them out of the water.)", "boss"),
             new(B, "I was never one creature. I was everything that got thrown away and left here.", "boss"),
-            new(S, "Then I'll help carry these pieces out, one by one."),
+            new(S, "Then I'll finish cleaning what people left here."),
             new(S, "The trapped animals are free now."),
         });
 
         // --- Ending beat: hand over the tidal key, tease next sea ---
         d[Ending] = new DialogueTimeline(Ending, new List<DialogueLine>
         {
-            new(G, "The Sea Key is reacting to you. It should open the way to the Frozen Trench.", "npc1giving",
+            new(G, "The clean current is reacting to you. It should open the way to the Frozen Trench.", "npc1giving",
                 Picture: new(AssetLoader.ChapterBackground(2, 0), "Next · Frozen Trench")),
-            new(G, "The pollutants there are locked within the ice, so the power of Water alone will not be enough.", "npc1giving"),
+            new(G, "The pollution there is different. Water alone will not be enough.", "npc1giving"),
             new(S, "I'll leave some of my light here so everyone can find their way home."),
             new(S, "I'll carry the rest with me."),
         });
@@ -207,22 +207,22 @@ public static class NarrativeData
                 Picture: DialoguePicture.Photo("ch2_algal_bloom.jpg",
                     "An algal bloom spreading across Lake Erie, seen by satellite in September 2017.",
                     "NOAA Great Lakes Environmental Research Laboratory")),
-            new(L, "Turn on the three Flow Switches along the ridge. That should get the currents flowing freely again.", "lantern",
+            new(L, "Turn on the three Flow Switches along the ridge. Then clean the leaking waste so you have enough strength for the monster.", "lantern",
                 Picture: new(AssetLoader.MemoryIcon, "Flow Switch · three along the ridge")),
         });
         d[Chapter2Guardian] = new DialogueTimeline(Chapter2Guardian, new List<DialogueLine>
         {
-            new(F, "(The frozen shell cracks. The leaking foam slows down.)", "boss2"),
+            new(F, "(The frozen shell cracks. The leaking foam slows down and gathers into safe clumps.)", "boss2"),
             new(F, "I kept growing because every small leak found the same place to sink.", "boss2"),
-            new(S, "Then the cleanup has to start before the waste reaches the water."),
+            new(S, "Then I need to contain the small leaks first, before the biggest one gets stronger."),
             new(S, "For now, the trench can breathe again."),
         });
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>
         {
             new(F, "(The frozen chemical waste cracks apart and the toxic foam begins to disappear.)", "boss2"),
-            new(L, "The Frozen Trench is glowing again! But the waters ahead have completely lost their energy.", "lantern",
+            new(L, "The Frozen Trench is glowing again! But the waters ahead are covered in oil and heat.", "lantern",
                 Picture: new(AssetLoader.ChapterBackground(3, 0), "Next · The Old Lighthouse")),
-            new(S, "Then I'll bring this light to the next area."),
+            new(S, "Then I'll bring this cleaned-up light to the next area."),
         });
         d[Chapter3Opening] = new DialogueTimeline(Chapter3Opening, new List<DialogueLine>
         {
@@ -234,7 +234,7 @@ public static class NarrativeData
                 new("Keep going.", SetFlag: "ch3_ready", GotoLabel: "ch3_continue"),
             }),
             new(Sh, "The relays can restart safe equipment. It will not fix everything, but it gives the reef a chance.", "shoal", Label: "ch3_relays"),
-            new(Sh, "Reconnect the three relays. We need to provide safe, controlled power to the lighthouse.", "shoal",
+            new(Sh, "Reconnect the three relays. Then clean the oil patches so your electric pulse is strong enough for the monster.", "shoal",
                 Label: "ch3_continue",
                 Picture: new(AssetLoader.MemoryIcon, "Power Relay · three to reconnect")),
         });
@@ -242,12 +242,12 @@ public static class NarrativeData
         {
             new(C, "(The oil pulls away from the reef and gathers into a dark coil.)", "boss3"),
             new(C, "I spread wherever the water carried me. I covered things that were still alive.", "boss3"),
-            new(S, "Then we collect what is left, and we stop more oil from entering the water."),
+            new(S, "Then I clean what is left, and people have to stop more oil from entering the water."),
             new(S, "The lighthouse can guide the reef again."),
         });
         d[Chapter3Ending] = new DialogueTimeline(Chapter3Ending, new List<DialogueLine>
         {
-            new(C, "(The oil separates from the water and the monster collapses into waste that can be collected.)", "boss3"),
+            new(C, "(The oil separates from the water. The monster collapses into waste that can finally be removed.)", "boss3"),
             new(Sh, "Look! The lights are working again.", "shoal"),
             new(S, "Protecting the ocean isn't one big heroic act. It means facing the damage instead of hiding it beneath the surface."),
             new(S, "Out there, people wash oil from seabirds one feather at a time. It is slow, and many of those birds fly again.", null,

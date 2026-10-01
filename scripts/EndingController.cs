@@ -71,7 +71,7 @@ public partial class EndingController : Control
         main.AddChild(chapters);
         chapters.AddChild(ChapterCard(1, "TIDEPOOL NURSERY", Count(1), "plastic cleared", "light returned"));
         chapters.AddChild(ChapterCard(2, "FROZEN TRENCH", Count(2), "chemical waste contained", "oxygen moving"));
-        chapters.AddChild(ChapterCard(3, "THE OLD LIGHTHOUSE", Count(3), "oil collected", "safe lights returned"));
+        chapters.AddChild(ChapterCard(3, "THE OLD LIGHTHOUSE", Count(3), "oil cleaned", "safe lights returned"));
 
         var total = new PanelContainer();
         total.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(16, 0.72f, UiTheme.GapBlock));
@@ -79,7 +79,7 @@ public partial class EndingController : Control
         var totalRow = new HBoxContainer();
         totalRow.AddThemeConstantOverride("separation", UiTheme.GapSection);
         total.AddChild(totalRow);
-        totalRow.AddChild(BigStat((MemoryLog.Instance?.TotalPollutionCollected ?? 0).ToString(), "POLLUTION OBJECTS RECOVERED"));
+        totalRow.AddChild(BigStat((MemoryLog.Instance?.TotalPollutionCollected ?? 0).ToString(), "POLLUTION OBJECTS CLEANED"));
         totalRow.AddChild(BigStat((MemoryLog.Instance?.Conversations.Count ?? 0).ToString(), "VOICES HEARD"));
         totalRow.AddChild(BigStat((MemoryLog.Instance?.Notes.Count ?? 0).ToString(), "STORIES FOUND"));
         totalRow.AddChild(BigStat((MemoryLog.Instance?.GuardiansRestored ?? 0).ToString(), "MONSTERS CLEANED UP"));

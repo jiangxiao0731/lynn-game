@@ -101,7 +101,7 @@ public static class ChapterCast
             {
                 "I leak a little bit every day. It's hardly enough for anyone to call it a real accident.",
                 "A lot of pollution happens like this: small leaks from many places, day after day.",
-                "Clean me up, and the trench will improve. Stop the other leaks, and it can stay in better shape.",
+                "Clean the leak from me, and your light will get stronger. Stop the other leaks, and this place can stay better.",
             }, 146f),
 
         new("ch2_maskbeast", "Masked Sea Dog", "ch2_maskbeast", 2,
@@ -123,7 +123,7 @@ public static class ChapterCast
             {
                 "A crack appeared in my side. Everything I was supposed to hold leaked right out.",
                 "I used to have a label, but it fell off in the water. Now, no one even knows what I am.",
-                "Wake the Anchor. The currents can carry what's left of me to a place where I can be safely processed.",
+                "Wake the Anchor. Then clean what's leaking from me, so it can be safely processed.",
             }, 126f),
 
         new("ch2_wastebag", "Trash Bag", "ch2_wastebag", 2,
@@ -142,7 +142,7 @@ public static class ChapterCast
             {
                 "Almost everything you see here came through me.",
                 "I didn't choose what I carried. I was born to accept whatever people discharged into me.",
-                "The Chemical Waste Monster formed where the leaks collected. Stop the leaks, then let clean water flow again.",
+                "The Chemical Waste Monster formed where the leaks collected. Clean the smaller leaks first, then face it.",
             }, 210f),
 
         // ---------------------------------------------------------------
@@ -230,7 +230,7 @@ public static class ChapterCast
             {
                 "This is what combustion looks like—when it happens underwater rather than above the surface.",
                 "Greenhouse gases trap heat, and the ocean absorbs most of it.",
-                "You didn't come only to put me out. You came to stop the pollution that created me.",
+                "You didn't come only to put me out. Clean the oil around us first, then stop the monster that grew from it.",
             }, 164f, new()
             {
                 [1] = DialoguePicture.Photo("ch3_rig_fire.jpg",

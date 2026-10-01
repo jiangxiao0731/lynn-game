@@ -3,8 +3,9 @@ using Godot;
 namespace ShallowSeaDream;
 
 /// res://scripts/SkillSystem.cs
-/// Elemental purification skills (split from the god-class). Tracks per-element
-/// charges, validates target + energy, computes damage, fires the water projectile.
+/// Elemental purification skills (split from the god-class). Tracks cleanup power
+/// earned by treating smaller pollution objects, validates target, computes damage,
+/// and fires the purification projectile.
 /// Reads input actions skill_water/skill_ice/skill_electric and store_element.
 public partial class SkillSystem : Node
 {
@@ -31,7 +32,7 @@ public partial class SkillSystem : Node
         else if (@event.IsActionPressed("store_element")) _player?.StoreForm();
     }
 
-    /// Add charges from a shard pickup of the given form.
+    /// Add cleanup power from a treated pollution object of the given form.
     public void AddCharge(ElementForm form, int amount = GameConstants.ElementChargesPerPickup)
     {
         switch (form)
@@ -52,7 +53,7 @@ public partial class SkillSystem : Node
         EmitCharges();
     }
 
-    /// Validate energy + target, consume a charge, apply damage. Emits SkillCast/SkillFailed.
+    /// Validate cleanup power + target, consume a charge, apply damage. Emits SkillCast/SkillFailed.
     public void TryCast(ElementForm form)
     {
         if (ChargesFor(form) <= 0)

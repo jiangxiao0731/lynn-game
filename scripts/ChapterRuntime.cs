@@ -14,7 +14,7 @@ public static class ChapterRuntime
 
     public static int CurrentChapter { get; private set; } = 1;
     public static ElementForm RequiredForm { get; private set; } = ElementForm.Water;
-    public static string FragmentLabel { get; private set; } = "Water Shards";
+    public static string FragmentLabel { get; private set; } = "Plastic cleaned";
     public static string BossName { get; private set; } = GameConstants.MonsterBossName;
     public static string[] Zones { get; private set; } =
         { NarrativeData.ZoneShallows, NarrativeData.ZoneSediment, NarrativeData.ZoneDepths };
@@ -25,21 +25,21 @@ public static class ChapterRuntime
         if (CurrentChapter == 2)
         {
             RequiredForm = ElementForm.Ice;
-            FragmentLabel = "Frost Crystals";
+            FragmentLabel = "Leaks contained";
             BossName = "Chemical Waste Monster";
             Zones = new[] { "Frozen Inlet", "Ice Ridge", "Frost Nursery" };
         }
         else if (CurrentChapter == 3)
         {
             RequiredForm = ElementForm.Electric;
-            FragmentLabel = "Circuit Sparks";
+            FragmentLabel = "Oil cleaned";
             BossName = "Oil Monster";
             Zones = new[] { "Broken Power Grid", "Warm Current", "Silent Lighthouse" };
         }
         else
         {
             RequiredForm = ElementForm.Water;
-            FragmentLabel = "Water Shards";
+            FragmentLabel = "Plastic cleaned";
             BossName = GameConstants.MonsterBossName;
             Zones = new[] { NarrativeData.ZoneShallows, NarrativeData.ZoneSediment, NarrativeData.ZoneDepths };
         }
@@ -53,8 +53,8 @@ public static class ChapterRuntime
                 ObjectiveStage.FindNpc => "Find Lanternfish: learn why the water stopped",
                 ObjectiveStage.TalkStarfish => "Talk to the resident by the first Flow Switch",
                 ObjectiveStage.TalkSeaweed => "Follow each resident clue, then restore the Flow Switches",
-                ObjectiveStage.CollectShards => "Collect Frost Crystals to contain the leaks",
-                ObjectiveStage.DefeatBoss => "Use Ice from a distance to clean chemical waste",
+                ObjectiveStage.CollectShards => "Contain leaking waste so Shimmer can face the monster",
+                ObjectiveStage.DefeatBoss => "Keep distance. Press 2 to seal the chemical waste",
                 ObjectiveStage.ExitLevel => "Follow the clean current toward the lighthouse",
                 _ => "Frozen Trench is flowing again",
             };
@@ -64,8 +64,8 @@ public static class ChapterRuntime
                 ObjectiveStage.FindNpc => "Find the Lost Shoal: learn why the reef went dark",
                 ObjectiveStage.TalkStarfish => "Talk to the resident by the first relay",
                 ObjectiveStage.TalkSeaweed => "Follow each resident clue, then reconnect the relays",
-                ObjectiveStage.CollectShards => "Collect Circuit Sparks for the cleanup system",
-                ObjectiveStage.DefeatBoss => "Use Electric from a distance to pull oil away",
+                ObjectiveStage.CollectShards => "Clean oil patches so Shimmer can power the relay strike",
+                ObjectiveStage.DefeatBoss => "Keep distance. Press 3 to pull the oil monster apart",
                 ObjectiveStage.ExitLevel => "Light the Silent Lighthouse",
                 _ => "Safe lights have returned to the ocean",
             };

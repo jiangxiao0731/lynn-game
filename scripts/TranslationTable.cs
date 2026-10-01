@@ -18,35 +18,35 @@ public static class TranslationTable
     {
         // Status / HUD hints
         ["STATUS_DEFAULT_HINT"] = ("探索潮湾，寻找岚婆婆。", "Explore the nursery and find Granny Lan."),
-        ["STATUS_NEED_ENERGY"] = ("没有碎片，无法释放。", "You need a shard to use an element."),
+        ["STATUS_NEED_ENERGY"] = ("先处理更多污染物，微光才够强。", "Clean more pollution first. Shimmer needs more cleanup power."),
         ["STATUS_NEED_TARGET"] = ("附近没有可净化的目标。", "No polluted creature is close enough."),
-        ["STATUS_FIRST_WATER"] = ("拾取了第一枚水碎片，按 1 释放水元素。", "Water Shard collected. Press 1 to use Water."),
-        ["STATUS_FORM_WATER"] = ("化为水元素水母。", "Water form active."),
-        ["STATUS_BOSS_GATE"] = ("需要 8 枚水碎片才能净化塑料怪物。", "Collect 8 Water Shards before you approach the Plastic Monster."),
+        ["STATUS_FIRST_WATER"] = ("处理掉第一件塑料污染。净化力增加，遇到大怪时按 1 反击。", "First plastic pollutant cleaned. Cleanup power is building—press 1 near the monster."),
+        ["STATUS_FORM_WATER"] = ("水流净化已准备好。", "Water cleanup is ready."),
+        ["STATUS_BOSS_GATE"] = ("先处理 8 件塑料污染，再去压制塑料怪物。", "Clean 8 plastic pollutants before you face the Plastic Monster."),
 
         // Skill feedback templates ({0} = form label / amount)
-        ["SKILL_RELEASED_TEMPLATE"] = ("{0}已释放，净化生效。", "{0} released. Purification worked."),
+        ["SKILL_RELEASED_TEMPLATE"] = ("{0}已释放，净化生效。", "{0} released. The cleanup worked."),
         ["SKILL_INEFFECTIVE_TEMPLATE"] = ("{0}效果有限。", "{0} had little effect here."),
         ["DAMAGE_RECEIVED_TEMPLATE"] = ("水母受到 {0} 点污染伤害。", "Shimmer took {0} pollution damage."),
 
         // Form labels
         ["FORM_BASE"] = ("基础水母", "Shimmer"),
-        ["FORM_WATER"] = ("水元素水母", "Water Form"),
-        ["FORM_ICE"] = ("冰元素水母", "Ice Form"),
-        ["FORM_ELECTRIC"] = ("电元素水母", "Electric Form"),
+        ["FORM_WATER"] = ("水流净化", "Water Flow"),
+        ["FORM_ICE"] = ("冰封净化", "Ice Seal"),
+        ["FORM_ELECTRIC"] = ("电流净化", "Electric Pulse"),
 
         // Objective checklist (6 stages)
         ["OBJ_FIND_NPC"] = ("找岚婆婆：了解这片海怎么坏掉的", "Find Granny Lan: learn what happened here"),
         ["OBJ_TALK_STARFISH"] = ("问海星：塑料为什么会伤害动物", "Ask Starfish why plastic hurts animals"),
         ["OBJ_TALK_SEAWEED"] = ("沿路听居民说完，再问海草怎么接近垃圾堆", "Follow the residents' story, then ask Seaweed about the trash pile"),
-        ["OBJ_COLLECT_SHARDS"] = ("收集水碎片：准备清理塑料", "Collect water shards for the cleanup"),
-        ["OBJ_DEFEAT_BOSS"] = ("保持距离，用水清理塑料怪物", "Keep distance and clean the Plastic Monster with Water"),
+        ["OBJ_COLLECT_SHARDS"] = ("处理塑料瓶和垃圾，让微光变强", "Clean plastic bottles and trash so Shimmer can fight"),
+        ["OBJ_DEFEAT_BOSS"] = ("保持距离，按 1 用净化力压制塑料怪物", "Keep distance. Press 1 to push back the Plastic Monster"),
         ["OBJ_EXIT_LEVEL"] = ("带着新的洋流前往下一片海", "Follow the new current to the next sea"),
         ["OBJ_COMPLETE"] = ("章节完成", "Chapter complete"),
 
         // Minimap legend
-        ["MINIMAP_LEGEND"] = ("🟢微光 🟡岚婆婆 🔵碎片 🔴巢母 🟤汽油桶 ⚪出口",
-                              "🟢Shimmer  🟡Granny Lan  🔵Shard  🔴Boss  🟤Barrel  ⚪Exit"),
+        ["MINIMAP_LEGEND"] = ("🟢微光 🟡岚婆婆 🔵污染物 🔴巢母 🟤汽油桶 ⚪出口",
+                              "🟢Shimmer  🟡Granny Lan  🔵Pollution  🔴Boss  🟤Barrel  ⚪Exit"),
 
         // Monster codex
         ["MONSTER_TITLE"] = ("怪物图鉴", "Creature Guide"),
@@ -57,12 +57,12 @@ public static class TranslationTable
         ["UI_PAUSE_LABEL"] = ("游戏已暂停", "Paused"),
         ["RESTART_HINT"] = ("按 T 重新开始", "Press T to restart"),
         ["SETTLEMENT_TITLE"] = ("净化完成", "Area Restored"),
-        ["SETTLEMENT_SUMMARY"] = ("塑料怪物已被清理，海之钥浮现。\n更冷的水流正从下方呼唤。",
-                                  "The Plastic Monster has been cleared away, and the Sea Key has surfaced.\nA colder current is calling from below."),
+        ["SETTLEMENT_SUMMARY"] = ("塑料怪物已被清理，干净洋流浮现。\n更冷的水流正从下方呼唤。",
+                                  "The Plastic Monster has been cleared away, and a clean current has surfaced.\nA colder current is calling from below."),
         ["FAILURE_LABEL"] = ("微光暗淡了…", "Shimmer Faded"),
 
         // Resume notice
-        ["RESUME_NOTICE_TEMPLATE"] = ("进度已恢复…碎片:{0}", "Progress restored. Shards: {0}"),
+        ["RESUME_NOTICE_TEMPLATE"] = ("进度已恢复…已处理污染物:{0}", "Progress restored. Pollution cleaned: {0}"),
 
         // HP label
         ["HP_LABEL_TEMPLATE"] = ("生命 {0} / {1}", "HP {0} / {1}"),
@@ -89,8 +89,8 @@ public static class TranslationTable
         // Soft death / rest (item 4)
         ["SOFT_RESPAWN"] = ("微光黯淡了片刻……潮水把你托回安全处。", "Shimmer fades for a moment. The tide carries you back to safety."),
         ["REST_PROMPT"] = ("在此小憩，恢复微光？", "Rest here and restore Shimmer's light?"),
-        ["BOSS_PURIFY_HINT"] = ("和塑料怪物保持距离，按 1 释放水流。", "Keep distance from the Plastic Monster. Press 1 to release Water."),
-        ["BOSS_PURIFIED"] = ("塑料怪物被清理，被困动物回到水流中。", "The Plastic Monster is cleared away. The trapped animals return to the current."),
+        ["BOSS_PURIFY_HINT"] = ("塑料怪物开始攻击了。后退，按 1 释放刚积攒的净化力。", "The Plastic Monster is attacking. Back up, then press 1 with your cleanup power."),
+        ["BOSS_PURIFIED"] = ("塑料怪物散开了。海里的塑料污染被清走，被困动物回到水流中。", "The Plastic Monster broke apart. The plastic pollution is gone, and trapped animals return to the current."),
 
         // Controls sheet (verbatim from brief §5)
         ["CONTROLS_SHEET"] = ("←↑→↓ 移动 / 1·2·3 释放 水·冰·电 / E 互动 / R 收回当前形态 / T 重新开始当前关卡 / Esc 暂停·继续",

@@ -146,17 +146,17 @@ public static class DialogueData
         d[GrannyLan] = new DialogueTimeline(GrannyLan, new List<DialogueLine>
         {
             new(SpeakerGranny, "Your light is still clear, Shimmer. That's a good sign.", "npc1giving"),
-            new(SpeakerGranny, "Different kinds of pollution need different powers to clean up.", "npc1giving"),
-            new(SpeakerGranny, "Let's start with Water. I'll show you how it works.", "npc1giving"),
+            new(SpeakerGranny, "You are not here to collect water. Your own light is the thing that cleans.", "npc1giving"),
+            new(SpeakerGranny, "Start small. Clean the plastic bottles and loose trash first, and your light will grow steadier.", "npc1giving"),
             new(SpeakerGranny, "Will you help me clean up this bay?", "npc1giving", new List<DialogueChoice>
             {
                 new("I'll give it a try.", SetFlag: "granny_accept", GotoLabel: "granny_yes"),
                 new("I'm a little scared.", SetFlag: "granny_hesitate", GotoLabel: "granny_soft"),
             }),
             new(SpeakerGranny, "It's okay to be scared. I'll guide you through the first part.", "npc1giving", Label: "granny_soft"),
-            new(SpeakerGranny, "Go gather the nearby Water Element fragments. When you reach the Plastic Monster, press the 1 key to release the water flow.", "npc1giving", Label: "granny_yes",
-                Picture: new(AssetLoader.ChapterElement(1), "Look for these · 8 are scattered through the Shallows")),
-            new(SpeakerGranny, "You'll learn Ice and Electric later. For now, let's take it one step at a time.", "npc1giving"),
+            new(SpeakerGranny, "Go clean the nearby plastic pieces. When the Plastic Monster attacks, stay back and press 1 to push that cleaned-up power into it.", "npc1giving", Label: "granny_yes",
+                Picture: new(AssetLoader.ChapterElement(1), "Clean these · 8 pieces before the monster")),
+            new(SpeakerGranny, "Later, you will clean different kinds of pollution in different ways. For now, one piece at a time.", "npc1giving"),
             new(SpeakerShimmer, "I will. I'll remember every light we bring back.", "npc1giving"),
         });
 
@@ -167,7 +167,7 @@ public static class DialogueData
             new(SpeakerShimmer, "What should I watch out for?", null, new List<DialogueChoice>
             {
                 new("Tell me the worst part.", SetFlag: "starfish_more", GotoLabel: "starfish_more"),
-                new("I get it. I need to clean it.", SetFlag: "starfish_ready", GotoLabel: "starfish_continue"),
+                new("I get it. I need to clean the plastic.", SetFlag: "starfish_ready", GotoLabel: "starfish_continue"),
             }),
             new(SpeakerStarfish, "The worst part is that it looks like food. No one means to eat trash, but hungry animals still do.", "starfish", Label: "starfish_more"),
             new(SpeakerStarfish, "Far above us, seabirds feed plastic to their chicks without knowing. Their stomachs fill up, and there is no room left for real food.", "starfish",
@@ -187,8 +187,8 @@ public static class DialogueData
                 new("Yes. Keep it simple.", SetFlag: "seaweed_plan", GotoLabel: "seaweed_plan"),
                 new("I can figure it out.", SetFlag: "seaweed_skip_plan", GotoLabel: "seaweed_continue"),
             }),
-            new(SpeakerSeaweed, "Collect light first. Then stand far enough away and use Water. Do not swim into the pile.", "seaweed", Label: "seaweed_plan"),
-            new(SpeakerSeaweed, "Collect the shards first. Then, use Water on the loosest part of the trash pile.", "seaweed", Label: "seaweed_continue"),
+            new(SpeakerSeaweed, "Clean the smaller plastic first. Then stand far enough away and press 1. Do not swim into the pile.", "seaweed", Label: "seaweed_plan"),
+            new(SpeakerSeaweed, "Use your light on the smaller trash first. Then press 1 on the loosest part of the big pile.", "seaweed", Label: "seaweed_continue"),
             new(SpeakerSeaweed, "If it moves toward you, back up. Cleaning it does not mean hugging it.", "seaweed"),
         });
 
@@ -213,7 +213,7 @@ public static class DialogueData
         {
             new(SpeakerShimmer, "The pile is breaking apart!"),
             new(SpeakerShimmer, "The trapped animals are returning to the current."),
-            new(SpeakerShimmer, "There's something new in the current. Maybe it can lead me to the next area."),
+            new(SpeakerShimmer, "The plastic is gone. Something clean is moving in the current now."),
         });
 
         return d;

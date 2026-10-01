@@ -65,7 +65,7 @@ public partial class SettlementPanel : Control
         var metrics = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         metrics.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         layout.AddChild(metrics);
-        metrics.AddChild(MetricCard(PollutionIcon(chapter), "POLLUTION LIFTED", CollectedFor(chapter).ToString()));
+        metrics.AddChild(MetricCard(PollutionIcon(chapter), "POLLUTION CLEANED", CollectedFor(chapter).ToString()));
         metrics.AddChild(MetricCard(AssetLoader.ChapterBossPortrait(chapter), "MONSTER", "CLEANED UP"));
         metrics.AddChild(MetricCard(AssetLoader.MemoryIcon, "SEA CHANGE", SeaChange(chapter)));
 
@@ -215,7 +215,7 @@ public partial class SettlementPanel : Control
     private static string TransformationLine(int c) => c switch
     {
         2 => "stagnant water  →  moving oxygen",
-        3 => "waste heat  →  guided energy",
+        3 => "oil and heat  →  safe light",
         _ => "buried light  →  living current",
     };
     private static string SeaChange(int c) => c switch

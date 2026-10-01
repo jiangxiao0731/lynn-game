@@ -27,7 +27,7 @@ public partial class TutorialController : Control
         ("How I Move",
          "Use the arrow keys or WASD to swim.\n\nPress E when I get close to someone or something. That's how I talk, check things, and listen.\n\nIf I learn an element, press 1, 2, or 3 to use it. Press R if I need to go back to just being me."),
         ("First, Granny Lan",
-         "Granny Lan knows this bay better than anyone.\n\nIf I can find her, she can help me understand what happened here.\n\nThen I can collect the glowing pieces, bring water back through the gaps, and help this place breathe again."),
+         "Granny Lan knows this bay better than anyone.\n\nIf I can find her, she can help me understand what happened here.\n\nThen I can use my own light to clean the plastic pieces. If I clean enough, I'll have the strength to face the big monster."),
     };
 
     public override void _Ready()

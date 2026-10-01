@@ -3,13 +3,12 @@ using Godot;
 namespace ShallowSeaDream;
 
 /// res://scripts/ElementSpawner.cs
-/// Spawns water-shard pickups across the map grid and handles pickup detection
-/// (split from the god-class). Each shard carries a typed ElementForm rather than
-/// the original "冰"/"电" node-name heuristic.
+/// Spawns small pollution pickups across the map grid and handles cleanup detection.
+/// Each cleaned object grants one stored cleanup release for the chapter element.
 public partial class ElementSpawner : Node2D
 {
     [Export] public float PickupDistance = GameConstants.ElementPickupDistance;
-    /// How many shards to keep available on the map at once.
+    /// How many pollution objects to keep available on the map at once.
     /// The map grew from 3600 to ~17200 wide, so the old count of 8 left long empty
     /// stretches. This keeps roughly the same pickup density per screen.
     [Export] public int ActiveShardTarget = 22;
@@ -20,7 +19,7 @@ public partial class ElementSpawner : Node2D
     private bool _firstWaterCollected;
     private float _bob;
     private float _lockedHintCooldown;
-    private int _memoryIndex; // each pickup unlocks the next 微光潮汐记忆 (item 3)
+    private int _memoryIndex; // each cleaned object unlocks the next 微光潮汐记忆 (item 3)
 
     // Full-map grid spawn points (port WATER_ELEMENT_SPAWN_POINTS).
     private readonly System.Collections.Generic.List<Vector2> _spawnPoints = new();
@@ -117,7 +116,7 @@ public partial class ElementSpawner : Node2D
                     if (_lockedHintCooldown <= 0f)
                     {
                         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                            "Listen to the residents before you collect the scattered Ocean Memories.");
+                            "Listen to the residents first. Then clean the scattered pollution.");
                         _lockedHintCooldown = 2f;
                     }
                     continue;
@@ -166,15 +165,15 @@ public partial class ElementSpawner : Node2D
         }
     }
 
-    /// Spawn a single shard of the given form at a clear grid point.
+    /// Spawn a single pollution object at a clear grid point.
     public void SpawnShard(ElementForm form, Vector2 position)
     {
         var shard = new Sprite2D
         {
-            Name = "WaterShard",
+            Name = "PlasticPollution",
             Position = position,
-            // Shards are now 微光潮汐记忆 motes (item 3): prefer the memory icon, then the
-            // water-shard icon, then a procedural blob.
+            // These are pollution objects Shimmer cleans with her own light: prefer
+            // the chapter pollutant art, then fall back to an old memory icon.
             Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterRuntime.CurrentChapter))
                       ?? AssetLoader.Texture(AssetLoader.MemoryIcon)
                       ?? AssetLoader.Texture(AssetLoader.ShardIcon)
@@ -205,8 +204,13 @@ public partial class ElementSpawner : Node2D
         _skills?.AddCharge(form);
         AudioManager.Instance?.PlaySfx("element_pickup");
         Events.Instance?.EmitSignal(Events.SignalName.ElementPickedUp, (int)form);
+        if (form == ElementForm.Water && _objectives != null && _objectives.ShardsCollected >= ObjectiveManager.ShardThreshold)
+        {
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                "Enough plastic is cleaned. Shimmer can face the Plastic Monster now.");
+        }
 
-        // Item 3 — collecting a shard is now a narrative act: unlock the next memory
+        // Item 3 — cleaning a pollutant is now a narrative act: unlock the next memory
         // vignette and record it in the log. GameSceneController plays it via dialogue.
         if (form == ElementForm.Water && _memoryIndex < NarrativeData.MemoryCount)
         {

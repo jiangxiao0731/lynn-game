@@ -24,11 +24,12 @@ public partial class BossController : CharacterBody2D
     public int CurrentHealth { get; private set; } = GameConstants.BossMaxHealth;
     public bool IsDefeated { get; private set; }
     /// Chapters two and three open their arena after the third restoration node, but
-    /// the guardian stays dormant until the player has gathered the required shards.
+    /// the guardian stays invulnerable until the player has cleaned enough smaller
+    /// pollution objects to store cleanup power.
     public bool CombatEnabled { get; set; } = true;
     /// Hostility and vulnerability are separate. The guardian begins attacking as
     /// soon as its arena opens, even while the player is still gathering enough
-    /// elemental charge to purify it.
+    /// cleanup charge to purify it.
     public bool AggressionEnabled { get; set; } = true;
     public Node2D? NextElementDrop { get; private set; }
     /// Set true once the player has come close enough to read the codex profile.
@@ -110,10 +111,10 @@ public partial class BossController : CharacterBody2D
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "The Chemical Waste Monster is attacking. Back up, then press 2 to release Ice."
+                ? "The Chemical Waste Monster is attacking. Back up, then press 2 with your cleanup power."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "The Oil Monster is attacking. Back up, then press 3 to release Electric."
-                    : "The Plastic Monster is attacking. Back up, then press 1 to release Water.";
+                    ? "The Oil Monster is attacking. Back up, then press 3 with your cleanup power."
+                    : "The Plastic Monster is attacking. Back up, then press 1 with your cleanup power.";
             Events.Instance?.EmitSignal(Events.SignalName.CombatHint, hint);
         }
 
@@ -149,9 +150,9 @@ public partial class BossController : CharacterBody2D
 
     private string AttackInstruction() => EffectiveElement switch
     {
-        ElementForm.Ice => "HIT! Back up, then press 2 to strike with Ice.",
-        ElementForm.Electric => "HIT! Back up, then press 3 to strike with Electric.",
-        _ => "HIT! Back up, then press 1 to strike with Water.",
+        ElementForm.Ice => "HIT! Back up, then press 2 to seal it with cleanup power.",
+        ElementForm.Electric => "HIT! Back up, then press 3 to pull it apart.",
+        _ => "HIT! Back up, then press 1 to wash the plastic apart.",
     };
 
     private void AnimateAttack()
@@ -237,7 +238,7 @@ public partial class BossController : CharacterBody2D
         {
             Name = "ElementOrb",
             // ChapterElement is the chapter's pollution pickup (bottle/sludge/oil),
-            // not the next-form key. Use the supplied painted energy orb here and
+            // not the next-form key. Use the supplied painted clean-current orb here and
             // distinguish its element with colour plus a hand-drawn glyph.
             Texture = AssetLoader.Texture(AssetLoader.ShardIcon)
                       ?? AssetLoader.Texture(AssetLoader.MemoryIcon)
@@ -249,7 +250,7 @@ public partial class BossController : CharacterBody2D
         drop.AddChild(MakeElementGlyph(NextUnlockedElement, elementColor));
 
         var label = UiTheme.WorldRole(UiTheme.TypeRole.Name,
-            $"{GameStrings.FormLabel(NextUnlockedElement)} TIDAL KEY");
+            $"{GameStrings.FormLabel(NextUnlockedElement)} CURRENT");
         label.Position = new Vector2(-240f, 105f);
         label.Size = new Vector2(480f, 44f);
         drop.AddChild(label);
@@ -260,7 +261,7 @@ public partial class BossController : CharacterBody2D
 
         NextElementDrop = drop;
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-            $"A {GameStrings.FormLabel(NextUnlockedElement)} current has appeared. Swim close to collect it.");
+            $"A clean {GameStrings.FormLabel(NextUnlockedElement)} current appeared. Swim close to follow it.");
     }
 
     private void UpdateNextElementDrop(float delta)
@@ -288,7 +289,7 @@ public partial class BossController : CharacterBody2D
         _player?.SetForm(NextUnlockedElement);
         Events.Instance?.EmitSignal(Events.SignalName.NextLevelElementUnlocked, (int)NextUnlockedElement);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-            $"{GameStrings.FormLabel(NextUnlockedElement)} unlocked. The way to the next sea is open.");
+            $"{GameStrings.FormLabel(NextUnlockedElement)} is ready. The way to the next sea is open.");
         AudioManager.Instance?.PlaySfx("objective_advance");
 
         var tween = drop.CreateTween();

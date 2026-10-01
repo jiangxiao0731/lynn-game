@@ -164,7 +164,7 @@ public partial class LogPanel : CanvasLayer
         NarrativeData.Shoal => DialogueData.SpeakerShoal,
         NarrativeData.BossPre => "Plastic Monster · Before Cleanup",
         NarrativeData.BossMid => "Plastic Monster · Breaking Apart",
-        NarrativeData.Ending => "Finale · Sea Key",
+        NarrativeData.Ending => "Finale · Clean Current",
         NarrativeData.Chapter2Opening => "Opening · Frozen Trench",
         NarrativeData.Chapter2Guardian => "Chemical Waste Monster · First Contact",
         NarrativeData.Chapter2Ending => "Frozen Trench · Restored",
