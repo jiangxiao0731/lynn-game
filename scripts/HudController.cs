@@ -313,31 +313,31 @@ public partial class HudController : CanvasLayer
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         statusBox.AddChild(_statusLabel);
 
-        // Damage feedback is an action cue, not another dialogue card. It sits directly
-        // above the stored-cleanup dock, using the same painted material and one warm
-        // key cap. The player reads the key first and the verb second.
-        _combatPanel = Track(Surface("CombatPrompt", new Vector2(360, 0), 0.86f));
-        Pin(_combatPanel, Control.LayoutPreset.CenterBottom);
-        _combatRestPosition = new Vector2(-180f, -190f);
+        // Damage feedback is an action cue, not another dialogue card. It sits near
+        // the lower-right play area after a hit, but leaves the movement button and
+        // cleanup dock readable.
+        _combatPanel = Track(Surface("CombatPrompt", new Vector2(430, 0), 0.78f));
+        Pin(_combatPanel, Control.LayoutPreset.BottomRight);
+        _combatRestPosition = new Vector2(-560f, -178f);
         _combatPanel.Position = _combatRestPosition;
         _combatPanel.Visible = false;
         AddChild(_combatPanel);
         _combatPanel.AddThemeStyleboxOverride("panel", CombatPanelStyle());
-        var combatInset = Inset(_combatPanel, 22, 12);
+        var combatInset = Inset(_combatPanel, 20, 11);
         var combatRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         combatRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         combatInset.AddChild(combatRow);
-        var press = UiTheme.Role(UiTheme.TypeRole.Hint, "PRESS");
+        var press = UiTheme.Role(UiTheme.TypeRole.Hint, "AFTER HIT  PRESS");
         press.VerticalAlignment = VerticalAlignment.Center;
         combatRow.AddChild(press);
-        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(54, 50) };
+        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(48, 44) };
         keyFrame.AddThemeStyleboxOverride("panel", CombatKeyStyle());
         combatRow.AddChild(keyFrame);
         _combatKeyLabel = UiTheme.Role(UiTheme.TypeRole.Name, "1");
         _combatKeyLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _combatKeyLabel.VerticalAlignment = VerticalAlignment.Center;
         keyFrame.AddChild(_combatKeyLabel);
-        _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Name, "PURIFY NOW");
+        _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Name, "CLEANSE BACK");
         _combatTextLabel.AddThemeColorOverride("font_color", UiTheme.Accent);
         _combatTextLabel.VerticalAlignment = VerticalAlignment.Center;
         combatRow.AddChild(_combatTextLabel);
@@ -504,7 +504,7 @@ public partial class HudController : CanvasLayer
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
     }
 
-    private static StyleBox CombatPanelStyle() => UiTheme.GlassPanel(14, 0.82f, 0);
+    private static StyleBox CombatPanelStyle() => UiTheme.GlassPanel(14, 0.74f, 0);
 
     private static StyleBoxFlat CombatKeyStyle() => new()
     {
@@ -553,7 +553,7 @@ public partial class HudController : CanvasLayer
         };
         _combatKeyLabel.Text = key;
         _combatKeyLabel.AddThemeColorOverride("font_color", UiTheme.InkOnLight);
-        _combatTextLabel.Text = "PURIFY NOW";
+        _combatTextLabel.Text = "CLEANSE BACK";
         // A combat cue replaces a generic toast instead of stacking over it.
         _statusRevision++;
         _statusPanel.Visible = false;
@@ -566,7 +566,7 @@ public partial class HudController : CanvasLayer
             .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
         enter.TweenProperty(_combatPanel, "position", _combatRestPosition, 0.22f)
             .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
-        await ToSignal(GetTree().CreateTimer(1.8), SceneTreeTimer.SignalName.Timeout);
+        await ToSignal(GetTree().CreateTimer(3.0), SceneTreeTimer.SignalName.Timeout);
         if (revision != _combatRevision || !IsInstanceValid(_combatPanel)) return;
         var tween = CreateTween();
         tween.TweenProperty(_combatPanel, "modulate:a", 0f, 0.22f)

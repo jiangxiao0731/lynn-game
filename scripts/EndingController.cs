@@ -70,14 +70,14 @@ public partial class EndingController : Control
 
         var centre = new CenterContainer();
         margin.AddChild(centre);
-        var composition = new HBoxContainer { CustomMinimumSize = new Vector2(1500, 760) };
-        composition.AddThemeConstantOverride("separation", 72);
+        var composition = new HBoxContainer { CustomMinimumSize = new Vector2(1240, 700) };
+        composition.AddThemeConstantOverride("separation", 54);
         centre.AddChild(composition);
 
         _story = new VBoxContainer
         {
             Alignment = BoxContainer.AlignmentMode.Center,
-            CustomMinimumSize = new Vector2(760, 700),
+            CustomMinimumSize = new Vector2(700, 640),
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
         };
         _story.AddThemeConstantOverride("separation", UiTheme.GapSection);
@@ -134,7 +134,7 @@ public partial class EndingController : Control
 
         var heroStage = new Control
         {
-            CustomMinimumSize = new Vector2(600, 720),
+            CustomMinimumSize = new Vector2(420, 620),
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             MouseFilter = MouseFilterEnum.Ignore,
         };
@@ -143,8 +143,8 @@ public partial class EndingController : Control
         _heroGlow = new TextureRect
         {
             Texture = PlaceholderArt.SoftGlow(new Color(0.54f, 0.94f, 0.90f, 0.72f), 256),
-            Position = new Vector2(30, 70),
-            Size = new Vector2(560, 560),
+            Position = new Vector2(40, 96),
+            Size = new Vector2(340, 340),
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             StretchMode = TextureRect.StretchModeEnum.Scale,
             MouseFilter = MouseFilterEnum.Ignore,
@@ -154,8 +154,8 @@ public partial class EndingController : Control
         _hero = new TextureRect
         {
             Texture = AssetLoader.Texture(AssetLoader.FormSheet(ElementForm.Water)),
-            Position = new Vector2(54, 72),
-            Size = new Vector2(520, 520),
+            Position = new Vector2(68, 116),
+            Size = new Vector2(284, 284),
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
             MouseFilter = MouseFilterEnum.Ignore,
@@ -163,8 +163,9 @@ public partial class EndingController : Control
         heroStage.AddChild(_hero);
 
         var finalLine = UiTheme.WorldRole(UiTheme.TypeRole.Meta, "SHIMMER · KEEPER OF THE LAST LIGHT");
-        finalLine.Position = new Vector2(70, 610);
-        finalLine.Size = new Vector2(500, 48);
+        finalLine.Position = new Vector2(0, 486);
+        finalLine.Size = new Vector2(420, 48);
+        finalLine.HorizontalAlignment = HorizontalAlignment.Center;
         heroStage.AddChild(finalLine);
     }
 

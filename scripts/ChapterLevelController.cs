@@ -181,22 +181,27 @@ public partial class ChapterLevelController : Node2D
                 map.AddChild(art);
             }
 
-            // Sampled from one continuous curve rather than a per-panel alpha step, so
-            // the veil does not draw a band exactly on each backdrop seam.
-            float t0 = x0 / MapWidth, t1 = (x0 + panelWidth) / MapWidth;
-            var veil = new TextureRect
+            if (ChapterId != 3)
             {
-                Name = $"DamageVeil{i + 1}", Position = new Vector2(x0, 0), Size = new Vector2(panelWidth, MapHeight),
-                Texture = PlaceholderArt.HorizontalGradient(DamageAt(t0), DamageAt(t1)),
-                StretchMode = TextureRect.StretchModeEnum.Scale,
-                ZIndex = -96, MouseFilter = Control.MouseFilterEnum.Ignore,
-            };
-            map.AddChild(veil);
-            _veils.Add(veil);
-
+                // Sampled from one continuous curve rather than a per-panel alpha step,
+                // so the veil does not draw a band exactly on each backdrop edge.
+                float t0 = x0 / MapWidth, t1 = (x0 + panelWidth) / MapWidth;
+                var veil = new TextureRect
+                {
+                    Name = $"DamageVeil{i + 1}", Position = new Vector2(x0, 0), Size = new Vector2(panelWidth, MapHeight),
+                    Texture = PlaceholderArt.HorizontalGradient(DamageAt(t0), DamageAt(t1)),
+                    StretchMode = TextureRect.StretchModeEnum.Scale,
+                    ZIndex = -96, MouseFilter = Control.MouseFilterEnum.Ignore,
+                };
+                map.AddChild(veil);
+                _veils.Add(veil);
+            }
         }
-        MapSeamBlender.Add(map, ChapterMap.PanelStart(ChapterId, 1), MapHeight, -94, Palette.ArenaTint(ChapterId), ChapterId * 100 + 1);
-        MapSeamBlender.Add(map, ChapterMap.PanelStart(ChapterId, 2), MapHeight, -94, Palette.ArenaTint(ChapterId), ChapterId * 100 + 2);
+        if (ChapterId != 3)
+        {
+            MapSeamBlender.Add(map, ChapterMap.PanelStart(ChapterId, 1), MapHeight, -94, Palette.ArenaTint(ChapterId), ChapterId * 100 + 1);
+            MapSeamBlender.Add(map, ChapterMap.PanelStart(ChapterId, 2), MapHeight, -94, Palette.ArenaTint(ChapterId), ChapterId * 100 + 2);
+        }
     }
 
     private void BuildBoundsAndMaze(Node2D map)
@@ -803,7 +808,9 @@ public partial class ChapterLevelController : Node2D
         if (state == null || state.CurrentLevel != ChapterId || state.ObjectiveStage == ObjectiveStage.Complete) return;
         // Chapter interaction topology is short; resume safely at the start rather
         // than restoring half-removed runtime gates without their authored visuals.
-        _player.RestoreState(state.CurrentHealth, RequiredForm);
+        // Do not force the chapter's cleanup form here: the visual change should
+        // happen from cleaning pollution or releasing cleanup power, not from load.
+        _player.RestoreState(state.CurrentHealth, ElementForm.Base);
         _skills.RestoreCharges(0, 0, 0);
         Events.Instance?.EmitSignal(Events.SignalName.ShardProgressChanged, _fragments, RequiredFragments);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
