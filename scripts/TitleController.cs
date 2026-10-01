@@ -75,12 +75,8 @@ public partial class TitleController : Control
         menu.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         menu.Alignment = BoxContainer.AlignmentMode.Begin;
 
-        var saved = SaveManager.Instance?.LoadState();
-        int savedLevel = saved?.CurrentLevel ?? 1;
-        string chapterText = savedLevel == 2 ? "CHAPTER 2  ·  FROZEN TRENCH"
-            : savedLevel == 3 ? "CHAPTER 3  ·  THE OLD LIGHTHOUSE" : "CHAPTER 1  ·  TIDEPOOL NURSERY";
-        var chapter = UiTheme.Role(UiTheme.TypeRole.Eyebrow, chapterText);
-        menu.AddChild(chapter);
+        var storyLabel = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "AN OCEAN RESTORATION STORY");
+        menu.AddChild(storyLabel);
 
         // Editorial, left-aligned title lockup. One restrained glow belongs to the
         // title only; buttons and supporting text remain quiet.
@@ -93,10 +89,6 @@ public partial class TitleController : Control
         title.AddThemeConstantOverride("outline_size", 8);
         menu.AddChild(title);
         StartTitlePulse(title);
-
-        var subtitle = UiTheme.Role(UiTheme.TypeRole.Meta, "AN OCEAN RESTORATION STORY");
-        subtitle.HorizontalAlignment = HorizontalAlignment.Left;
-        menu.AddChild(subtitle);
 
         var premise = UiTheme.Role(UiTheme.TypeRole.Body, "Protect the last light. Help a polluted ocean recover.", wrap: true);
         premise.CustomMinimumSize = new Vector2(620, 64);
