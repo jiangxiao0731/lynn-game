@@ -250,11 +250,43 @@ public static class ChapterCast
     {
         foreach (var m in Members)
         {
-            var lines = m.Lines
-                .Select((text, i) => new DialogueLine(m.DisplayName, text, m.PortraitId,
-                    Picture: m.Pictures != null && m.Pictures.TryGetValue(i, out var pic) ? pic : null))
-                .ToList();
+            var lines = new List<DialogueLine>();
+            if (m.Lines.Count > 0)
+                lines.Add(MakeLine(m, 0));
+
+            if (m.Lines.Count > 1)
+            {
+                string detailLabel = $"{m.Id}_detail";
+                string continueLabel = $"{m.Id}_continue";
+                lines.Add(new DialogueLine(m.DisplayName, ChoicePrompt(m), m.PortraitId, new List<DialogueChoice>
+                {
+                    new("Yes, tell me.", SetFlag: $"{m.Id}_asked", GotoLabel: detailLabel),
+                    new("I get it.", SetFlag: $"{m.Id}_ready", GotoLabel: continueLabel),
+                }));
+                lines.Add(new DialogueLine(m.DisplayName, ChoiceDetail(m), m.PortraitId, Label: detailLabel));
+                lines.Add(MakeLine(m, 1, continueLabel));
+                for (int i = 2; i < m.Lines.Count; i++) lines.Add(MakeLine(m, i));
+            }
+
             yield return new KeyValuePair<string, DialogueTimeline>(m.Id, new DialogueTimeline(m.Id, lines));
         }
     }
+
+    private static DialogueLine MakeLine(CastMember member, int index, string? label = null) =>
+        new(member.DisplayName, member.Lines[index], member.PortraitId, Label: label,
+            Picture: member.Pictures != null && member.Pictures.TryGetValue(index, out var pic) ? pic : null);
+
+    private static string ChoicePrompt(CastMember member) => member.Chapter switch
+    {
+        2 => "Do you want the short version?",
+        3 => "Do you want the part people usually miss?",
+        _ => "Do you want me to say it plainly?",
+    };
+
+    private static string ChoiceDetail(CastMember member) => member.Chapter switch
+    {
+        2 => "A lot of small leaks became one big problem. That is why this place feels empty.",
+        3 => "The reef is not weak. It is being hit by oil, heat, and time all at once.",
+        _ => "People threw things away, and the ocean had to carry them.",
+    };
 }

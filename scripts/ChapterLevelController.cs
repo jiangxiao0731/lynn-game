@@ -263,6 +263,7 @@ public partial class ChapterLevelController : Node2D
             if (portrait != null) PlaceholderArt.FitSprite(sprite, member.DisplaySize);
             node.AddChild(sprite);
             InteractionSpacing.AddSolid(node, member.DisplaySize);
+            NpcAttentionCue.Attach(node, sprite, member.Tint, member.DisplaySize);
 
             float labelY = member.DisplaySize * 0.56f + 16f;
             var prompt = UiTheme.WorldPlate(node, labelY, member.DisplayName, null, "Talk");

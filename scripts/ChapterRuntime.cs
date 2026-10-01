@@ -50,22 +50,22 @@ public static class ChapterRuntime
         if (CurrentChapter == 2)
             return stage switch
             {
-                ObjectiveStage.FindNpc => "Find Lanternfish",
-                ObjectiveStage.TalkStarfish => "Wake the first Flow Switch",
-                ObjectiveStage.TalkSeaweed => "Wake all three Flow Switches",
-                ObjectiveStage.CollectShards => "Collect Frost Crystals",
-                ObjectiveStage.DefeatBoss => "Freeze and clean up the Chemical Waste Monster",
-                ObjectiveStage.ExitLevel => "Cross the restored nursery gate",
+                ObjectiveStage.FindNpc => "Find Lanternfish: learn why the water stopped",
+                ObjectiveStage.TalkStarfish => "Start the first Flow Switch to move oxygen",
+                ObjectiveStage.TalkSeaweed => "Restore all Flow Switches so the nursery can breathe",
+                ObjectiveStage.CollectShards => "Collect Frost Crystals to contain the leaks",
+                ObjectiveStage.DefeatBoss => "Use Ice from a distance to clean chemical waste",
+                ObjectiveStage.ExitLevel => "Follow the clean current toward the lighthouse",
                 _ => "Frozen Trench is flowing again",
             };
         if (CurrentChapter == 3)
             return stage switch
             {
-                ObjectiveStage.FindNpc => "Find the Lost Shoal",
-                ObjectiveStage.TalkStarfish => "Connect the first Power Relay",
-                ObjectiveStage.TalkSeaweed => "Reconnect all three Power Relays",
-                ObjectiveStage.CollectShards => "Collect Circuit Sparks",
-                ObjectiveStage.DefeatBoss => "Clean up the Oil Monster with Electric",
+                ObjectiveStage.FindNpc => "Find the Lost Shoal: learn why the reef went dark",
+                ObjectiveStage.TalkStarfish => "Connect the first relay safely",
+                ObjectiveStage.TalkSeaweed => "Reconnect all relays to restart the lighthouse",
+                ObjectiveStage.CollectShards => "Collect Circuit Sparks for the cleanup system",
+                ObjectiveStage.DefeatBoss => "Use Electric from a distance to pull oil away",
                 ObjectiveStage.ExitLevel => "Light the Silent Lighthouse",
                 _ => "Safe lights have returned to the ocean",
             };

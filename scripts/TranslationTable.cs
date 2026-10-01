@@ -36,12 +36,12 @@ public static class TranslationTable
         ["FORM_ELECTRIC"] = ("电元素水母", "Electric Form"),
 
         // Objective checklist (6 stages)
-        ["OBJ_FIND_NPC"] = ("寻找岚婆婆", "Find Granny Lan"),
-        ["OBJ_TALK_STARFISH"] = ("与海星交谈", "Talk to the Starfish"),
-        ["OBJ_TALK_SEAWEED"] = ("与海草交谈", "Talk to the Seaweed"),
-        ["OBJ_COLLECT_SHARDS"] = ("收集 8 枚水碎片", "Collect 8 water shards"),
-        ["OBJ_DEFEAT_BOSS"] = ("清理塑料怪物", "Clean up the Plastic Monster"),
-        ["OBJ_EXIT_LEVEL"] = ("抵达出口", "Reach the exit"),
+        ["OBJ_FIND_NPC"] = ("找岚婆婆：了解这片海怎么坏掉的", "Find Granny Lan: learn what happened here"),
+        ["OBJ_TALK_STARFISH"] = ("问海星：塑料为什么会伤害动物", "Ask Starfish why plastic hurts animals"),
+        ["OBJ_TALK_SEAWEED"] = ("问海草：怎样安全接近垃圾堆", "Ask Seaweed how to approach the trash pile"),
+        ["OBJ_COLLECT_SHARDS"] = ("收集水碎片：准备清理塑料", "Collect water shards for the cleanup"),
+        ["OBJ_DEFEAT_BOSS"] = ("保持距离，用水清理塑料怪物", "Keep distance and clean the Plastic Monster with Water"),
+        ["OBJ_EXIT_LEVEL"] = ("带着新的洋流前往下一片海", "Follow the new current to the next sea"),
         ["OBJ_COMPLETE"] = ("章节完成", "Chapter complete"),
 
         // Minimap legend

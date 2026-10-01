@@ -128,7 +128,14 @@ public static class DialogueData
         {
             new(SpeakerStarfish, "Wow... I haven't seen another glowing jellyfish in a long time.", "starfish"),
             new(SpeakerStarfish, "There's plastic everywhere. Animals get trapped in it; some even mistake it for food.", "starfish"),
+            new(SpeakerShimmer, "What should I watch out for?", null, new List<DialogueChoice>
+            {
+                new("Tell me the worst part.", SetFlag: "starfish_more", GotoLabel: "starfish_more"),
+                new("I get it. I need to clean it.", SetFlag: "starfish_ready", GotoLabel: "starfish_continue"),
+            }),
+            new(SpeakerStarfish, "The worst part is that it looks like food. No one means to eat trash, but hungry animals still do.", "starfish", Label: "starfish_more"),
             new(SpeakerStarfish, "Far above us, seabirds feed plastic to their chicks without knowing. Their stomachs fill up, and there is no room left for real food.", "starfish",
+                Label: "starfish_continue",
                 Picture: DialoguePicture.Photo("ch1_albatross_debris.jpg",
                     "A Laysan albatross chick among plastic debris on Midway Atoll.", "NOAA Marine Debris Program")),
             new(SpeakerStarfish, "Seagrass is just below. Talk to them before you move on.", "starfish",
@@ -139,7 +146,14 @@ public static class DialogueData
         {
             new(SpeakerSeaweed, "Wait... Do you hear that low, rumbling sound?", "seaweed"),
             new(SpeakerSeaweed, "That sound is coming from a group of young jellyfish. Wastewater tangled their bodies together.", "seaweed"),
-            new(SpeakerSeaweed, "Collect the shards first. Then, use Water on the loosest part of the trash pile.", "seaweed"),
+            new(SpeakerSeaweed, "Do you want the simple plan?", "seaweed", new List<DialogueChoice>
+            {
+                new("Yes. Keep it simple.", SetFlag: "seaweed_plan", GotoLabel: "seaweed_plan"),
+                new("I can figure it out.", SetFlag: "seaweed_skip_plan", GotoLabel: "seaweed_continue"),
+            }),
+            new(SpeakerSeaweed, "Collect light first. Then stand far enough away and use Water. Do not swim into the pile.", "seaweed", Label: "seaweed_plan"),
+            new(SpeakerSeaweed, "Collect the shards first. Then, use Water on the loosest part of the trash pile.", "seaweed", Label: "seaweed_continue"),
+            new(SpeakerSeaweed, "If it moves toward you, back up. Cleaning it does not mean hugging it.", "seaweed"),
         });
 
         d[JellyfishBox] = new DialogueTimeline(JellyfishBox, new List<DialogueLine>
@@ -147,7 +161,14 @@ public static class DialogueData
             new(SpeakerShimmer, "How did this get here... an old, rusty barrel?"),
             new(SpeakerBox, "I used to transport fuel to factories on land.", "barrel"),
             new(SpeakerBox, "Once they were done with me, they decided it was easier to just toss me into the sea.", "barrel"),
+            new(SpeakerShimmer, "What do you want me to do?", null, new List<DialogueChoice>
+            {
+                new("Ask about the leak.", SetFlag: "barrel_leak", GotoLabel: "barrel_leak"),
+                new("Just record it.", SetFlag: "barrel_record", GotoLabel: "barrel_record"),
+            }),
+            new(SpeakerBox, "Do not push me around. Mark where I am, then let someone remove me safely.", "barrel", Label: "barrel_leak"),
             new(SpeakerBox, "I don't want to keep leaking.", "barrel"),
+            new(SpeakerBox, "Writing it down still matters. If no one records it, people pretend it was never here.", "barrel", Label: "barrel_record"),
             new(SpeakerBox, "The oil sticks to animals and blocks out the light; it even harms the fish before it spreads any further.", "barrel"),
             new(SpeakerShimmer, "I'll save its story in my journal. Even an old oil drum deserves a better ending."),
         });

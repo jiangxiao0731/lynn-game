@@ -134,7 +134,14 @@ public static class NarrativeData
         {
             new(L, "Down here in the deep, mine is the only light still flickering.", "lantern"),
             new(L, "The oil keeps washing over, trying to smother my light, but I can't let it go out. My companions need my light to guide them home.", "lantern"),
-            new(L, "Your light feels warm. Could you help guide the others home?", "lantern"),
+            new(S, "What should I do first?", null, new List<DialogueChoice>
+            {
+                new("Help me find them.", SetFlag: "lantern_find", GotoLabel: "lantern_find"),
+                new("I'll keep moving.", SetFlag: "lantern_ready", GotoLabel: "lantern_continue"),
+            }),
+            new(L, "Follow the dim lights. If one goes out, stop and look around. Someone may be stuck nearby.", "lantern", Label: "lantern_find"),
+            new(L, "Your light feels warm. Could you help guide the others home?", "lantern", Label: "lantern_continue"),
+            new(S, "I'll look for every light I can."),
             new(S, "I will. Just promise me you'll keep your light on too.", "lantern"),
         });
 
@@ -143,7 +150,13 @@ public static class NarrativeData
         {
             new(Sh, "(A chorus of tiny voices) Which way is the exit? We've lost our bearings.", "shoal"),
             new(Sh, "We followed that stream of dirty water too deep; now we can't see the way back.", "shoal"),
-            new(Sh, "You're glowing... Could we follow you for a while?", "shoal"),
+            new(S, "Should I lead you now?", null, new List<DialogueChoice>
+            {
+                new("Stay close to me.", SetFlag: "shoal_follow", GotoLabel: "shoal_follow"),
+                new("Wait where it is safer.", SetFlag: "shoal_wait", GotoLabel: "shoal_continue"),
+            }),
+            new(Sh, "Okay. We will follow your light, but we will not rush ahead.", "shoal", Label: "shoal_follow"),
+            new(Sh, "You're glowing... Could we follow you for a while?", "shoal", Label: "shoal_continue"),
         });
 
         // --- Boss pre / mid (post = existing BossDefeated + Ending) ---
@@ -151,7 +164,14 @@ public static class NarrativeData
         {
             new(B, "More trash... It keeps piling up...", "boss"),
             new(S, "This monster is made from all the plastic that collected here."),
-            new(S, "I need to aim at the weakest part of the pile and use Water to wash the trash apart."),
+            new(S, "How should I handle this?", null, new List<DialogueChoice>
+            {
+                new("Keep distance and aim.", SetFlag: "boss1_careful", GotoLabel: "boss1_careful"),
+                new("Go in fast.", SetFlag: "boss1_rush", GotoLabel: "boss1_continue"),
+            }),
+            new(S, "I should not swim into it. I can help from outside the danger area.", Label: "boss1_careful"),
+            new(S, "I need to aim at the weakest part of the pile and use Water to wash the trash apart.", Label: "boss1_continue"),
+            new(S, "If I rush, I will just get caught too."),
         });
 
         d[BossMid] = new DialogueTimeline(BossMid, new List<DialogueLine>
@@ -174,7 +194,14 @@ public static class NarrativeData
         {
             new(L, "Shimmer! The current has completely stopped. Fish eggs and seaweed are trapped beneath the polluted ice.", "lantern"),
             new(S, "The cold isn't the main problem. Runoff triggered an algae bloom, and as the algae decays, it consumes the oxygen in the water."),
+            new(S, "So this is not just ice?", null, new List<DialogueChoice>
+            {
+                new("Ask what caused it.", SetFlag: "ch2_ask_source", GotoLabel: "ch2_source"),
+                new("Focus on the switches.", SetFlag: "ch2_focus_switches", GotoLabel: "ch2_switches"),
+            }),
+            new(L, "Right. The ice is only holding the problem in place. The real issue started upstream.", "lantern", Label: "ch2_source"),
             new(S, "It happens in real lakes and seas too. From space, a bloom looks like green paint poured into the water.", null,
+                Label: "ch2_switches",
                 Picture: DialoguePicture.Photo("ch2_algal_bloom.jpg",
                     "An algal bloom spreading across Lake Erie, seen by satellite in September 2017.",
                     "NOAA Great Lakes Environmental Research Laboratory")),
@@ -184,7 +211,14 @@ public static class NarrativeData
         d[Chapter2Guardian] = new DialogueTimeline(Chapter2Guardian, new List<DialogueLine>
         {
             new(F, "More chemicals... More leaking barrels... Keep feeding me...", "boss2"),
-            new(S, "This monster is made from leaked chemicals. I can use Ice to stop the leaks from spreading."),
+            new(S, "Should I freeze the monster or the leaks?", null, new List<DialogueChoice>
+            {
+                new("Freeze the leaks first.", SetFlag: "ch2_freeze_leaks", GotoLabel: "ch2_freeze_leaks"),
+                new("Aim at the monster.", SetFlag: "ch2_aim_guardian", GotoLabel: "ch2_guardian_continue"),
+            }),
+            new(S, "The leaks are what keep feeding it. Ice can slow them down.", Label: "ch2_freeze_leaks"),
+            new(S, "This monster is made from leaked chemicals. I can use Ice to stop the leaks from spreading.", Label: "ch2_guardian_continue"),
+            new(S, "I still need to stay out of its reach."),
         });
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>
         {
@@ -197,13 +231,27 @@ public static class NarrativeData
         {
             new(Sh, "The ocean absorbed too much heat. The coral turned pale, and then the old power grid failed.", "shoal"),
             new(S, "Greenhouse gases trap excess heat, and the ocean eventually absorbs most of it."),
+            new(S, "What can I actually fix here?", null, new List<DialogueChoice>
+            {
+                new("Ask about the relays.", SetFlag: "ch3_ask_relays", GotoLabel: "ch3_relays"),
+                new("Keep going.", SetFlag: "ch3_ready", GotoLabel: "ch3_continue"),
+            }),
+            new(Sh, "The relays can restart safe equipment. It will not fix everything, but it gives the reef a chance.", "shoal", Label: "ch3_relays"),
             new(Sh, "Reconnect the three relays. We need to provide safe, controlled power to the lighthouse.", "shoal",
+                Label: "ch3_continue",
                 Picture: new(AssetLoader.MemoryIcon, "Power Relay · three to reconnect")),
         });
         d[Chapter3Guardian] = new DialogueTimeline(Chapter3Guardian, new List<DialogueLine>
         {
             new(C, "More oil... More fuel... The whole reef will be covered...", "boss3"),
-            new(S, "The spilled oil formed this monster. I'll use Electric to start the cleanup system and pull the oil away from the reef."),
+            new(S, "What is the safest move?", null, new List<DialogueChoice>
+            {
+                new("Use Electric from a distance.", SetFlag: "ch3_safe_electric", GotoLabel: "ch3_safe_electric"),
+                new("Try to grab the oil.", SetFlag: "ch3_grab_oil", GotoLabel: "ch3_guardian_continue"),
+            }),
+            new(S, "Electric can start the cleanup system. I should not touch the oil myself.", Label: "ch3_safe_electric"),
+            new(S, "The spilled oil formed this monster. I'll use Electric to start the cleanup system and pull the oil away from the reef.", Label: "ch3_guardian_continue"),
+            new(S, "If I grab it, it will just spread over me too."),
         });
         d[Chapter3Ending] = new DialogueTimeline(Chapter3Ending, new List<DialogueLine>
         {

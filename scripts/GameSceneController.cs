@@ -578,6 +578,7 @@ public partial class GameSceneController : Node2D
         node.AddChild(runtimeSprite);
         InteractionSpacing.AddSolid(node, displaySize);
         var prompt = DecorateNpc(node, runtimeSprite, displayName, tint);
+        NpcAttentionCue.Attach(node, runtimeSprite, tint, displaySize);
         _interactables.Add(new Interactable
         {
             Node = node,
