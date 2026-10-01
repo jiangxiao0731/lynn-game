@@ -15,7 +15,6 @@ public partial class BossAura : Node2D
     private Node2D? _boss;
     private Node2D? _player;
     private TextureRect _wash = null!;
-    private Polygon2D _lowerCurrent = null!;
     private Color _tint = new(0.62f, 0.16f, 0.22f);
     private float _pulse;
     private bool _announced;
@@ -32,41 +31,23 @@ public partial class BossAura : Node2D
         _player = GetTree().GetFirstNodeInGroup("player") as Node2D;
         if (_boss == null) return;
 
-        // Left edge is transparent and the colour gathers toward the guardian. The
-        // rectangle extends beyond the viewport vertically, so no geometric boundary
-        // is visible in play—only a change in the colour of the water.
+        // Cover the whole chapter with a very soft directional tint. Earlier builds
+        // used a local polygon/current near the guardian; its edge could read as a
+        // visible line in the boss area. A full-map wash has no local boundary.
+        float mapWidth = ChapterMap.TotalWidth(ChapterRuntime.CurrentChapter);
         _wash = new TextureRect
         {
             Name = "ArenaColourWash",
-            Position = new Vector2(_boss.Position.X - FieldWidth + 900f, -260f),
-            Size = new Vector2(FieldWidth, ChapterMap.Height + 520f),
+            Position = Vector2.Zero,
+            Size = new Vector2(mapWidth, ChapterMap.Height),
             Texture = PlaceholderArt.HorizontalGradient(
-                new Color(_tint, 0f), new Color(_tint.Lightened(0.08f), MaxWash)),
+                new Color(_tint, MaxWash * 0.15f), new Color(_tint.Lightened(0.08f), MaxWash)),
             StretchMode = TextureRect.StretchModeEnum.Scale,
             MouseFilter = Control.MouseFilterEnum.Ignore,
             ZIndex = -4,
-            Modulate = new Color(1f, 1f, 1f, 0.58f),
+            Modulate = new Color(1f, 1f, 1f, 0.42f),
         };
         AddChild(_wash);
-
-        // A low, irregular current breaks up the flat gradient without drawing a ring.
-        _lowerCurrent = new Polygon2D
-        {
-            Name = "PollutionCurrent",
-            Polygon = new[]
-            {
-                new Vector2(_boss.Position.X - 4100f, 820f),
-                new Vector2(_boss.Position.X - 3000f, 730f),
-                new Vector2(_boss.Position.X - 2050f, 860f),
-                new Vector2(_boss.Position.X - 1100f, 700f),
-                new Vector2(_boss.Position.X + 900f, 780f),
-                new Vector2(_boss.Position.X + 900f, 1160f),
-                new Vector2(_boss.Position.X - 4100f, 1160f),
-            },
-            Color = new Color(_tint.Darkened(0.14f), 0.13f),
-            ZIndex = -3,
-        };
-        AddChild(_lowerCurrent);
     }
 
     public override void _Process(double delta)
@@ -82,8 +63,6 @@ public partial class BossAura : Node2D
 
         if (IsInstanceValid(_wash))
             _wash.Modulate = new Color(1f, 1f, 1f, Mathf.Lerp(0.42f, 1f, nearness) * breath);
-        if (IsInstanceValid(_lowerCurrent))
-            _lowerCurrent.Modulate = new Color(1f, 1f, 1f, 0.65f + 0.35f * nearness);
 
         bool inside = distance <= InnerRadius + 520f;
         if (inside && !_announced)
