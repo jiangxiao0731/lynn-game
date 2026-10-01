@@ -38,8 +38,12 @@ public partial class HudController : CanvasLayer
     /// Leading uppercase segment of a status line ("CHAPTER 2 · FROSTBOUND TRENCH"),
     /// shown as a kicker above the message instead of run into it.
     private Label _statusKicker = null!;
+    private PanelContainer _combatPanel = null!;
+    private Label _combatKeyLabel = null!;
+    private Label _combatTextLabel = null!;
     private PanelContainer _pausePanel = null!;
     private int _statusRevision;
+    private int _combatRevision;
     private int _shardCollected;
     private int _shardRequired = GameConstants.ShardThresholdForBoss;
 
@@ -68,6 +72,7 @@ public partial class HudController : CanvasLayer
             bus.ObjectiveAdvanced += OnObjectiveAdvanced;
             bus.BossHealthChanged += OnBossHealthChanged;
             bus.StatusHint += OnStatusHint;
+            bus.CombatHint += OnCombatHint;
             bus.ZoneEntered += OnZoneEntered;
             bus.PlayerDefeated += OnPlayerDefeated;
             bus.ObjectiveCompleted += OnObjectiveCompleted;
@@ -307,6 +312,35 @@ public partial class HudController : CanvasLayer
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         statusBox.AddChild(_statusLabel);
 
+        // Combat prompt is deliberately NOT the normal toast. It uses the warning
+        // colour, a key badge and urgent wording so players know this is an action.
+        _combatPanel = Track(Surface("CombatPrompt", new Vector2(660, 0), 0.94f));
+        Pin(_combatPanel, Control.LayoutPreset.CenterBottom);
+        _combatPanel.Position = new Vector2(-330, -382);
+        _combatPanel.Visible = false;
+        AddChild(_combatPanel);
+        _combatPanel.AddThemeStyleboxOverride("panel", CombatPanelStyle());
+        var combatInset = Inset(_combatPanel, 24, 18);
+        var combatRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        combatRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
+        combatInset.AddChild(combatRow);
+        var combatText = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+        combatText.AddThemeConstantOverride("separation", 4);
+        combatRow.AddChild(combatText);
+        var combatKicker = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "COMBAT");
+        combatKicker.AddThemeColorOverride("font_color", Palette.WarningAmber);
+        combatText.AddChild(combatKicker);
+        _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Primary, "", wrap: true);
+        _combatTextLabel.AddThemeColorOverride("font_color", Colors.White);
+        combatText.AddChild(_combatTextLabel);
+        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(78, 66) };
+        keyFrame.AddThemeStyleboxOverride("panel", CombatKeyStyle());
+        combatRow.AddChild(keyFrame);
+        _combatKeyLabel = UiTheme.Role(UiTheme.TypeRole.Heading, "1");
+        _combatKeyLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _combatKeyLabel.VerticalAlignment = VerticalAlignment.Center;
+        keyFrame.AddChild(_combatKeyLabel);
+
         _pausePanel = Surface("PauseFeedbackPanel", new Vector2(360, 0), 0.94f);
         Pin(_pausePanel, Control.LayoutPreset.Center);
         _pausePanel.Visible = false;
@@ -454,6 +488,36 @@ public partial class HudController : CanvasLayer
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
     }
 
+    private static StyleBoxFlat CombatPanelStyle() => new()
+    {
+        BgColor = new Color(0.24f, 0.035f, 0.035f, 0.94f),
+        BorderColor = new Color(Palette.WarningAmber, 0.86f),
+        BorderWidthLeft = 3,
+        BorderWidthTop = 3,
+        BorderWidthRight = 3,
+        BorderWidthBottom = 3,
+        CornerRadiusTopLeft = 14,
+        CornerRadiusTopRight = 14,
+        CornerRadiusBottomLeft = 14,
+        CornerRadiusBottomRight = 14,
+        ShadowColor = new Color(0f, 0f, 0f, 0.35f),
+        ShadowSize = 12,
+    };
+
+    private static StyleBoxFlat CombatKeyStyle() => new()
+    {
+        BgColor = Palette.WarningAmber,
+        BorderColor = Colors.White,
+        BorderWidthLeft = 2,
+        BorderWidthTop = 2,
+        BorderWidthRight = 2,
+        BorderWidthBottom = 2,
+        CornerRadiusTopLeft = 12,
+        CornerRadiusTopRight = 12,
+        CornerRadiusBottomLeft = 12,
+        CornerRadiusBottomRight = 12,
+    };
+
     private async void OnStatusHint(string text)
     {
         int revision = ++_statusRevision;
@@ -474,6 +538,33 @@ public partial class HudController : CanvasLayer
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
         await ToSignal(tween, Tween.SignalName.Finished);
         if (revision == _statusRevision) _statusPanel.Visible = false;
+    }
+
+    private async void OnCombatHint(string text)
+    {
+        int revision = ++_combatRevision;
+        string key = ChapterRuntime.RequiredForm switch
+        {
+            ElementForm.Ice => "2",
+            ElementForm.Electric => "3",
+            _ => "1",
+        };
+        _combatKeyLabel.Text = key;
+        _combatTextLabel.Text = text;
+        _combatPanel.Visible = true;
+        _combatPanel.Modulate = Colors.White;
+        _combatPanel.Scale = new Vector2(0.96f, 0.96f);
+        var enter = CreateTween().SetParallel();
+        enter.TweenProperty(_combatPanel, "scale", Vector2.One, 0.14f)
+            .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+        enter.TweenProperty(_combatPanel, "modulate", new Color(1.12f, 1.12f, 1.12f, 1f), 0.08f);
+        await ToSignal(GetTree().CreateTimer(3.2), SceneTreeTimer.SignalName.Timeout);
+        if (revision != _combatRevision || !IsInstanceValid(_combatPanel)) return;
+        var tween = CreateTween();
+        tween.TweenProperty(_combatPanel, "modulate:a", 0f, 0.25f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
+        await ToSignal(tween, Tween.SignalName.Finished);
+        if (revision == _combatRevision) _combatPanel.Visible = false;
     }
 
     public override void _UnhandledInput(InputEvent @event)

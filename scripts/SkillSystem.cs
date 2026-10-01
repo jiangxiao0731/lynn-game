@@ -28,15 +28,7 @@ public partial class SkillSystem : Node
         if (@event.IsActionPressed("skill_water")) TryCast(ElementForm.Water);
         else if (@event.IsActionPressed("skill_ice")) TryCast(ElementForm.Ice);
         else if (@event.IsActionPressed("skill_electric")) TryCast(ElementForm.Electric);
-        else if (@event.IsActionPressed("e")) TryCastContextualBossSkill();
         else if (@event.IsActionPressed("store_element")) _player?.StoreForm();
-    }
-
-    private void TryCastContextualBossSkill()
-    {
-        var target = FindTarget();
-        if (target == null) return;
-        TryCast(target.EffectiveElement);
     }
 
     /// Add charges from a shard pickup of the given form.

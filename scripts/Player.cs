@@ -29,6 +29,7 @@ public partial class Player : CharacterBody2D
     private float _flashTime;
     private float _shakeTime;
     private bool _dialogueActive;
+    private Sprite2D? _damageBurst;
 
     // Item 4 — soft death: last safe spot the tide carries the player back to.
     private Vector2 _safePoint;
@@ -90,7 +91,21 @@ public partial class Player : CharacterBody2D
             StartNaturalIdle(sprite, form);
             _sprites[form] = sprite;
         }
+        BuildDamageBurst();
         ShowActiveForm();
+    }
+
+    private void BuildDamageBurst()
+    {
+        _damageBurst = new Sprite2D
+        {
+            Name = "DamageBurst",
+            Texture = PlaceholderArt.SoftGlow(new Color(1f, 0.26f, 0.18f, 0.92f), 256),
+            Scale = Vector2.One * 0.18f,
+            Modulate = new Color(1f, 1f, 1f, 0f),
+            ZIndex = 100,
+        };
+        AddChild(_damageBurst);
     }
 
     private static void StartNaturalIdle(AnimatedSprite2D sprite, ElementForm form)
@@ -225,6 +240,7 @@ public partial class Player : CharacterBody2D
         CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
         _flashTime = 0.25f;
         _shakeTime = 0.3f;
+        PlayDamageImpact();
         Events.Instance?.EmitSignal(Events.SignalName.PlayerDamaged, amount);
         Events.Instance?.EmitSignal(Events.SignalName.PlayerHealthChanged, CurrentHealth, MaxHealthValue);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
@@ -232,6 +248,33 @@ public partial class Player : CharacterBody2D
         AudioManager.Instance?.PlaySfx("player_hit");
         if (CurrentHealth == 0)
             SoftRespawn();
+    }
+
+    private void PlayDamageImpact()
+    {
+        if (_sprites.TryGetValue(CurrentForm, out var active))
+        {
+            Vector2 restScale = active.Scale;
+            var spriteTween = active.CreateTween();
+            spriteTween.TweenProperty(active, "scale", restScale * 1.22f, 0.07f)
+                .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+            spriteTween.Parallel().TweenProperty(active, "modulate", new Color(1f, 0.28f, 0.20f, 1f), 0.05f);
+            spriteTween.TweenProperty(active, "scale", restScale * 0.92f, 0.10f)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+            spriteTween.Parallel().TweenProperty(active, "modulate", new Color(1f, 1f, 1f, 1f), 0.10f);
+            spriteTween.TweenProperty(active, "scale", restScale, 0.10f)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        }
+        if (_damageBurst != null)
+        {
+            _damageBurst.Scale = Vector2.One * 0.18f;
+            _damageBurst.Modulate = new Color(1f, 0.35f, 0.25f, 0.92f);
+            var burstTween = _damageBurst.CreateTween().SetParallel();
+            burstTween.TweenProperty(_damageBurst, "scale", Vector2.One * 1.55f, 0.22f)
+                .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+            burstTween.TweenProperty(_damageBurst, "modulate:a", 0f, 0.22f)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
+        }
     }
 
     /// Item 4 — eco-fable soft death: fade out, restore full shimmer, and let the tide

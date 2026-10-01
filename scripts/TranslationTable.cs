@@ -89,7 +89,7 @@ public static class TranslationTable
         // Soft death / rest (item 4)
         ["SOFT_RESPAWN"] = ("微光黯淡了片刻……潮水把你托回安全处。", "Shimmer fades for a moment. The tide carries you back to safety."),
         ["REST_PROMPT"] = ("在此小憩，恢复微光？", "Rest here and restore Shimmer's light?"),
-        ["BOSS_PURIFY_HINT"] = ("和塑料怪物保持距离，按 1 或 E 释放水流。", "Keep distance from the Plastic Monster. Press 1 or E to release Water."),
+        ["BOSS_PURIFY_HINT"] = ("和塑料怪物保持距离，按 1 释放水流。", "Keep distance from the Plastic Monster. Press 1 to release Water."),
         ["BOSS_PURIFIED"] = ("塑料怪物被清理，被困动物回到水流中。", "The Plastic Monster is cleared away. The trapped animals return to the current."),
 
         // Controls sheet (verbatim from brief §5)

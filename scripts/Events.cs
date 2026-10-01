@@ -45,6 +45,7 @@ public partial class Events : Node
     [Signal] public delegate void LevelExitReachedEventHandler();
     [Signal] public delegate void GamePausedEventHandler(bool paused);
     [Signal] public delegate void StatusHintEventHandler(string text);
+    [Signal] public delegate void CombatHintEventHandler(string text);
 
     /// Convenience singleton accessor (set in _EnterTree). Autoload name is "Events".
     public static Events Instance { get; private set; } = null!;

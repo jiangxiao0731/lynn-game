@@ -110,11 +110,11 @@ public partial class BossController : CharacterBody2D
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "The Chemical Waste Monster is attacking. Back up, then press 2 or E to release Ice."
+                ? "The Chemical Waste Monster is attacking. Back up, then press 2 to release Ice."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "The Oil Monster is attacking. Back up, then press 3 or E to release Electric."
-                    : "The Plastic Monster is attacking. Back up, then press 1 or E to release Water.";
-            Events.Instance?.EmitSignal(Events.SignalName.StatusHint, hint);
+                    ? "The Oil Monster is attacking. Back up, then press 3 to release Electric."
+                    : "The Plastic Monster is attacking. Back up, then press 1 to release Water.";
+            Events.Instance?.EmitSignal(Events.SignalName.CombatHint, hint);
         }
 
         _attackCooldown -= (float)delta;
@@ -143,15 +143,15 @@ public partial class BossController : CharacterBody2D
         AnimateAttack();
         _player?.TakeDamage(AttackDamage);
         Events.Instance?.EmitSignal(Events.SignalName.BossAttacked, AttackDamage);
-        Events.Instance?.EmitSignal(Events.SignalName.StatusHint, AttackInstruction());
+        Events.Instance?.EmitSignal(Events.SignalName.CombatHint, AttackInstruction());
         AudioManager.Instance?.PlaySfx("boss_attack");
     }
 
     private string AttackInstruction() => EffectiveElement switch
     {
-        ElementForm.Ice => "You were hit. Back up, then press 2 or E to release Ice.",
-        ElementForm.Electric => "You were hit. Back up, then press 3 or E to release Electric.",
-        _ => "You were hit. Back up, then press 1 or E to release Water.",
+        ElementForm.Ice => "HIT! Back up, then press 2 to strike with Ice.",
+        ElementForm.Electric => "HIT! Back up, then press 3 to strike with Electric.",
+        _ => "HIT! Back up, then press 1 to strike with Water.",
     };
 
     private void AnimateAttack()
