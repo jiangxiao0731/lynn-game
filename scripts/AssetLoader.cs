@@ -103,7 +103,8 @@ public static class AssetLoader
     public static string ChapterBossPortrait(int chapter)
         => NpcPortrait($"boss{Mathf.Clamp(chapter, 1, 3)}");
 
-    /// The one element collected in a chapter (Water / Ice / Electric).
+    /// The pollution object treated in a chapter (plastic / chemical waste / oil).
+    /// Its cleanup charge still maps to an internal ElementForm for combat.
     public static string ChapterElement(int chapter)
         => $"res://assets/sprites/element_ch{Mathf.Clamp(chapter, 1, 3)}.png";
 }

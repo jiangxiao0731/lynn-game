@@ -15,6 +15,9 @@ public static class ChapterRuntime
     public static int CurrentChapter { get; private set; } = 1;
     public static ElementForm RequiredForm { get; private set; } = ElementForm.Water;
     public static string FragmentLabel { get; private set; } = "Plastic cleaned";
+    /// Player-facing name for the pollution represented by the chapter pickup icon.
+    /// ElementForm remains an internal combat implementation detail.
+    public static string PollutionLabel { get; private set; } = "PLASTIC WASTE";
     public static string BossName { get; private set; } = GameConstants.MonsterBossName;
     public static string? ObjectiveOverride { get; private set; }
     public static string[] Zones { get; private set; } =
@@ -28,6 +31,7 @@ public static class ChapterRuntime
         {
             RequiredForm = ElementForm.Ice;
             FragmentLabel = "Chemical waste cleaned";
+            PollutionLabel = "CHEMICAL WASTE";
             BossName = "Chemical Waste Monster";
             Zones = new[] { "Frozen Inlet", "Ice Ridge", "Frost Nursery" };
         }
@@ -35,6 +39,7 @@ public static class ChapterRuntime
         {
             RequiredForm = ElementForm.Electric;
             FragmentLabel = "Oil cleaned";
+            PollutionLabel = "OIL POLLUTION";
             BossName = "Oil Monster";
             Zones = new[] { "Broken Power Grid", "Warm Current", "Silent Lighthouse" };
         }
@@ -42,6 +47,7 @@ public static class ChapterRuntime
         {
             RequiredForm = ElementForm.Water;
             FragmentLabel = "Plastic cleaned";
+            PollutionLabel = "PLASTIC WASTE";
             BossName = GameConstants.MonsterBossName;
             Zones = new[] { NarrativeData.ZoneShallows, NarrativeData.ZoneSediment, NarrativeData.ZoneDepths };
         }

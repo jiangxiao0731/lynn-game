@@ -228,7 +228,7 @@ public partial class HudController : CanvasLayer
         StyleBar(_hpBar, UiTheme.Accent);
         healthBox.AddChild(_hpBar);
 
-        // Ability charges appear only after the mechanic is unlocked.
+        // Stored cleanup power appears only after pollution treatment is unlocked.
         _skillDock = Track(Surface("SkillDock", new Vector2(340, 0), 0.78f));
         Pin(_skillDock, Control.LayoutPreset.CenterBottom);
         _skillDock.Position = new Vector2(-170, -118);
@@ -238,31 +238,26 @@ public partial class HudController : CanvasLayer
         var skillRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         skillRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         skillInset.AddChild(skillRow);
-        var skills = new[]
-        {
-            ("1", "WATER", Palette.ElementWater),
-            ("2", "ICE", Palette.ElementIce),
-            ("3", "ELECTRIC", Palette.ElementElectric),
-        };
         int formIndex = Mathf.Clamp((int)ChapterRuntime.RequiredForm - 1, 0, 2);
-        var keyBadge = UiTheme.Role(UiTheme.TypeRole.Numeral, skills[formIndex].Item1);
+        string key = (formIndex + 1).ToString();
+        var keyBadge = UiTheme.Role(UiTheme.TypeRole.Numeral, key);
         keyBadge.CustomMinimumSize = new Vector2(34, 34);
         keyBadge.HorizontalAlignment = HorizontalAlignment.Center;
         keyBadge.VerticalAlignment = VerticalAlignment.Center;
         skillRow.AddChild(keyBadge);
 
-        var formIcon = UiTheme.Thumbnail(38, out var formImage);
-        formImage.Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterRuntime.CurrentChapter))
-                            ?? AssetLoader.Texture(AssetLoader.ShardIcon);
-        skillRow.AddChild(formIcon);
+        var pollutionIcon = UiTheme.Thumbnail(38, out var pollutionImage);
+        pollutionImage.Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterRuntime.CurrentChapter))
+                                 ?? AssetLoader.Texture(AssetLoader.ShardIcon);
+        skillRow.AddChild(pollutionIcon);
 
         var nameBox = new VBoxContainer();
         nameBox.AddThemeConstantOverride("separation", 0);
         skillRow.AddChild(nameBox);
-        var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, skills[formIndex].Item2);
-        name.AddThemeColorOverride("font_color", skills[formIndex].Item3);
+        var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, ChapterRuntime.PollutionLabel);
+        name.AddThemeColorOverride("font_color", UiTheme.Accent);
         nameBox.AddChild(name);
-        var hint = UiTheme.Role(UiTheme.TypeRole.Hint, "CLEANUP POWER");
+        var hint = UiTheme.Role(UiTheme.TypeRole.Hint, "CLEANUP POWER STORED");
         nameBox.AddChild(hint);
 
         var count = UiTheme.Role(UiTheme.TypeRole.Numeral, "× 0");
