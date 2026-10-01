@@ -361,48 +361,25 @@ public partial class DialogueRunner : CanvasLayer
 
     private static IReadOnlyList<DialoguePicture> AutoPhotoPool(string timelineId)
     {
-        if (timelineId == DialogueData.Seaweed || timelineId == NarrativeData.SeaweedDeep ||
-            timelineId == NarrativeData.Hermit || timelineId == NarrativeData.Shoal ||
-            timelineId == NarrativeData.Lantern || timelineId == "bannerfish")
+        if (timelineId == DialogueData.Seaweed)
             return new[]
             {
                 DialoguePicture.Photo("ch1_seal_net.jpg",
                     "A Hawaiian monk seal caught in an abandoned fishing net.", "NOAA Fisheries"),
+            };
+
+        if (timelineId == NarrativeData.SeaweedDeep)
+            return new[]
+            {
                 DialoguePicture.Photo("ch1_derelict_gear_reef.jpg",
                     "A NOAA diver removes derelict fishing gear from a reef.", "NOAA"),
-                DialoguePicture.Photo("ch1_laysan_plastic_remains.jpg",
-                    "Plastic pieces remain around a young albatross on Midway Atoll.", "U.S. Fish and Wildlife Service"),
-                DialoguePicture.Photo("ch1_albatross_cleanup.jpg",
-                    "Albatrosses stand near plastic debris collected on Midway Atoll.", "U.S. Fish and Wildlife Service"),
             };
 
-        if (timelineId.StartsWith("ch2_") || timelineId == NarrativeData.Chapter2Guardian)
-            return new[]
-            {
-                DialoguePicture.Photo("ch2_sediment_plume.jpg",
-                    "Polluted runoff spreading from land into coastal water.", "NASA Goddard Space Flight Center"),
-                DialoguePicture.Photo("ch2_after_monitor_buoy.jpg",
-                    "A monitoring buoy tracks water quality changes.", "USGS"),
-                DialoguePicture.Photo("ch2_habs_sample.jpg",
-                    "A water sample shows how contaminated water can become dense and cloudy.", "NOAA GLERL"),
-            };
-
-        if (timelineId.StartsWith("ch3_") || timelineId == NarrativeData.Chapter3Guardian ||
-            timelineId == NarrativeData.Chapter3Ending)
-            return new[]
-            {
-                DialoguePicture.Photo("ch3_oil_slick.jpg",
-                    "Oil smoothing the surface of the Gulf of Mexico, seen by satellite.", "NASA Goddard Space Flight Center"),
-                DialoguePicture.Photo("ch3_oiled_pelican.jpg",
-                    "A wildlife officer reaches an oiled brown pelican after the Deepwater Horizon spill.", "U.S. Fish and Wildlife Service"),
-                DialoguePicture.Photo("ch3_bleaching.jpg",
-                    "Bleached brain coral during the 2023 Florida Keys marine heatwave.", "NOAA"),
-                DialoguePicture.Photo("ch3_rig_fire.jpg",
-                    "The Deepwater Horizon drilling rig burning in April 2010.", "U.S. Coast Guard"),
-                DialoguePicture.Photo("ch3_oil_approaches_coast.jpg",
-                    "Oil response teams watch slick water near the Gulf coast.", "U.S. Navy"),
-            };
-
+        // Chapters 2 and 3 use authored, line-specific photographs only. A broad
+        // rotation made a real photo appear beside a conversation about a different
+        // kind of harm (for example an algal bloom beside chemical wastewater).
+        // If no exact photo was authored for a line, showing none is more honest than
+        // inserting an unrelated image.
         return Array.Empty<DialoguePicture>();
     }
 

@@ -133,7 +133,7 @@ public static class NarrativeData
         d[Lantern] = new DialogueTimeline(Lantern, new List<DialogueLine>
         {
             new(L, "Down here in the deep, mine is the only light still flickering.", "lantern"),
-            new(L, "The oil keeps washing over, trying to smother my light, but I can't let it go out. My companions need my light to guide them home.", "lantern"),
+            new(L, "Plastic film and dirty water keep dimming my light, but I can't let it go out. My companions need it to find their way home.", "lantern"),
             new(S, "What should I do first?", null, new List<DialogueChoice>
             {
                 new("Help me find them.", SetFlag: "lantern_find", GotoLabel: "lantern_find"),
@@ -204,8 +204,8 @@ public static class NarrativeData
             new(L, "Yes. It came through pipes and drains. Some of it burns, some of it poisons, and some of it stays in the mud.", "lantern", Label: "ch2_source"),
             new(S, "Real polluted water can look cloudy, bright, or almost normal. That is why people have to test it, not just stare at it.", null,
                 Label: "ch2_switches",
-                Picture: DialoguePicture.Photo("ch2_after_monitor_buoy.jpg",
-                    "A monitoring buoy tracks water quality changes in real time.",
+                Picture: DialoguePicture.Photo("ch2_sampling_station.jpg",
+                    "A USGS monitoring station continuously checks water quality instead of judging it by appearance.",
                     "USGS")),
             new(L, "Turn on the three Flow Switches along the ridge. Then clean the chemical waste patches so you have enough strength for the monster.", "lantern",
                 Picture: new(AssetLoader.MemoryIcon, "Flow Switch · three along the ridge")),
@@ -214,7 +214,10 @@ public static class NarrativeData
         {
             new(F, "(The frozen shell cracks. The chemical foam slows down and gathers into safe clumps.)", "boss2"),
             new(F, "I grew because every pipe sent its waste to the same quiet trench.", "boss2"),
-            new(S, "Then the cleanup has to start before the waste reaches the water."),
+            new(S, "Then the cleanup has to start before the waste reaches the water.", null,
+                Picture: DialoguePicture.Photo("ch2_treatment_canal.jpg",
+                    "An industrial effluent-treatment canal separates waste before water is released.",
+                    "U.S. EPA / NARA")),
             new(S, "For now, the trench is not being poisoned anymore."),
         });
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>

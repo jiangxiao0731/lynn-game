@@ -74,6 +74,7 @@ public partial class SkillSystem : Node
 
         // Every release also shifts Shimmer into that elemental form.
         _player?.SetForm(form);
+        _player?.PlayCleanupAttack(form, target.GlobalPosition);
 
         bool effective = target.IsSkillEffective(form);
         int damage = effective ? GameConstants.DamageWaterEffective : GameConstants.DamageIneffective;
@@ -129,9 +130,13 @@ public partial class SkillSystem : Node
         GetParent().AddChild(orb);
         orb.Scale *= 0.65f;
         var tween = orb.CreateTween();
+        // A brief gather lets the player's body motion read first; travel and growth
+        // then happen together as one coherent purification pulse.
+        tween.TweenInterval(0.09f);
+        tween.TweenProperty(orb, "global_position", target.GlobalPosition, GameConstants.WaterAttackProjectileTime)
+            .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
         tween.Parallel().TweenProperty(orb, "scale", orb.Scale * 1.45f, GameConstants.WaterAttackProjectileTime)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(orb, "global_position", target.GlobalPosition, GameConstants.WaterAttackProjectileTime);
         tween.TweenCallback(Callable.From(() =>
         {
             if (IsInstanceValid(target)) target.ApplyDamage(damage);

@@ -48,7 +48,11 @@ public static class ChapterCast
                 "I used to know this reef like a map. Every stripe showed me the way home.",
                 "Now, plastic bags cover me; I can't see the path ahead at all.",
                 "No one has cleaned this place up. It's buried under things people threw away on land.",
-            }, 128f),
+            }, 128f, new()
+            {
+                [1] = DialoguePicture.Photo("ch1_derelict_gear_reef.jpg",
+                    "A NOAA diver removes abandoned fishing gear from a coral reef.", "NOAA"),
+            }),
 
 
         // ---------------------------------------------------------------
@@ -62,7 +66,11 @@ public static class ChapterCast
                 "You're the first person in a long time to swim toward me instead of away.",
                 "I fell into the sewer. Someone upstream had enough of me and acted as if the river could swallow anything.",
                 "If you really want to solve this, start further upstream and find my source. Put an end to my polluting the ocean.",
-            }, 132f),
+            }, 132f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_wastewater_pipe.jpg",
+                    "Wastewater leaves a discharge pipe and enters the surrounding water.", "USDA"),
+            }),
 
         new("ch2_drumcone", "Old Traffic Cone", "ch2_drumcone", 2,
             new Vector2(760, 860), new Color(0.78f, 0.80f, 0.42f),
@@ -71,7 +79,11 @@ public static class ChapterCast
                 "I've sat here so long that the silt has basically made me part of the floor.",
                 "The water above me is thick and strange now. It was like that when I first arrived, too.",
                 "The trench didn't just get cold. It got filled with waste that living things were never supposed to touch.",
-            }, 150f),
+            }, 150f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_blackwater_discharge.jpg",
+                    "Dark industrial wastewater is discharged into the Ohio River.", "U.S. EPA / NARA"),
+            }),
 
         new("ch2_gascloud", "Toxic Cloud", "ch2_gascloud", 2,
             new Vector2(1090, 250), new Color(0.70f, 0.92f, 0.46f),
@@ -82,8 +94,8 @@ public static class ChapterCast
                 "Now the cloud spreads through the water and makes it unsafe for eggs, fish, and seaweed.",
             }, 140f, new()
             {
-                [1] = DialoguePicture.Photo("ch2_sediment_plume.jpg",
-                    "Polluted runoff pours from land into coastal water.", "NASA Goddard Space Flight Center"),
+                [1] = DialoguePicture.Photo("ch2_chemical_spill_river.jpg",
+                    "Chemical pollution covers a rock shelf beside the Olentangy River after a spill.", "U.S. EPA / NARA"),
             }),
 
         new("ch2_radiodrum", "Warning Barrel", "ch2_radiodrum", 2,
@@ -93,7 +105,11 @@ public static class ChapterCast
                 "Someone painted a warning on me so people would stay away.",
                 "But they were still afraid, so they dumped me where no one goes—making the warning irrelevant.",
                 "The fish here can't read it. People chose what was easiest and ignored the consequences.",
-            }, 168f),
+            }, 168f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_valley_drums.jpg",
+                    "Discarded chemical drums cover the hazardous-waste site known as the Valley of the Drums.", "U.S. EPA"),
+            }),
 
         new("ch2_jerrycan", "Leaking Can", "ch2_jerrycan", 2,
             new Vector2(1510, 700), new Color(0.74f, 0.78f, 0.44f),
@@ -102,7 +118,11 @@ public static class ChapterCast
                 "I leak a little bit every day. It's hardly enough for anyone to call it a real accident.",
                 "A lot of pollution happens like this: small leaks from many places, day after day.",
                 "Clean the waste around me, and your light will get stronger. Stop the discharge upstream, and this place can stay better.",
-            }, 146f),
+            }, 146f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_chemical_cleanup.jpg",
+                    "EPA workers supervise cleanup after chemicals leaked from a storage building.", "U.S. EPA / NARA"),
+            }),
 
         new("ch2_maskbeast", "Masked Sea Dog", "ch2_maskbeast", 2,
             new Vector2(1890, 800), new Color(0.68f, 0.82f, 0.50f),
@@ -113,8 +133,8 @@ public static class ChapterCast
                 "But so many ocean creatures can't wear masks. That's why we have to move clean water through again.",
             }, 158f, new()
             {
-                [1] = DialoguePicture.Photo("ch2_after_monitor_buoy.jpg",
-                    "A monitoring buoy tracks water-quality changes near polluted coastal water.", "USGS"),
+                [1] = DialoguePicture.Photo("ch2_water_sample.png",
+                    "A USGS water sample is collected so pollution can be measured instead of guessed by sight.", "USGS"),
             }),
 
         new("ch2_flask", "Broken Bottle", "ch2_flask", 2,
@@ -124,7 +144,11 @@ public static class ChapterCast
                 "A crack appeared in my side. Everything I was supposed to hold leaked right out.",
                 "I used to have a label, but it fell off in the water. Now, no one even knows what I am.",
                 "Wake the Anchor. Then clean the chemical water around me, so it can be safely processed.",
-            }, 126f),
+            }, 126f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_chemical_drums.jpg",
+                    "Unmarked chemical containers pile up on farmland in California.", "U.S. EPA / NARA"),
+            }),
 
         new("ch2_wastebag", "Trash Bag", "ch2_wastebag", 2,
             new Vector2(2270, 850), new Color(0.70f, 0.74f, 0.40f),
@@ -133,7 +157,11 @@ public static class ChapterCast
                 "They tied me up, weighed me down, and let me sink. But hiding something doesn't make it disappear.",
                 "I've been slowly coming undone for years; the trench has absorbed everything that leaked out.",
                 "You can't undo the fact that I was cast aside here. But you can stop the next bag from leaving the shore.",
-            }, 152f),
+            }, 152f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_hazardous_drums_swamp.jpg",
+                    "Thousands of hazardous-waste drums sit in a wet field beside a community.", "U.S. EPA / NARA"),
+            }),
 
 
         new("ch2_vent", "Drainpipe", "ch2_vent", 2,
@@ -143,7 +171,11 @@ public static class ChapterCast
                 "Almost everything you see here came through me.",
                 "I didn't choose what I carried. I was born to accept whatever people discharged into me.",
                 "The Chemical Waste Monster formed where the dumped chemicals collected. Clean the smaller patches first, then face it.",
-            }, 210f),
+            }, 210f, new()
+            {
+                [1] = DialoguePicture.Photo("ch2_sewer_outlet.jpg",
+                    "A combined sewer overflow outlet carries wastewater directly toward open water.", "U.S. EPA"),
+            }),
 
         // ---------------------------------------------------------------
         // Chapter 3 — The Old Lighthouse. Harm: oil, ocean heat, bleaching.
@@ -168,7 +200,11 @@ public static class ChapterCast
                 "I used to power the lighthouse. When the light went out, they left me on the seabed.",
                 "The keeper said they'd come back for me. Then the reef was devastated, and they never returned.",
                 "Let the lighthouse run on cleaner equipment. Then I won't be the only fuel this coast relies on.",
-            }, 172f),
+            }, 172f, new()
+            {
+                [1] = DialoguePicture.Photo("ch3_oil_approaches_coast.jpg",
+                    "Response crews watch oil-streaked water near the Gulf coast after the Deepwater Horizon spill.", "U.S. Navy"),
+            }),
 
         new("ch3_pufferfish", "Masked Pufferfish", "ch3_pufferfish", 3,
             new Vector2(1160, 500), new Color(0.86f, 0.72f, 0.44f),
@@ -190,7 +226,11 @@ public static class ChapterCast
                 "I'm clinging tightly to this nozzle because there are no living creatures left nearby for me to hold onto.",
                 "Seahorses need something to anchor themselves to. The seagrass that once grew here withered and died in the heat.",
                 "If the relay is reconnected, the water temperature will start to drop. But it takes time—the recovery rate of the coral reefs and seagrass is far slower than we'd hoped.",
-            }, 142f),
+            }, 142f, new()
+            {
+                [1] = DialoguePicture.Photo("ch3_seagrass_habitat.jpg",
+                    "A healthy seagrass bed gives small animals places to feed, rest, and hide.", "NOAA"),
+            }),
 
         new("ch3_cancrab", "Can-Shell Crab", "ch3_cancrab", 3,
             new Vector2(1640, 860), new Color(0.90f, 0.50f, 0.32f),
@@ -199,7 +239,11 @@ public static class ChapterCast
                 "This isn't my real shell. My old one became too fragile in the warm water, so I had to make do with whatever I could find right here.",
                 "Half of us are using trash as shells. After all, without them, I'd be left completely unprotected.",
                 "You alone can't cool down the entire ocean. But humans can stop dumping so much heat into it.",
-            }, 150f),
+            }, 150f, new()
+            {
+                [0] = DialoguePicture.Photo("ch3_hermit_natural_shell.jpg",
+                    "A hermit crab uses a natural shell—the kind of shelter trash should never have to replace.", "NOAA"),
+            }),
 
         new("ch3_slickray", "Oil-Stained Ray", "ch3_slickray", 3,
             new Vector2(2030, 280), new Color(0.82f, 0.64f, 0.86f),
@@ -222,7 +266,11 @@ public static class ChapterCast
                 "There is still living coral beneath this layer of gunk. It just can't reach the sunlight anymore.",
                 "If the oil is cleaned off, it will try to grow again. You see, we've never stopped trying.",
                 "That's the nature of a coral reef—it's always fighting to recover. It just needs enough time.",
-            }, 176f),
+            }, 176f, new()
+            {
+                [0] = DialoguePicture.Photo("ch3_oil_damaged_coral.jpg",
+                    "Coral shows damage after the 2010 Deepwater Horizon oil spill.", "NOAA OER / BOEMRE"),
+            }),
 
         new("ch3_oilflame", "Oil Flare", "ch3_oilflame", 3,
             new Vector2(2570, 815), new Color(0.94f, 0.56f, 0.28f),

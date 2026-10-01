@@ -26,11 +26,18 @@ public partial class Player : CharacterBody2D
     public ElementForm CurrentForm { get; private set; } = ElementForm.Base;
 
     private readonly System.Collections.Generic.Dictionary<ElementForm, AnimatedSprite2D> _sprites = new();
+    private readonly System.Collections.Generic.Dictionary<ElementForm, Vector2> _restScales = new();
+    private readonly System.Collections.Generic.Dictionary<ElementForm, Vector2> _restPositions = new();
+    private readonly System.Collections.Generic.Dictionary<ElementForm, Tween> _idleTweens = new();
     private Camera2D? _camera;
     private float _flashTime;
     private float _shakeTime;
     private bool _dialogueActive;
     private Sprite2D? _damageBurst;
+    private Sprite2D? _cleanupBurst;
+    private Tween? _attackTween;
+    private Tween? _attackBurstTween;
+    private ElementForm? _attackForm;
 
     // Item 4 — soft death: last safe spot the tide carries the player back to.
     private Vector2 _safePoint;
@@ -89,10 +96,13 @@ public partial class Player : CharacterBody2D
             // tint at half strength so the art stays legible, not washed dark.
             sprite.Modulate = FormModulate(form);
             sprite.Play("Idle");
-            StartNaturalIdle(sprite, form);
             _sprites[form] = sprite;
+            _restScales[form] = sprite.Scale;
+            _restPositions[form] = sprite.Position;
+            StartNaturalIdle(sprite, form);
         }
         BuildDamageBurst();
+        BuildCleanupBurst();
         ShowActiveForm();
     }
 
@@ -109,10 +119,27 @@ public partial class Player : CharacterBody2D
         AddChild(_damageBurst);
     }
 
-    private static void StartNaturalIdle(AnimatedSprite2D sprite, ElementForm form)
+    private void BuildCleanupBurst()
     {
-        Vector2 restPosition = sprite.Position;
-        Vector2 restScale = sprite.Scale;
+        _cleanupBurst = new Sprite2D
+        {
+            Name = "CleanupBurst",
+            Texture = PlaceholderArt.SoftGlow(Colors.White, 256),
+            Scale = Vector2.One * 0.12f,
+            Modulate = new Color(1f, 1f, 1f, 0f),
+            ZIndex = 99,
+        };
+        AddChild(_cleanupBurst);
+    }
+
+    private void StartNaturalIdle(AnimatedSprite2D sprite, ElementForm form)
+    {
+        if (!_restPositions.TryGetValue(form, out var restPosition)) restPosition = sprite.Position;
+        if (!_restScales.TryGetValue(form, out var restScale)) restScale = sprite.Scale;
+        StopNaturalIdle(form);
+        sprite.Position = restPosition;
+        sprite.Scale = restScale;
+        sprite.Rotation = 0f;
         float drift = form switch
         {
             ElementForm.Ice => 4.5f,
@@ -138,6 +165,35 @@ public partial class Player : CharacterBody2D
         tween.Parallel().TweenProperty(sprite, "scale", downScale, seconds);
         tween.TweenProperty(sprite, "position:y", restPosition.Y, seconds * 0.5f);
         tween.Parallel().TweenProperty(sprite, "scale", restScale, seconds * 0.5f);
+        _idleTweens[form] = tween;
+    }
+
+    private void StopNaturalIdle(ElementForm form)
+    {
+        if (!_idleTweens.TryGetValue(form, out var tween)) return;
+        tween.Kill();
+        _idleTweens.Remove(form);
+    }
+
+    private void RestoreFormPose(ElementForm form)
+    {
+        if (!_sprites.TryGetValue(form, out var sprite)) return;
+        if (_restPositions.TryGetValue(form, out var position)) sprite.Position = position;
+        if (_restScales.TryGetValue(form, out var scale)) sprite.Scale = scale;
+        sprite.Rotation = 0f;
+        sprite.Modulate = FormModulate(form);
+    }
+
+    private void CancelCleanupAttack()
+    {
+        _attackTween?.Kill();
+        _attackBurstTween?.Kill();
+        _attackTween = null;
+        _attackBurstTween = null;
+        if (_attackForm is not { } form) return;
+        RestoreFormPose(form);
+        if (_sprites.TryGetValue(form, out var sprite)) StartNaturalIdle(sprite, form);
+        _attackForm = null;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -219,6 +275,8 @@ public partial class Player : CharacterBody2D
     /// Switch active form, update the visible sprite + modulate, emit FormChanged.
     public void SetForm(ElementForm form)
     {
+        if (_attackForm is { } attacking && attacking != form)
+            CancelCleanupAttack();
         CurrentForm = form;
         ShowActiveForm();
         if (_sprites.TryGetValue(form, out var s))
@@ -228,6 +286,83 @@ public partial class Player : CharacterBody2D
         }
         EmitSignal(SignalName.FormChanged, (int)form);
         Events.Instance?.EmitSignal(Events.SignalName.PlayerFormChanged, (int)form);
+    }
+
+    /// A readable purification gesture shared by all three chapter skills. The art
+    /// compresses, reaches toward the target, flashes, then settles back into its
+    /// natural idle. Only the child sprite moves, so collision and aiming stay fixed.
+    public void PlayCleanupAttack(ElementForm form, Vector2 targetPosition)
+    {
+        if (!_sprites.TryGetValue(form, out var sprite)) return;
+
+        CancelCleanupAttack();
+        StopNaturalIdle(form);
+        RestoreFormPose(form);
+        _attackForm = form;
+
+        Vector2 direction = (targetPosition - GlobalPosition).Normalized();
+        if (direction == Vector2.Zero) direction = Vector2.Right;
+        if (Mathf.Abs(direction.X) > 0.01f) sprite.FlipH = direction.X < 0f;
+
+        Vector2 restScale = _restScales[form];
+        Vector2 restPosition = _restPositions[form];
+        Vector2 windupScale = form switch
+        {
+            ElementForm.Ice => new Vector2(restScale.X * 0.82f, restScale.Y * 1.10f),
+            ElementForm.Electric => new Vector2(restScale.X * 0.90f, restScale.Y * 0.92f),
+            _ => new Vector2(restScale.X * 0.86f, restScale.Y * 1.14f),
+        };
+        Vector2 releaseScale = form switch
+        {
+            ElementForm.Ice => new Vector2(restScale.X * 1.15f, restScale.Y * 0.86f),
+            ElementForm.Electric => new Vector2(restScale.X * 1.24f, restScale.Y * 0.80f),
+            _ => new Vector2(restScale.X * 1.20f, restScale.Y * 0.84f),
+        };
+        float releaseRotation = form == ElementForm.Electric
+            ? Mathf.DegToRad(direction.X < 0f ? -7f : 7f)
+            : Mathf.DegToRad(direction.Y * 3f);
+        float windupTime = form == ElementForm.Electric ? 0.07f : 0.10f;
+        float releaseTime = form == ElementForm.Ice ? 0.15f : 0.11f;
+        Color attackColor = Colors.White.Lerp(Palette.ForForm(form), 0.32f);
+
+        _attackTween = sprite.CreateTween();
+        _attackTween.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        _attackTween.TweenProperty(sprite, "scale", windupScale, windupTime);
+        _attackTween.Parallel().TweenProperty(sprite, "position", restPosition - direction * 5f, windupTime);
+        _attackTween.TweenProperty(sprite, "scale", releaseScale, releaseTime)
+            .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+        _attackTween.Parallel().TweenProperty(sprite, "position", restPosition + direction * 13f, releaseTime);
+        _attackTween.Parallel().TweenProperty(sprite, "rotation", releaseRotation, releaseTime);
+        _attackTween.Parallel().TweenProperty(sprite, "modulate", attackColor, releaseTime);
+        _attackTween.TweenProperty(sprite, "scale", restScale, 0.18f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        _attackTween.Parallel().TweenProperty(sprite, "position", restPosition, 0.18f);
+        _attackTween.Parallel().TweenProperty(sprite, "rotation", 0f, 0.18f);
+        _attackTween.Parallel().TweenProperty(sprite, "modulate", FormModulate(form), 0.18f);
+        _attackTween.TweenCallback(Callable.From(() =>
+        {
+            RestoreFormPose(form);
+            StartNaturalIdle(sprite, form);
+            _attackTween = null;
+            _attackForm = null;
+        }));
+
+        if (_cleanupBurst != null)
+        {
+            _cleanupBurst.Rotation = direction.Angle();
+            _cleanupBurst.Scale = new Vector2(0.10f, 0.18f);
+            _cleanupBurst.Modulate = new Color(attackColor.R, attackColor.G, attackColor.B, 0.90f);
+            var burstTween = _cleanupBurst.CreateTween().SetParallel();
+            _attackBurstTween = burstTween;
+            burstTween.TweenProperty(_cleanupBurst, "scale", new Vector2(1.35f, 0.62f), 0.30f)
+                .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+            burstTween.TweenProperty(_cleanupBurst, "modulate:a", 0f, 0.30f)
+                .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
+            burstTween.Chain().TweenCallback(Callable.From(() =>
+            {
+                if (_attackBurstTween == burstTween) _attackBurstTween = null;
+            }));
+        }
     }
 
     /// Mark a safe spot to return to on soft-respawn (e.g. on entering a new zone /
@@ -251,18 +386,22 @@ public partial class Player : CharacterBody2D
 
     private void PlayDamageImpact()
     {
+        CancelCleanupAttack();
         if (_sprites.TryGetValue(CurrentForm, out var active))
         {
-            Vector2 restScale = active.Scale;
+            StopNaturalIdle(CurrentForm);
+            RestoreFormPose(CurrentForm);
+            Vector2 restScale = _restScales[CurrentForm];
             var spriteTween = active.CreateTween();
             spriteTween.TweenProperty(active, "scale", restScale * 1.22f, 0.07f)
-                .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+                .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
             spriteTween.Parallel().TweenProperty(active, "modulate", new Color(1f, 0.28f, 0.20f, 1f), 0.05f);
             spriteTween.TweenProperty(active, "scale", restScale * 0.92f, 0.10f)
                 .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-            spriteTween.Parallel().TweenProperty(active, "modulate", new Color(1f, 1f, 1f, 1f), 0.10f);
+            spriteTween.Parallel().TweenProperty(active, "modulate", FormModulate(CurrentForm), 0.10f);
             spriteTween.TweenProperty(active, "scale", restScale, 0.10f)
                 .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+            spriteTween.TweenCallback(Callable.From(() => StartNaturalIdle(active, CurrentForm)));
         }
         if (_damageBurst != null)
         {

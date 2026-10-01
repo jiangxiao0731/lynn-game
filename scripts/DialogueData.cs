@@ -29,9 +29,9 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
 
     public static DialoguePicture ResultBeforeForChapter(int chapter) => chapter switch
     {
-        2 => Photo("ch2_sediment_plume.jpg",
-            "Polluted runoff spreads through coastal water.",
-            "NOAA"),
+        2 => Photo("ch2_industrial_discharge.jpg",
+            "Industrial wastewater is discharged into a river before stronger pollution controls were in place.",
+            "U.S. Fish and Wildlife Service / Tom D. Serota"),
         3 => Photo("ch3_oil_spill_satellite.jpg",
             "The Deepwater Horizon oil slick spreads across the Gulf of Mexico.",
             "NASA"),
@@ -42,9 +42,9 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
 
     public static DialoguePicture ResultAfterForChapter(int chapter) => chapter switch
     {
-        2 => Photo("ch2_after_monitor_buoy.jpg",
-            "A monitoring buoy tracks water quality in real time.",
-            "USGS"),
+        2 => Photo("ch2_chromium_pond.jpg",
+            "EPA staff inspect a holding pond where polluted water is treated to remove chromium.",
+            "U.S. EPA / NARA"),
         3 => Photo("ch3_after_coral_restoration.jpg",
             "NOAA divers prepare coral restoration work in habitat injured by the 2010 oil spill.",
             "NOAA Fisheries / Chris Gardner"),
@@ -60,13 +60,13 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
     {
         2 => Mathf.PosMod(variant, 7) switch
         {
-            0 => Photo("ch2_sediment_plume.jpg", "Polluted runoff spreading from land into coastal water.", "NASA Goddard Space Flight Center"),
-            1 => Photo("ch2_after_monitor_buoy.jpg", "A monitoring buoy tracks water quality changes.", "USGS"),
-            2 => Photo("ch2_dead_zone.jpg", "A coastal survey maps water that has become unsafe for many animals.", "NOAA"),
-            3 => Photo("ch2_habs_sample.jpg", "A water sample shows how contaminated water can become dense and cloudy.", "NOAA GLERL"),
-            4 => Photo("ch2_habs_buoy.jpg", "Scientists monitor changing water conditions from a buoy.", "NOAA GLERL"),
-            5 => Photo("ch2_lake_erie_habs_2015.jpg", "Discolored water shows a large pollution event from above.", "NOAA GLERL"),
-            _ => Photo("ch2_habs_sample.jpg", "A water sample shows cloudy contaminated water under a microscope.", "NOAA GLERL"),
+            0 => Photo("ch2_wastewater_pipe.jpg", "Wastewater leaves a discharge pipe and enters the surrounding water.", "USDA"),
+            1 => Photo("ch2_chemical_drums.jpg", "Unmarked chemical containers pile up on farmland in California.", "U.S. EPA / NARA"),
+            2 => Photo("ch2_chemical_spill_river.jpg", "Chemical pollution covers a riverbank after a spill.", "U.S. EPA / NARA"),
+            3 => Photo("ch2_water_sample.png", "A water sample is collected so pollution can be measured in a lab.", "USGS"),
+            4 => Photo("ch2_valley_drums.jpg", "Discarded chemical drums cover a hazardous-waste site.", "U.S. EPA"),
+            5 => Photo("ch2_treatment_canal.jpg", "An industrial treatment canal separates waste before water is released.", "U.S. EPA / NARA"),
+            _ => Photo("ch2_sampling_station.jpg", "A USGS station continuously checks changes in water quality.", "USGS"),
         },
         3 => Mathf.PosMod(variant, 6) switch
         {
