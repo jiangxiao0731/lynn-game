@@ -670,16 +670,13 @@ public partial class ChapterLevelController : Node2D
         {
             _guardianAfterPlayed = true;
             InteractionSpacing.FrameConversation(_player, _boss, InteractionSpacing.GuardianConversationDistance);
-            if (ChapterId == 3)
-                _dialogue.Play(GuardianTimeline, () => _dialogue.Play(EndingTimeline, () => Advance(ObjectiveStage.ExitLevel)));
-            else
-                _dialogue.Play(GuardianTimeline, () =>
-                    Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                        "The Chemical Waste Monster is contained. Swim to the clean current it left behind."));
+            _dialogue.Play(GuardianTimeline, () => _dialogue.Play(EndingTimeline, () => Advance(ObjectiveStage.ExitLevel)));
         }
         else
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                "The Chemical Waste Monster is contained. Swim to the clean current it left behind.");
+                ChapterId == 2
+                    ? "The Chemical Waste Monster is contained. Follow the clean current toward the lighthouse."
+                    : "The Oil Monster is gone. Light the Silent Lighthouse.");
     }
 
     private void OnNextLevelElementUnlocked(int form)

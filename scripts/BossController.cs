@@ -273,7 +273,7 @@ public partial class BossController : CharacterBody2D
         float pulse = 1f + Mathf.Sin(_dropPulse * 3.1f) * 0.045f;
         NextElementDrop.Scale = Vector2.One * pulse;
 
-        if (_player != null && NextElementDrop.GlobalPosition.DistanceTo(_player.GlobalPosition)
+        if (!_dialogueActive && _player != null && NextElementDrop.GlobalPosition.DistanceTo(_player.GlobalPosition)
             <= GameConstants.ElementPickupDistance + 50f)
             CollectNextElementDrop();
     }
