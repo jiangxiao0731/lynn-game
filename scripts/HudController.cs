@@ -242,10 +242,8 @@ public partial class HudController : CanvasLayer
         skillRow.AddChild(keyBadge);
 
         var formIcon = UiTheme.Thumbnail(38, out var formImage);
-        var frames = PlaceholderArt.FormFrames(ChapterRuntime.RequiredForm);
-        var anim = frames.GetAnimationNames();
-        if (anim.Length > 0 && frames.GetFrameCount(anim[0]) > 0)
-            formImage.Texture = frames.GetFrameTexture(anim[0], 0);
+        formImage.Texture = AssetLoader.Texture(AssetLoader.ChapterElement(ChapterRuntime.CurrentChapter))
+                            ?? AssetLoader.Texture(AssetLoader.ShardIcon);
         skillRow.AddChild(formIcon);
 
         var nameBox = new VBoxContainer();
