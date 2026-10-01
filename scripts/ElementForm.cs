@@ -26,7 +26,7 @@ public enum ObjectiveStage
 /// Shared gameplay constants (ported from character_body_2d.gd / monster scripts).
 public static class GameConstants
 {
-    public const float Speed = 240.0f;
+    public const float Speed = 1248.0f;
     public const int MaxHealth = 120;
 
     public const int ElementChargesPerPickup = 1;

@@ -11,8 +11,9 @@ public partial class Player : CharacterBody2D
     [Signal] public delegate void FormChangedEventHandler(int form);
 
     [Export] public float Speed = GameConstants.Speed;
-    /// Shift-to-sprint factor; tuned so a full chapter crossing stays under a minute.
-    [Export] public float SprintMultiplier = 5.2f;
+    /// Shift-to-sprint factor. Base speed is already the old sprint pace; Shift is a
+    /// faster traversal mode for long chapter crossings.
+    [Export] public float SprintMultiplier = 2.0f;
     /// Contractions per second while swimming.
     [Export] public float PulseRate = 1.45f;
     /// Speed kept during the coast, as a fraction of full thrust.
