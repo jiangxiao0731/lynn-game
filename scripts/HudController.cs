@@ -219,14 +219,14 @@ public partial class HudController : CanvasLayer
         healthBox.AddChild(_hpBar);
 
         // Ability charges appear only after the mechanic is unlocked.
-        _skillDock = Track(Surface("SkillDock", new Vector2(430, 0), 0.72f));
+        _skillDock = Track(Surface("SkillDock", new Vector2(340, 0), 0.78f));
         Pin(_skillDock, Control.LayoutPreset.CenterBottom);
-        _skillDock.Position = new Vector2(-215, -152);
+        _skillDock.Position = new Vector2(-170, -118);
         _skillDock.Visible = false;
         AddChild(_skillDock);
         var skillInset = Inset(_skillDock, UiTheme.PadSurfaceX, UiTheme.PadSurfaceY);
-        var skillRow = new HBoxContainer();
-        skillRow.AddThemeConstantOverride("separation", UiTheme.GapPair);
+        var skillRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        skillRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         skillInset.AddChild(skillRow);
         var skills = new[]
         {
@@ -234,34 +234,34 @@ public partial class HudController : CanvasLayer
             ("2", "ICE", Palette.ElementIce),
             ("3", "ELECTRIC", Palette.ElementElectric),
         };
-        // Ice unlocks at the end of chapter one and Electric at the end of chapter two,
-        // so earlier chapters would otherwise show slots that can only ever read 0.
-        int unlocked = Mathf.Clamp(ChapterRuntime.CurrentChapter, 1, 3);
-        for (int i = 0; i < skills.Length; i++)
-        {
-            if (i >= unlocked) continue;
-            var slot = new HBoxContainer { CustomMinimumSize = new Vector2(126, 0) };
-            slot.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            slot.AddThemeConstantOverride("separation", UiTheme.GapPair);
-            var key = UiTheme.Role(UiTheme.TypeRole.Hint, skills[i].Item1);
-            key.VerticalAlignment = VerticalAlignment.Center;
-            slot.AddChild(key);
-            var formIcon = UiTheme.Thumbnail(32, out var formImage);
-            var frames = PlaceholderArt.FormFrames((ElementForm)(i + 1));
-            var anim = frames.GetAnimationNames();
-            if (anim.Length > 0 && frames.GetFrameCount(anim[0]) > 0) formImage.Texture = frames.GetFrameTexture(anim[0], 0);
-            slot.AddChild(formIcon);
-            var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, skills[i].Item2);
-            name.AddThemeColorOverride("font_color", skills[i].Item3);
-            name.VerticalAlignment = VerticalAlignment.Center;
-            slot.AddChild(name);
-            var count = UiTheme.Role(UiTheme.TypeRole.Numeral, "0");
-            count.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            count.HorizontalAlignment = HorizontalAlignment.Right;
-            _skillCounts[i] = count;
-            slot.AddChild(count);
-            skillRow.AddChild(slot);
-        }
+        int formIndex = Mathf.Clamp((int)ChapterRuntime.RequiredForm - 1, 0, 2);
+        var keyBadge = UiTheme.Role(UiTheme.TypeRole.Numeral, skills[formIndex].Item1);
+        keyBadge.CustomMinimumSize = new Vector2(34, 34);
+        keyBadge.HorizontalAlignment = HorizontalAlignment.Center;
+        keyBadge.VerticalAlignment = VerticalAlignment.Center;
+        skillRow.AddChild(keyBadge);
+
+        var formIcon = UiTheme.Thumbnail(38, out var formImage);
+        var frames = PlaceholderArt.FormFrames(ChapterRuntime.RequiredForm);
+        var anim = frames.GetAnimationNames();
+        if (anim.Length > 0 && frames.GetFrameCount(anim[0]) > 0)
+            formImage.Texture = frames.GetFrameTexture(anim[0], 0);
+        skillRow.AddChild(formIcon);
+
+        var nameBox = new VBoxContainer();
+        nameBox.AddThemeConstantOverride("separation", 0);
+        skillRow.AddChild(nameBox);
+        var name = UiTheme.Role(UiTheme.TypeRole.Eyebrow, skills[formIndex].Item2);
+        name.AddThemeColorOverride("font_color", skills[formIndex].Item3);
+        nameBox.AddChild(name);
+        var hint = UiTheme.Role(UiTheme.TypeRole.Hint, "ENERGY");
+        nameBox.AddChild(hint);
+
+        var count = UiTheme.Role(UiTheme.TypeRole.Numeral, "× 0");
+        count.HorizontalAlignment = HorizontalAlignment.Right;
+        count.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        _skillCounts[formIndex] = count;
+        skillRow.AddChild(count);
 
         // Boss name and health get the conventional top-centre focal position.
         _bossPanel = Track(Surface("BossPanel", new Vector2(760, 0), 0.86f));
@@ -353,7 +353,7 @@ public partial class HudController : CanvasLayer
         for (int i = 0; i < _skillCounts.Length; i++)
         {
             var label = _skillCounts[i];
-            if (label != null) label.Text = counts[i].ToString();
+            if (label != null) label.Text = $"× {counts[i]}";
         }
     }
 

@@ -637,7 +637,9 @@ public partial class ChapterLevelController : Node2D
         if (state == null || state.CurrentLevel != ChapterId || state.ObjectiveStage == ObjectiveStage.Complete) return;
         // Chapter interaction topology is short; resume safely at the start rather
         // than restoring half-removed runtime gates without their authored visuals.
-        _player.RestoreState(state.CurrentHealth, state.CurrentForm);
+        _player.RestoreState(state.CurrentHealth, RequiredForm);
+        _skills.RestoreCharges(0, 0, 0);
+        Events.Instance?.EmitSignal(Events.SignalName.ShardProgressChanged, _fragments, RequiredFragments);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
             "Progress restored. This chapter's restoration route begins at the entrance." );
     }
