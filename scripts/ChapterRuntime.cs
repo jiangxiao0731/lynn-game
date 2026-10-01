@@ -16,12 +16,14 @@ public static class ChapterRuntime
     public static ElementForm RequiredForm { get; private set; } = ElementForm.Water;
     public static string FragmentLabel { get; private set; } = "Plastic cleaned";
     public static string BossName { get; private set; } = GameConstants.MonsterBossName;
+    public static string? ObjectiveOverride { get; private set; }
     public static string[] Zones { get; private set; } =
         { NarrativeData.ZoneShallows, NarrativeData.ZoneSediment, NarrativeData.ZoneDepths };
 
     public static void SetChapter(int chapter)
     {
         CurrentChapter = Mathf.Clamp(chapter, 1, 3);
+        ObjectiveOverride = null;
         if (CurrentChapter == 2)
         {
             RequiredForm = ElementForm.Ice;
@@ -45,8 +47,13 @@ public static class ChapterRuntime
         }
     }
 
+    public static void SetObjectiveOverride(string? text) => ObjectiveOverride = text;
+
     public static string ObjectiveLabel(ObjectiveStage stage)
     {
+        if (!string.IsNullOrEmpty(ObjectiveOverride))
+            return ObjectiveOverride!;
+
         if (CurrentChapter == 2)
             return stage switch
             {

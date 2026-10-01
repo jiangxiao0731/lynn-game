@@ -72,6 +72,7 @@ public partial class ChapterLevelController : Node2D
     private readonly List<Node2D> _residents = new();
     private readonly List<Control> _residentPrompts = new();
     private readonly List<string> _residentTimelines = new();
+    private readonly List<string> _residentNames = new();
     private readonly bool[] _requiredResidentVisited = new bool[3];
     private int[] _requiredResidentIndices = System.Array.Empty<int>();
 
@@ -279,6 +280,7 @@ public partial class ChapterLevelController : Node2D
             _residents.Add(node);
             _residentPrompts.Add(prompt);
             _residentTimelines.Add(member.Id);
+            _residentNames.Add(member.DisplayName);
         }
     }
 
@@ -528,8 +530,11 @@ public partial class ChapterLevelController : Node2D
         _requiredResidentVisited[nodeIndex] = true;
         string nextDevice = ChapterId == 2 ? "Flow Switch" : "Power Relay";
         _dialogue.Play(_residentTimelines[residentIndex], () =>
+        {
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                $"Now restore {nextDevice} {nodeIndex + 1}."));
+                $"Now restore {nextDevice} {nodeIndex + 1}.");
+            RefreshObjective();
+        });
         return true;
     }
 
@@ -568,6 +573,7 @@ public partial class ChapterLevelController : Node2D
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint, chapterFacts[index]);
         AudioManager.Instance?.PlaySfx("objective_advance");
         if (index == 0) Advance(ObjectiveStage.TalkSeaweed);
+        else if (_restoredNodes < 3) RefreshObjective();
         else if (_restoredNodes >= 3)
         {
             OpenArenaGate();
@@ -698,6 +704,7 @@ public partial class ChapterLevelController : Node2D
     private void Advance(ObjectiveStage next)
     {
         _stage = next;
+        UpdateObjectiveOverride();
         Events.Instance?.EmitSignal(Events.SignalName.ObjectiveAdvanced, (int)next);
         if (next == ObjectiveStage.CollectShards)
             Events.Instance?.EmitSignal(Events.SignalName.ShardProgressChanged, _fragments, RequiredFragments);
@@ -708,8 +715,49 @@ public partial class ChapterLevelController : Node2D
 
     private void BroadcastObjective()
     {
+        UpdateObjectiveOverride();
         Events.Instance?.EmitSignal(Events.SignalName.ObjectiveAdvanced, (int)_stage);
         Events.Instance?.EmitSignal(Events.SignalName.ShardProgressChanged, _fragments, RequiredFragments);
+    }
+
+    private void RefreshObjective()
+    {
+        UpdateObjectiveOverride();
+        Events.Instance?.EmitSignal(Events.SignalName.ObjectiveAdvanced, (int)_stage);
+    }
+
+    private void UpdateObjectiveOverride()
+    {
+        string? text = null;
+        string device = ChapterId == 2 ? "Flow Switch" : "Power Relay";
+        string pollutant = ChapterId == 2 ? "leaking waste" : "oil patches";
+        string boss = ChapterId == 2 ? "Chemical Waste Monster" : "Oil Monster";
+
+        if (_stage == ObjectiveStage.TalkStarfish || _stage == ObjectiveStage.TalkSeaweed)
+        {
+            var resident = RequiredResidentForNode(_restoredNodes);
+            if (resident != null)
+            {
+                int index = _residents.IndexOf(resident);
+                string name = index >= 0 && index < _residentNames.Count ? _residentNames[index] : "the next resident";
+                text = $"Talk to {name}, then restore {device} {_restoredNodes + 1}";
+            }
+            else if (_restoredNodes < _restoreNodes.Count)
+            {
+                text = $"Restore {device} {_restoredNodes + 1}";
+            }
+        }
+        else if (_stage == ObjectiveStage.CollectShards)
+        {
+            text = $"Clean {pollutant} so Shimmer can face the {boss}";
+        }
+        else if (_stage == ObjectiveStage.DefeatBoss)
+        {
+            int key = ChapterId == 2 ? 2 : 3;
+            text = $"Keep distance. Press {key} to use cleanup power on the {boss}";
+        }
+
+        ChapterRuntime.SetObjectiveOverride(text);
     }
 
     private bool Near(Node2D node) => _player.GlobalPosition.DistanceTo(node.GlobalPosition) <= InteractionRange;
