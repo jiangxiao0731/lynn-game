@@ -27,6 +27,32 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
     public static DialoguePicture Photo(string file, string caption, string credit) =>
         new($"res://assets/photos/{file}", caption, credit);
 
+    public static DialoguePicture ResultBeforeForChapter(int chapter) => chapter switch
+    {
+        2 => Photo("ch2_toxic_algae_lake_erie.jpg",
+            "A thick harmful algal bloom spreads across Lake Erie.",
+            "NOAA"),
+        3 => Photo("ch3_oil_spill_satellite.jpg",
+            "The Deepwater Horizon oil slick spreads across the Gulf of Mexico.",
+            "NASA"),
+        _ => Photo("ch1_albatross_plastic_chick.jpg",
+            "A young albatross sits beside plastic debris on Midway Atoll.",
+            "U.S. Fish and Wildlife Service"),
+    };
+
+    public static DialoguePicture ResultAfterForChapter(int chapter) => chapter switch
+    {
+        2 => Photo("ch2_after_monitor_buoy.jpg",
+            "A monitoring buoy tracks water quality and harmful bloom conditions in real time.",
+            "USGS"),
+        3 => Photo("ch3_after_coral_restoration.jpg",
+            "NOAA divers prepare coral restoration work in habitat injured by the 2010 oil spill.",
+            "NOAA Fisheries / Chris Gardner"),
+        _ => Photo("ch1_after_beach_cleanup.jpg",
+            "Volunteers clean shoreline near the Ahua Reef restored wetlands in Hawaiʻi.",
+            "U.S. Navy / MC1 Daniel Barker"),
+    };
+
     /// A rotating public-domain reality check for conversations that otherwise only
     /// carry character art. Every timeline now opens with real-world context, while
     /// authored line-specific photos still take priority.
@@ -148,8 +174,8 @@ public static class DialogueData
                 Label: "starfish_continue",
                 Picture: DialoguePicture.Photo("ch1_albatross_debris.jpg",
                     "A Laysan albatross chick among plastic debris on Midway Atoll.", "NOAA Marine Debris Program")),
-            new(SpeakerStarfish, "Seagrass is just below. Talk to them before you move on.", "starfish",
-                Picture: new(AssetLoader.NpcPortrait("seaweed"), "Seaweed · a little further along the reef")),
+            new(SpeakerStarfish, "Seaweed is farther in, near the darker water. Talk to them before you face the big pile.", "starfish",
+                Picture: new(AssetLoader.NpcPortrait("seaweed"), "Seaweed · deeper along the reef")),
         });
 
         d[Seaweed] = new DialogueTimeline(Seaweed, new List<DialogueLine>

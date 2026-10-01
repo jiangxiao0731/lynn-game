@@ -491,13 +491,13 @@ public partial class GameSceneController : Node2D
         WireNpc("GrannyLan", DialogueData.GrannyLan, DialogueData.SpeakerGranny,
             SX(new Vector2(520, 360)), Palette.WarningAmber, 124f,
             () => _objectives?.OnGrannyTalked());
-        // 海星 (浅滩) — deepened on repeat talk.
+        // 海星 (沉积带) — the main story now stretches into the second panel.
         WireNpc("StarfishNPC", DialogueData.Starfish, DialogueData.SpeakerStarfish,
-            SX(new Vector2(980, 320)), Palette.CoastalCyan, 108f,
+            SX(new Vector2(1460, 330)), Palette.CoastalCyan, 108f,
             () => _objectives?.OnStarfishTalked(), NarrativeData.StarfishDeep);
-        // 海草 (浅滩/沉积带 border) — deepened on repeat talk.
+        // 海草 (巢母深处前) — the last story warning before cleanup becomes urgent.
         WireNpc("SeaweedNPC", DialogueData.Seaweed, DialogueData.SpeakerSeaweed,
-            SX(new Vector2(700, 840)), Palette.PollutedTealBright, 108f,
+            SX(new Vector2(2320, 780)), Palette.PollutedTealBright, 108f,
             () => _objectives?.OnSeaweedTalked(), NarrativeData.SeaweedDeep);
 
         // NEW in-canon NPCs (item 6), placed across zones, added as runtime nodes.

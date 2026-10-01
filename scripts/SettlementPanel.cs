@@ -50,10 +50,12 @@ public partial class SettlementPanel : Control
         var compare = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         compare.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         layout.AddChild(compare);
-        compare.AddChild(PictureCard("BEFORE", DialoguePicture.PollutionForChapter(chapter, chapter).Path,
-            BeforeCaption(chapter), new Color(Palette.ArenaTint(chapter), 0.34f)));
-        compare.AddChild(PictureCard("AFTER", AssetLoader.ChapterBackground(chapter, 2),
-            AfterCaption(chapter), new Color(UiTheme.Accent, 0.22f)));
+        var before = DialoguePicture.ResultBeforeForChapter(chapter);
+        var after = DialoguePicture.ResultAfterForChapter(chapter);
+        compare.AddChild(PictureCard("BEFORE", before.Path,
+            CaptionWithCredit(before, BeforeCaption(chapter)), new Color(Palette.ArenaTint(chapter), 0.34f)));
+        compare.AddChild(PictureCard("AFTER", after.Path,
+            CaptionWithCredit(after, AfterCaption(chapter)), new Color(UiTheme.Accent, 0.22f)));
 
         var change = UiTheme.Role(UiTheme.TypeRole.Primary, TransformationLine(chapter), wrap: true);
         change.HorizontalAlignment = HorizontalAlignment.Center;
@@ -123,6 +125,9 @@ public partial class SettlementPanel : Control
         stack.AddChild(text);
         return card;
     }
+
+    private static string CaptionWithCredit(DialoguePicture picture, string note)
+        => $"{picture.Caption}\n{note} · {picture.Credit}";
 
     private static Control MetricCard(string texturePath, string label, string value)
     {
