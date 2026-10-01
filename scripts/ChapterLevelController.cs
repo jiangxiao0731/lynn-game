@@ -44,6 +44,7 @@ public partial class ChapterLevelController : Node2D
     private int _zone = -1;
     private bool _guardianBeatPlayed;
     private bool _guardianRestored;
+    private bool _guardianAfterPlayed;
     private bool _completed;
     private bool _smokeMode;
     private float _time;
@@ -71,6 +72,8 @@ public partial class ChapterLevelController : Node2D
     private readonly List<Node2D> _residents = new();
     private readonly List<Control> _residentPrompts = new();
     private readonly List<string> _residentTimelines = new();
+    private readonly bool[] _requiredResidentVisited = new bool[3];
+    private int[] _requiredResidentIndices = System.Array.Empty<int>();
 
     private ElementForm RequiredForm => ChapterId == 2 ? ElementForm.Ice : ElementForm.Electric;
     private string GuideTimeline => ChapterId == 2 ? NarrativeData.Chapter2Opening : NarrativeData.Chapter3Opening;
@@ -143,6 +146,7 @@ public partial class ChapterLevelController : Node2D
         BuildBoundsAndMaze(map);
         BuildGuide();
         BuildResidents();
+        SelectRequiredResidents();
         BuildRestoreNodes(map);
         BuildFragments(map);
         BuildExit(map);
@@ -359,8 +363,10 @@ public partial class ChapterLevelController : Node2D
         if (_stage == ObjectiveStage.DefeatBoss && !_guardianBeatPlayed && _player.GlobalPosition.DistanceTo(_boss.GlobalPosition) < 520f)
         {
             _guardianBeatPlayed = true;
-            InteractionSpacing.FrameConversation(_player, _boss, InteractionSpacing.GuardianConversationDistance);
-            _dialogue.Play(GuardianTimeline);
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                ChapterId == 2
+                    ? "The Chemical Waste Monster is attacking. Keep distance and press 2 to release Ice."
+                    : "The Oil Monster is attacking. Keep distance and press 3 to release Electric.");
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
             CompleteChapter();
@@ -425,6 +431,11 @@ public partial class ChapterLevelController : Node2D
             GetViewport().SetInputAsHandled();
             return;
         }
+        if (TryRequiredResidentInteraction())
+        {
+            GetViewport().SetInputAsHandled();
+            return;
+        }
         for (int i = 0; i < _restoreNodes.Count; i++)
         {
             if (IsNodeAvailable(i) && Near(_restoreNodes[i]))
@@ -457,7 +468,8 @@ public partial class ChapterLevelController : Node2D
     {
         ObjectiveStage.FindNpc => _guide,
         ObjectiveStage.TalkStarfish or ObjectiveStage.TalkSeaweed
-            => _restoredNodes < _restoreNodes.Count ? _restoreNodes[_restoredNodes] : null,
+            => RequiredResidentForNode(_restoredNodes) ??
+               (_restoredNodes < _restoreNodes.Count ? _restoreNodes[_restoredNodes] : null),
         ObjectiveStage.CollectShards => Nearest(_fragmentsInWorld),
         ObjectiveStage.DefeatBoss => _boss.NextElementDrop ?? _boss,
         ObjectiveStage.ExitLevel => _exit,
@@ -478,8 +490,47 @@ public partial class ChapterLevelController : Node2D
     }
 
     private bool IsNodeAvailable(int index) => index == _restoredNodes &&
+        RequiredResidentForNode(index) == null &&
         ((index == 0 && _stage == ObjectiveStage.TalkStarfish) ||
          (index > 0 && _stage == ObjectiveStage.TalkSeaweed));
+
+    private void SelectRequiredResidents()
+    {
+        _requiredResidentIndices = ChapterId == 2
+            ? new[] { 0, 2, 5 }  // source → bloom → low oxygen
+            : new[] { 0, 2, 5 }; // oil → bleaching → spread
+    }
+
+    private Node2D? RequiredResidentForNode(int nodeIndex)
+    {
+        if (nodeIndex < 0 || nodeIndex >= _requiredResidentVisited.Length) return null;
+        if (_requiredResidentVisited[nodeIndex]) return null;
+        if (nodeIndex >= _requiredResidentIndices.Length) return null;
+        int residentIndex = _requiredResidentIndices[nodeIndex];
+        if (residentIndex < 0 || residentIndex >= _residents.Count) return null;
+        var resident = _residents[residentIndex];
+        if (!IsInstanceValid(resident) || IsBossAreaOrAfter(resident.GlobalPosition)) return null;
+        return resident;
+    }
+
+    private bool TryRequiredResidentInteraction()
+    {
+        if (_stage != ObjectiveStage.TalkStarfish && _stage != ObjectiveStage.TalkSeaweed) return false;
+        int nodeIndex = _restoredNodes;
+        var resident = RequiredResidentForNode(nodeIndex);
+        if (resident == null || !Near(resident)) return false;
+
+        int residentIndex = _residents.IndexOf(resident);
+        if (residentIndex < 0 || residentIndex >= _residentTimelines.Count) return false;
+
+        InteractionSpacing.FrameConversation(_player, resident, InteractionSpacing.NpcConversationDistance);
+        _requiredResidentVisited[nodeIndex] = true;
+        string nextDevice = ChapterId == 2 ? "Flow Switch" : "Power Relay";
+        _dialogue.Play(_residentTimelines[residentIndex], () =>
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                $"Now restore {nextDevice} {nodeIndex + 1}."));
+        return true;
+    }
 
     private void RestoreNode(int index)
     {
@@ -587,8 +638,17 @@ public partial class ChapterLevelController : Node2D
         _guardianRestored = true;
         for (int i = 0; i < 3; i++) SetZoneRestored(i);
         _exit.CreateTween().TweenProperty(_exit, "modulate", Colors.White, 0.9f);
-        if (ChapterId == 3)
-            _dialogue.Play(EndingTimeline, () => Advance(ObjectiveStage.ExitLevel));
+        if (!_guardianAfterPlayed)
+        {
+            _guardianAfterPlayed = true;
+            InteractionSpacing.FrameConversation(_player, _boss, InteractionSpacing.GuardianConversationDistance);
+            if (ChapterId == 3)
+                _dialogue.Play(GuardianTimeline, () => _dialogue.Play(EndingTimeline, () => Advance(ObjectiveStage.ExitLevel)));
+            else
+                _dialogue.Play(GuardianTimeline, () =>
+                    Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                        "The Chemical Waste Monster released a new current. Collect it to open the next area."));
+        }
         else
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
                 "The Chemical Waste Monster released a new current. Collect it to open the next area.");

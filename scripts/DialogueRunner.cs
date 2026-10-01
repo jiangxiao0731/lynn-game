@@ -34,7 +34,7 @@ public partial class DialogueRunner : CanvasLayer
     private TextureRect _artImage = null!;
     private Label _artTitle = null!;
     private Label _artSubtitle = null!;
-    private readonly HashSet<string> _shownPhotoPaths = new();
+    private static readonly HashSet<string> ShownPhotoPaths = new();
     /// Width a photo gets inside the card: the bubble minus its padding, the speaker
     /// portrait column and the card's own padding.
     private static float PictureWidth =>
@@ -346,8 +346,8 @@ public partial class DialogueRunner : CanvasLayer
     private DialoguePicture? AcceptPictureIfFresh(DialoguePicture picture)
     {
         if (!picture.IsPhoto) return picture;
-        if (_shownPhotoPaths.Contains(picture.Path)) return null;
-        _shownPhotoPaths.Add(picture.Path);
+        if (ShownPhotoPaths.Contains(picture.Path)) return null;
+        ShownPhotoPaths.Add(picture.Path);
         return picture;
     }
 
@@ -362,19 +362,16 @@ public partial class DialogueRunner : CanvasLayer
     private static IReadOnlyList<DialoguePicture> AutoPhotoPool(string timelineId)
     {
         if (timelineId == DialogueData.Seaweed || timelineId == NarrativeData.SeaweedDeep ||
-            timelineId == NarrativeData.BossPre || timelineId == "bannerfish")
+            timelineId == NarrativeData.Hermit || timelineId == NarrativeData.Shoal ||
+            timelineId == NarrativeData.Lantern || timelineId == "bannerfish")
             return new[]
             {
                 DialoguePicture.Photo("ch1_seal_net.jpg",
                     "A Hawaiian monk seal caught in an abandoned fishing net.", "NOAA Fisheries"),
                 DialoguePicture.Photo("ch1_derelict_gear_reef.jpg",
                     "A NOAA diver removes derelict fishing gear from a reef.", "NOAA"),
-                DialoguePicture.Photo("ch1_albatross_plastic_chick.jpg",
-                    "A young albatross sits beside plastic debris on Midway Atoll.", "U.S. Fish and Wildlife Service"),
                 DialoguePicture.Photo("ch1_laysan_plastic_remains.jpg",
                     "Plastic pieces remain around a young albatross on Midway Atoll.", "U.S. Fish and Wildlife Service"),
-                DialoguePicture.Photo("ch1_cleanup.jpg",
-                    "A cleanup crew lifts derelict fishing gear from Midway Atoll.", "U.S. Fish and Wildlife Service"),
                 DialoguePicture.Photo("ch1_albatross_cleanup.jpg",
                     "Albatrosses stand near plastic debris collected on Midway Atoll.", "U.S. Fish and Wildlife Service"),
             };
@@ -388,8 +385,6 @@ public partial class DialogueRunner : CanvasLayer
                     "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
                 DialoguePicture.Photo("ch2_algal_bloom.jpg",
                     "A harmful algal bloom spreading across Lake Erie, seen from space.", "NOAA GLERL"),
-                DialoguePicture.Photo("ch2_toxic_algae_lake_erie.jpg",
-                    "A thick green algal bloom spreads across Lake Erie.", "NOAA"),
                 DialoguePicture.Photo("ch2_lake_erie_habs_2015.jpg",
                     "Harmful algal bloom water in Lake Erie during a 2015 survey.", "NOAA GLERL"),
                 DialoguePicture.Photo("ch2_habs_sample.jpg",
@@ -410,8 +405,6 @@ public partial class DialogueRunner : CanvasLayer
                     "Bleached brain coral during the 2023 Florida Keys marine heatwave.", "NOAA"),
                 DialoguePicture.Photo("ch3_rig_fire.jpg",
                     "The Deepwater Horizon drilling rig burning in April 2010.", "U.S. Coast Guard"),
-                DialoguePicture.Photo("ch3_oil_spill_satellite.jpg",
-                    "The Deepwater Horizon oil slick spreading across the Gulf of Mexico.", "NASA"),
                 DialoguePicture.Photo("ch3_oil_approaches_coast.jpg",
                     "Oil response teams watch slick water near the Gulf coast.", "U.S. Navy"),
             };

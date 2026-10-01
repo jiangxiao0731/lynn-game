@@ -159,7 +159,7 @@ public static class NarrativeData
             new(Sh, "You're glowing... Could we follow you for a while?", "shoal", Label: "shoal_continue"),
         });
 
-        // --- Boss pre / mid (post = existing BossDefeated + Ending) ---
+        // --- Boss combat notes. BossMid now plays after defeat, not mid-fight. ---
         d[BossPre] = new DialogueTimeline(BossPre, new List<DialogueLine>
         {
             new(B, "More trash... It keeps piling up...", "boss"),
@@ -176,8 +176,10 @@ public static class NarrativeData
 
         d[BossMid] = new DialogueTimeline(BossMid, new List<DialogueLine>
         {
-            new(B, "(Plastic bottles and bags begin to break away.)", "boss"),
-            new(S, "Just a little more. The trapped animals are almost free."),
+            new(B, "(Plastic bottles and bags break loose and drift apart.)", "boss"),
+            new(B, "I was never one creature. I was everything that got thrown away and left here.", "boss"),
+            new(S, "Then I'll help carry these pieces out, one by one."),
+            new(S, "The trapped animals are free now."),
         });
 
         // --- Ending beat: hand over the tidal key, tease next sea ---
@@ -210,15 +212,10 @@ public static class NarrativeData
         });
         d[Chapter2Guardian] = new DialogueTimeline(Chapter2Guardian, new List<DialogueLine>
         {
-            new(F, "More chemicals... More leaking barrels... Keep feeding me...", "boss2"),
-            new(S, "Should I freeze the monster or the leaks?", null, new List<DialogueChoice>
-            {
-                new("Freeze the leaks first.", SetFlag: "ch2_freeze_leaks", GotoLabel: "ch2_freeze_leaks"),
-                new("Aim at the monster.", SetFlag: "ch2_aim_guardian", GotoLabel: "ch2_guardian_continue"),
-            }),
-            new(S, "The leaks are what keep feeding it. Ice can slow them down.", Label: "ch2_freeze_leaks"),
-            new(S, "This monster is made from leaked chemicals. I can use Ice to stop the leaks from spreading.", Label: "ch2_guardian_continue"),
-            new(S, "I still need to stay out of its reach."),
+            new(F, "(The frozen shell cracks. The leaking foam slows down.)", "boss2"),
+            new(F, "I kept growing because every small leak found the same place to sink.", "boss2"),
+            new(S, "Then the cleanup has to start before the waste reaches the water."),
+            new(S, "For now, the trench can breathe again."),
         });
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>
         {
@@ -243,15 +240,10 @@ public static class NarrativeData
         });
         d[Chapter3Guardian] = new DialogueTimeline(Chapter3Guardian, new List<DialogueLine>
         {
-            new(C, "More oil... More fuel... The whole reef will be covered...", "boss3"),
-            new(S, "What is the safest move?", null, new List<DialogueChoice>
-            {
-                new("Use Electric from a distance.", SetFlag: "ch3_safe_electric", GotoLabel: "ch3_safe_electric"),
-                new("Try to grab the oil.", SetFlag: "ch3_grab_oil", GotoLabel: "ch3_guardian_continue"),
-            }),
-            new(S, "Electric can start the cleanup system. I should not touch the oil myself.", Label: "ch3_safe_electric"),
-            new(S, "The spilled oil formed this monster. I'll use Electric to start the cleanup system and pull the oil away from the reef.", Label: "ch3_guardian_continue"),
-            new(S, "If I grab it, it will just spread over me too."),
+            new(C, "(The oil pulls away from the reef and gathers into a dark coil.)", "boss3"),
+            new(C, "I spread wherever the water carried me. I covered things that were still alive.", "boss3"),
+            new(S, "Then we collect what is left, and we stop more oil from entering the water."),
+            new(S, "The lighthouse can guide the reef again."),
         });
         d[Chapter3Ending] = new DialogueTimeline(Chapter3Ending, new List<DialogueLine>
         {

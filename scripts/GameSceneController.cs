@@ -43,6 +43,8 @@ public partial class GameSceneController : Node2D
     private bool _bossPrePlayed;
     private bool _bossMidPlayed;
     private bool _grannyMidPlayed;
+    private bool _bossAfterPlayed;
+    private readonly System.Collections.Generic.HashSet<string> _mainStoryVisited = new();
     private readonly System.Collections.Generic.List<TextureRect> _pollutionVeils = new();
 
     /// Pollution veil colour at a fraction across the map, 0 at the mouth to 1 at the
@@ -159,7 +161,7 @@ public partial class GameSceneController : Node2D
         {
             case ObjectiveStage.FindNpc: return GetNodeOrNull<Node2D>("GrannyLan");
             case ObjectiveStage.TalkStarfish: return GetNodeOrNull<Node2D>("StarfishNPC");
-            case ObjectiveStage.TalkSeaweed: return GetNodeOrNull<Node2D>("SeaweedNPC");
+            case ObjectiveStage.TalkSeaweed: return NextMainStoryBridgeTarget() ?? GetNodeOrNull<Node2D>("SeaweedNPC");
             case ObjectiveStage.DefeatBoss:
                 var boss = GetNodeOrNull<BossController>("BroodMother");
                 return boss?.NextElementDrop ?? boss;
@@ -498,7 +500,7 @@ public partial class GameSceneController : Node2D
         // 海草 (巢母深处前) — the last story warning before cleanup becomes urgent.
         WireNpc("SeaweedNPC", DialogueData.Seaweed, DialogueData.SpeakerSeaweed,
             SX(new Vector2(2320, 780)), Palette.PollutedTealBright, 108f,
-            () => _objectives?.OnSeaweedTalked(), NarrativeData.SeaweedDeep);
+            () => { if (MainStoryBridgeComplete()) _objectives?.OnSeaweedTalked(); }, NarrativeData.SeaweedDeep);
 
         // NEW in-canon NPCs (item 6), placed across zones, added as runtime nodes.
         WireRuntimeNpc("HermitNPC", NarrativeData.Hermit, SX(new Vector2(1700, 760)),
@@ -741,10 +743,57 @@ public partial class GameSceneController : Node2D
             bool firstTime = !it.Talked;
             it.Talked = true;
             string timeline = (!firstTime && it.FollowUp != null) ? it.FollowUp : it.Timeline;
-            _dialogue.Play(timeline, firstTime ? it.OnFirstDone : null);
+            System.Action? onDone = firstTime ? it.OnFirstDone : null;
+            if (_objectives?.Stage == ObjectiveStage.TalkSeaweed)
+            {
+                if (it.Node.Name == "HermitNPC" || it.Node.Name == "ShoalNPC")
+                {
+                    string nodeName = it.Node.Name;
+                    onDone = Chain(onDone, () =>
+                    {
+                        _mainStoryVisited.Add(nodeName);
+                        Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                            MainStoryBridgeComplete()
+                                ? "Now find Seaweed near the darker water before you face the monster."
+                                : "Keep following the reef. There is one more resident who knows part of this story.");
+                    });
+                }
+                else if (it.Node.Name == "SeaweedNPC")
+                {
+                    if (!firstTime)
+                    {
+                        onDone = Chain(onDone, () =>
+                        {
+                            if (MainStoryBridgeComplete())
+                                _objectives?.OnSeaweedTalked();
+                            else
+                                Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                                    "Before the monster, listen to the residents farther along the reef.");
+                        });
+                    }
+                }
+            }
+            _dialogue.Play(timeline, onDone);
             return;
         }
     }
+
+    private static System.Action? Chain(System.Action? first, System.Action second) =>
+        first == null ? second : () => { first(); second(); };
+
+    private Node2D? NextMainStoryBridgeTarget()
+    {
+        foreach (string nodeName in new[] { "HermitNPC", "ShoalNPC" })
+        {
+            if (_mainStoryVisited.Contains(nodeName)) continue;
+            var node = GetNodeOrNull<Node2D>(nodeName);
+            if (node != null && IsInstanceValid(node) && !IsBossAreaOrAfter(node.GlobalPosition))
+                return node;
+        }
+        return null;
+    }
+
+    private bool MainStoryBridgeComplete() => NextMainStoryBridgeTarget() == null;
 
     private static bool IsBossAreaOrAfter(Vector2 worldPosition)
         => worldPosition.X >= ChapterMap.ArenaGateX(1) - 1f;
@@ -863,28 +912,17 @@ public partial class GameSceneController : Node2D
             _bossPrePlayed = true;
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint, GameStrings.Tr("BOSS_PURIFY_HINT"));
         }
-        else if (!_bossPrePlayed && current < max)
+        else if (current < max && current > 0)
         {
-            // First purification touch — play the pre/求救 beat.
             _bossPrePlayed = true;
-            if (!_dialogue.IsActive)
-            {
-                var boss = GetNodeOrNull<BossController>("BroodMother");
-                if (_player != null && boss != null)
-                    InteractionSpacing.FrameConversation(_player, boss, InteractionSpacing.GuardianConversationDistance);
-                _dialogue.Play(NarrativeData.BossPre);
-            }
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                "Keep your distance. Press 1 when the Plastic Monster is in range.");
         }
         if (!_bossMidPlayed && current > 0 && current <= max / 2)
         {
             _bossMidPlayed = true;
-            if (!_dialogue.IsActive)
-            {
-                var boss = GetNodeOrNull<BossController>("BroodMother");
-                if (_player != null && boss != null)
-                    InteractionSpacing.FrameConversation(_player, boss, InteractionSpacing.GuardianConversationDistance);
-                _dialogue.Play(NarrativeData.BossMid);
-            }
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                "The pile is loosening. Back up, then use Water again.");
         }
     }
 
@@ -909,6 +947,14 @@ public partial class GameSceneController : Node2D
             _exitMarker.CreateTween().TweenProperty(_exitMarker, "modulate", Colors.White, 1.0f)
                 .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint, GameStrings.Tr("BOSS_PURIFIED"));
+        if (!_bossAfterPlayed && !_dialogue.IsActive)
+        {
+            _bossAfterPlayed = true;
+            var boss = GetNodeOrNull<BossController>("BroodMother");
+            if (_player != null && boss != null)
+                InteractionSpacing.FrameConversation(_player, boss, InteractionSpacing.GuardianConversationDistance);
+            _dialogue.Play(NarrativeData.BossMid);
+        }
     }
 
     private void OnNextLevelElementUnlocked(int form)

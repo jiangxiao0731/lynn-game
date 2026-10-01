@@ -51,8 +51,8 @@ public static class ChapterRuntime
             return stage switch
             {
                 ObjectiveStage.FindNpc => "Find Lanternfish: learn why the water stopped",
-                ObjectiveStage.TalkStarfish => "Start the first Flow Switch to move oxygen",
-                ObjectiveStage.TalkSeaweed => "Restore all Flow Switches so the nursery can breathe",
+                ObjectiveStage.TalkStarfish => "Talk to the resident by the first Flow Switch",
+                ObjectiveStage.TalkSeaweed => "Follow each resident clue, then restore the Flow Switches",
                 ObjectiveStage.CollectShards => "Collect Frost Crystals to contain the leaks",
                 ObjectiveStage.DefeatBoss => "Use Ice from a distance to clean chemical waste",
                 ObjectiveStage.ExitLevel => "Follow the clean current toward the lighthouse",
@@ -62,8 +62,8 @@ public static class ChapterRuntime
             return stage switch
             {
                 ObjectiveStage.FindNpc => "Find the Lost Shoal: learn why the reef went dark",
-                ObjectiveStage.TalkStarfish => "Connect the first relay safely",
-                ObjectiveStage.TalkSeaweed => "Reconnect all relays to restart the lighthouse",
+                ObjectiveStage.TalkStarfish => "Talk to the resident by the first relay",
+                ObjectiveStage.TalkSeaweed => "Follow each resident clue, then reconnect the relays",
                 ObjectiveStage.CollectShards => "Collect Circuit Sparks for the cleanup system",
                 ObjectiveStage.DefeatBoss => "Use Electric from a distance to pull oil away",
                 ObjectiveStage.ExitLevel => "Light the Silent Lighthouse",

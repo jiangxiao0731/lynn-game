@@ -38,7 +38,7 @@ public static class TranslationTable
         // Objective checklist (6 stages)
         ["OBJ_FIND_NPC"] = ("找岚婆婆：了解这片海怎么坏掉的", "Find Granny Lan: learn what happened here"),
         ["OBJ_TALK_STARFISH"] = ("问海星：塑料为什么会伤害动物", "Ask Starfish why plastic hurts animals"),
-        ["OBJ_TALK_SEAWEED"] = ("问海草：怎样安全接近垃圾堆", "Ask Seaweed how to approach the trash pile"),
+        ["OBJ_TALK_SEAWEED"] = ("沿路听居民说完，再问海草怎么接近垃圾堆", "Follow the residents' story, then ask Seaweed about the trash pile"),
         ["OBJ_COLLECT_SHARDS"] = ("收集水碎片：准备清理塑料", "Collect water shards for the cleanup"),
         ["OBJ_DEFEAT_BOSS"] = ("保持距离，用水清理塑料怪物", "Keep distance and clean the Plastic Monster with Water"),
         ["OBJ_EXIT_LEVEL"] = ("带着新的洋流前往下一片海", "Follow the new current to the next sea"),
