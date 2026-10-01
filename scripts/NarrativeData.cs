@@ -194,32 +194,32 @@ public static class NarrativeData
 
         d[Chapter2Opening] = new DialogueTimeline(Chapter2Opening, new List<DialogueLine>
         {
-            new(L, "Shimmer! The current has completely stopped. Fish eggs and seaweed are trapped in low-oxygen water.", "lantern"),
-            new(S, "The cold isn't the main problem. Fertilizer and wastewater washed in from land. That fed a huge algae bloom."),
-            new(S, "So the algae is not the thing we are saving?", null, new List<DialogueChoice>
+            new(L, "Shimmer! The current has completely stopped. Fish eggs and seaweed are trapped under a layer of chemical waste.", "lantern"),
+            new(S, "The cold isn't the main problem. Factory wastewater and dumped lab chemicals leaked into the trench."),
+            new(S, "So this is chemical pollution?", null, new List<DialogueChoice>
             {
-                new("Ask what caused the bloom.", SetFlag: "ch2_ask_source", GotoLabel: "ch2_source"),
+                new("Ask where it came from.", SetFlag: "ch2_ask_source", GotoLabel: "ch2_source"),
                 new("Focus on the switches.", SetFlag: "ch2_focus_switches", GotoLabel: "ch2_switches"),
             }),
-            new(L, "Right. Too much algae is the symptom. When it dies and breaks down, it uses up oxygen, and animals can't breathe.", "lantern", Label: "ch2_source"),
-            new(S, "It happens in real lakes and seas too. From space, a harmful bloom can look like green paint poured into the water.", null,
+            new(L, "Yes. It came through pipes and drains. Some of it burns, some of it poisons, and some of it stays in the mud.", "lantern", Label: "ch2_source"),
+            new(S, "Real polluted water can look cloudy, bright, or almost normal. That is why people have to test it, not just stare at it.", null,
                 Label: "ch2_switches",
-                Picture: DialoguePicture.Photo("ch2_algal_bloom.jpg",
-                    "An algal bloom spreading across Lake Erie, seen by satellite in September 2017.",
-                    "NOAA Great Lakes Environmental Research Laboratory")),
-            new(L, "Turn on the three Flow Switches along the ridge. Then clean the nutrient runoff patches so you have enough strength for the bloom.", "lantern",
+                Picture: DialoguePicture.Photo("ch2_after_monitor_buoy.jpg",
+                    "A monitoring buoy tracks water quality changes in real time.",
+                    "USGS")),
+            new(L, "Turn on the three Flow Switches along the ridge. Then clean the chemical waste patches so you have enough strength for the monster.", "lantern",
                 Picture: new(AssetLoader.MemoryIcon, "Flow Switch · three along the ridge")),
         });
         d[Chapter2Guardian] = new DialogueTimeline(Chapter2Guardian, new List<DialogueLine>
         {
-            new(F, "(The bloom shrinks. Green clouds pull away from the eggs.)", "boss2"),
-            new(F, "I grew because every runoff stream brought more nutrients to the same quiet water.", "boss2"),
-            new(S, "Then the cleanup has to start upstream, before the nutrients feed another bloom."),
-            new(S, "For now, the trench can breathe again."),
+            new(F, "(The frozen shell cracks. The chemical foam slows down and gathers into safe clumps.)", "boss2"),
+            new(F, "I grew because every pipe sent its waste to the same quiet trench.", "boss2"),
+            new(S, "Then the cleanup has to start before the waste reaches the water."),
+            new(S, "For now, the trench is not being poisoned anymore."),
         });
         d[Chapter2Ending] = new DialogueTimeline(Chapter2Ending, new List<DialogueLine>
         {
-            new(F, "(The dead-zone bloom breaks apart, and oxygen slowly returns to the trench.)", "boss2"),
+            new(F, "(The chemical waste cracks apart, and the toxic foam begins to disappear.)", "boss2"),
             new(L, "The Frozen Trench is glowing again! But the waters ahead are covered in oil and heat.", "lantern",
                 Picture: new(AssetLoader.ChapterBackground(3, 0), "Next · The Old Lighthouse")),
             new(S, "Then I'll bring this cleaned-up light to the next area."),

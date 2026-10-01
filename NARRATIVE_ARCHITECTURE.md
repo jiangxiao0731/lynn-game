@@ -18,7 +18,7 @@ Every chapter follows the same causal structure:
 | Chapter | Environmental question | Knowledge carried by the story | Player verb |
 |---|---|---|---|
 | Tidepool Nursery | How does waste reach marine habitats? | Much marine pollution begins on land. Plastic can be eaten or trap wildlife; abandoned fishing gear can keep catching animals; oil harms bodies, eggs, and habitat. | Listen, examine, collect, release |
-| Frostbound Trench | Why can polluted water lose its life? | Runoff can carry excess nitrogen and phosphorus. These nutrients feed algal blooms; decay uses oxygen and can create low-oxygen water. Moving water helps oxygen reach a nursery, but the source still needs to be controlled. | Trace, reconnect, restore flow |
+| Frostbound Trench | What happens when chemical waste enters a nursery? | Factory wastewater, lab waste, and dumped containers can make water toxic even when it looks calm. Flow helps move cleaner water through the trench, but the source still needs to be controlled before chemicals reach the sea. | Trace, reconnect, restore flow |
 | The Silent Lighthouse | Why is a hotter ocean dangerous? | Greenhouse gases trap heat, and the ocean absorbs most of the excess. Long heat stress can make coral bleach. Cleaner energy and lower emissions reduce pressure on reefs, while recovery still takes time. | Stabilize, redirect, protect |
 
 ## Information layers
@@ -38,7 +38,7 @@ understands the causal chain; optional memories add emotional and historical dep
 
 - Use **restore**, **release**, **guide**, **reconnect**, and **protect**.
 - Use **polluted creature** or **guardian**, not enemy or monster in player-facing text.
-- Use **source**, **runoff**, **algal bloom**, **oxygen**, **ocean heat**, and **coral bleaching** only after their meaning is shown in context.
+- Use **source**, **chemical waste**, **toxic water**, **clean flow**, **ocean heat**, and **coral bleaching** only after their meaning is shown in context.
 - Use **Shimmer**, **Tidal Shard**, **Tidal Memory**, and **Tidal Key** consistently.
 
 ## Scientific reference points
@@ -48,9 +48,7 @@ understands the causal chain; optional memories add emotional and historical dep
   https://marinedebris.noaa.gov/why-marine-debris-problem/wildlife-entanglement-and-ghost-fishing
 - NOAA Ocean Service: physical and toxic effects of oil on marine life.
   https://oceanservice.noaa.gov/education/tutorial-coastal/oil-spills/os04.html
-- US EPA: excess nutrients, algal blooms, oxygen loss, and dead zones.
-  https://www.epa.gov/nutrientpollution/basic-information-nutrient-pollution
-  https://www.epa.gov/nutrientpollution/effects-dead-zones-and-harmful-algal-blooms
+- US EPA: chemical waste, toxic water, and water-quality monitoring.
 - NOAA Ocean Service and Climate.gov: ocean heat uptake, coral heat stress, and bleaching.
   https://oceanservice.noaa.gov/facts/coralreef-climate.html
   https://prod-01-asg-www-climate.woc.noaa.gov/news-features/understanding-climate/climate-change-ocean-heat-content

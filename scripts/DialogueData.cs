@@ -29,8 +29,8 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
 
     public static DialoguePicture ResultBeforeForChapter(int chapter) => chapter switch
     {
-        2 => Photo("ch2_toxic_algae_lake_erie.jpg",
-            "A thick harmful algal bloom spreads across Lake Erie.",
+        2 => Photo("ch2_sediment_plume.jpg",
+            "Polluted runoff spreads through coastal water.",
             "NOAA"),
         3 => Photo("ch3_oil_spill_satellite.jpg",
             "The Deepwater Horizon oil slick spreads across the Gulf of Mexico.",
@@ -43,7 +43,7 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
     public static DialoguePicture ResultAfterForChapter(int chapter) => chapter switch
     {
         2 => Photo("ch2_after_monitor_buoy.jpg",
-            "A monitoring buoy tracks water quality and harmful bloom conditions in real time.",
+            "A monitoring buoy tracks water quality in real time.",
             "USGS"),
         3 => Photo("ch3_after_coral_restoration.jpg",
             "NOAA divers prepare coral restoration work in habitat injured by the 2010 oil spill.",
@@ -60,13 +60,13 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
     {
         2 => Mathf.PosMod(variant, 7) switch
         {
-            0 => Photo("ch2_algal_bloom.jpg", "A harmful algal bloom spreading across Lake Erie, seen from space.", "NOAA GLERL"),
-            1 => Photo("ch2_sediment_plume.jpg", "Sediment and nutrients flowing from land into the Gulf of Mexico.", "NASA Goddard Space Flight Center"),
-            2 => Photo("ch2_dead_zone.jpg", "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
-            3 => Photo("ch2_toxic_algae_lake_erie.jpg", "A thick green algal bloom spreads across Lake Erie.", "NOAA"),
-            4 => Photo("ch2_lake_erie_habs_2015.jpg", "Harmful algal bloom water in Lake Erie during a 2015 survey.", "NOAA GLERL"),
-            5 => Photo("ch2_habs_sample.jpg", "A water sample shows how dense a harmful algal bloom can become.", "NOAA GLERL"),
-            _ => Photo("ch2_habs_buoy.jpg", "Scientists monitor harmful algal bloom conditions on Lake Erie.", "NOAA GLERL"),
+            0 => Photo("ch2_sediment_plume.jpg", "Polluted runoff spreading from land into coastal water.", "NASA Goddard Space Flight Center"),
+            1 => Photo("ch2_after_monitor_buoy.jpg", "A monitoring buoy tracks water quality changes.", "USGS"),
+            2 => Photo("ch2_dead_zone.jpg", "A coastal survey maps water that has become unsafe for many animals.", "NOAA"),
+            3 => Photo("ch2_habs_sample.jpg", "A water sample shows how contaminated water can become dense and cloudy.", "NOAA GLERL"),
+            4 => Photo("ch2_habs_buoy.jpg", "Scientists monitor changing water conditions from a buoy.", "NOAA GLERL"),
+            5 => Photo("ch2_lake_erie_habs_2015.jpg", "Discolored water shows a large pollution event from above.", "NOAA GLERL"),
+            _ => Photo("ch2_habs_sample.jpg", "A water sample shows cloudy contaminated water under a microscope.", "NOAA GLERL"),
         },
         3 => Mathf.PosMod(variant, 6) switch
         {
@@ -120,7 +120,7 @@ public static class DialogueData
     public const string SpeakerLantern = "Lanternfish";
     public const string SpeakerShoal = "Lost Shoal";
     public const string SpeakerBoss = "Plastic Monster";
-    public const string SpeakerFrostshell = "Dead Zone Bloom";
+    public const string SpeakerFrostshell = "Chemical Waste Monster";
     public const string SpeakerCore = "Oil Monster";
 
     private static readonly Dictionary<string, DialogueTimeline> Timelines = Build();

@@ -202,25 +202,25 @@ public partial class SettlementPanel : Control
     };
     private static string BeforeCaption(int c) => c switch
     {
-        2 => "Runoff fed blooms; decay pulled oxygen from the trench.",
+        2 => "Chemical waste entered the trench through drains and old containers.",
         3 => "Oil and trapped heat dimmed coral and silenced the grid.",
         _ => "Plastic, ghost gear and waste buried the nursery's light.",
     };
     private static string AfterCaption(int c) => c switch
     {
-        2 => "Flow Switches move oxygenated water through the eggs again.",
+        2 => "Flow Switches move cleaner water through the eggs again.",
         3 => "The safe circuit cools the reef and guides the shoal home.",
         _ => "Open currents carry light across the nursery again.",
     };
     private static string TransformationLine(int c) => c switch
     {
-        2 => "stagnant water  →  moving oxygen",
+        2 => "toxic water  →  cleaner current",
         3 => "oil and heat  →  safe light",
         _ => "buried light  →  living current",
     };
     private static string SeaChange(int c) => c switch
     {
-        2 => "OXYGEN",
+        2 => "CLEAN FLOW",
         3 => "COOL LIGHT",
         _ => "OPEN TIDE",
     };

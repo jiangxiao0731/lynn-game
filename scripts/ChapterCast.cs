@@ -52,7 +52,7 @@ public static class ChapterCast
 
 
         // ---------------------------------------------------------------
-        // Chapter 2 — Frozen Trench. Harm: runoff, algal bloom, oxygen loss.
+        // Chapter 2 — Frozen Trench. Harm: chemical wastewater and toxic discharge.
         // Residents carry the chain in reading order, left to right.
         // ---------------------------------------------------------------
         new("ch2_testtube", "Overflow Pipe", "ch2_testtube", 2,
@@ -60,7 +60,7 @@ public static class ChapterCast
             new[]
             {
                 "You're the first person in a long time to swim toward me instead of away.",
-                "I fell into the sewer. Someone upstream had enough of me and acted as if whatever was left was the river's problem.",
+                "I fell into the sewer. Someone upstream had enough of me and acted as if the river could swallow anything.",
                 "If you really want to solve this, start further upstream and find my source. Put an end to my polluting the ocean.",
             }, 132f),
 
@@ -69,21 +69,21 @@ public static class ChapterCast
             new[]
             {
                 "I've sat here so long that the silt has basically made me part of the floor.",
-                "The water above me is thick and green now. It was like that when I first arrived, too.",
-                "The trench didn't just get cold. It lost its oxygen and slowly stopped breathing.",
+                "The water above me is thick and strange now. It was like that when I first arrived, too.",
+                "The trench didn't just get cold. It got filled with waste that living things were never supposed to touch.",
             }, 150f),
 
-        new("ch2_gascloud", "Algae Cloud", "ch2_gascloud", 2,
+        new("ch2_gascloud", "Toxic Cloud", "ch2_gascloud", 2,
             new Vector2(1090, 250), new Color(0.70f, 0.92f, 0.46f),
             new[]
             {
-                "I grew here after the water absorbed too many nutrients.",
-                "Runoff brought nitrogen and phosphorus here, and the algae grew out of control.",
-                "Then the algae died, and decomposing it used up all the oxygen.",
+                "I formed after the water absorbed too much chemical waste.",
+                "Some of it came from drains. Some of it came from old containers people thought no one would find.",
+                "Now the cloud spreads through the water and makes it unsafe for eggs, fish, and seaweed.",
             }, 140f, new()
             {
                 [1] = DialoguePicture.Photo("ch2_sediment_plume.jpg",
-                    "River water loaded with soil and nutrients pours into the Gulf of Mexico.", "NASA Goddard Space Flight Center"),
+                    "Polluted runoff pours from land into coastal water.", "NASA Goddard Space Flight Center"),
             }),
 
         new("ch2_radiodrum", "Warning Barrel", "ch2_radiodrum", 2,
@@ -101,7 +101,7 @@ public static class ChapterCast
             {
                 "I leak a little bit every day. It's hardly enough for anyone to call it a real accident.",
                 "A lot of pollution happens like this: small leaks from many places, day after day.",
-                "Clean the runoff around me, and your light will get stronger. Stop the nutrients upstream, and this place can stay better.",
+                "Clean the waste around me, and your light will get stronger. Stop the discharge upstream, and this place can stay better.",
             }, 146f),
 
         new("ch2_maskbeast", "Masked Sea Dog", "ch2_maskbeast", 2,
@@ -109,12 +109,12 @@ public static class ChapterCast
             new[]
             {
                 "I wear this mask all the time because the water here isn't safe to breathe anymore.",
-                "Low oxygen doesn't look like poison. It just looks like an empty space where life used to be.",
-                "But so many ocean creatures can't wear masks. That's why we have to restore the currents.",
+                "Chemical pollution doesn't always look dramatic. Sometimes it just makes a place unsafe to breathe, grow, or hatch.",
+                "But so many ocean creatures can't wear masks. That's why we have to move clean water through again.",
             }, 158f, new()
             {
-                [1] = DialoguePicture.Photo("ch2_dead_zone.jpg",
-                    "A 2011 survey of the Gulf of Mexico 'dead zone'. Red marks seabed water with too little oxygen for most life.", "NOAA"),
+                [1] = DialoguePicture.Photo("ch2_after_monitor_buoy.jpg",
+                    "A monitoring buoy tracks water-quality changes near polluted coastal water.", "USGS"),
             }),
 
         new("ch2_flask", "Broken Bottle", "ch2_flask", 2,
@@ -123,7 +123,7 @@ public static class ChapterCast
             {
                 "A crack appeared in my side. Everything I was supposed to hold leaked right out.",
                 "I used to have a label, but it fell off in the water. Now, no one even knows what I am.",
-                "Wake the Anchor. Then clean the nutrient-heavy water around me, so it does not feed the bloom.",
+                "Wake the Anchor. Then clean the chemical water around me, so it can be safely processed.",
             }, 126f),
 
         new("ch2_wastebag", "Trash Bag", "ch2_wastebag", 2,
@@ -142,7 +142,7 @@ public static class ChapterCast
             {
                 "Almost everything you see here came through me.",
                 "I didn't choose what I carried. I was born to accept whatever people discharged into me.",
-                "The Dead Zone Bloom formed where nutrient runoff collected. Clean the smaller patches first, then face it.",
+                "The Chemical Waste Monster formed where the dumped chemicals collected. Clean the smaller patches first, then face it.",
             }, 210f),
 
         // ---------------------------------------------------------------
@@ -279,12 +279,12 @@ public static class ChapterCast
     private static string ChoicePrompt(CastMember member) => member.Id switch
     {
         "ch2_testtube" => "Should I trace where you came from?",
-        "ch2_drumcone" => "Is the green water the real problem?",
-        "ch2_gascloud" => "How did you grow so fast?",
+        "ch2_drumcone" => "Is the strange water the real problem?",
+        "ch2_gascloud" => "How did this cloud form?",
         "ch2_radiodrum" => "Did the warning label help anyone?",
-        "ch2_jerrycan" => "Can a little runoff really matter?",
-        "ch2_maskbeast" => "Why does low oxygen feel so scary?",
-        "ch2_flask" => "What should I do with this water?",
+        "ch2_jerrycan" => "Can a small leak really matter?",
+        "ch2_maskbeast" => "Why is toxic water so dangerous?",
+        "ch2_flask" => "What should I do with what leaked out?",
         "ch2_wastebag" => "If you are hidden, are you still dangerous?",
         "ch2_vent" => "So this all came through the drain?",
         "ch3_slickblob" => "What makes oil so hard to clean?",
@@ -306,11 +306,11 @@ public static class ChapterCast
     private static string ChoiceA(CastMember member) => member.Id switch
     {
         "ch2_testtube" => "Yes. Find the source.",
-        "ch2_drumcone" => "Explain the green water.",
-        "ch2_gascloud" => "Tell me what fed you.",
+        "ch2_drumcone" => "Explain the strange water.",
+        "ch2_gascloud" => "Tell me what made you.",
         "ch2_radiodrum" => "Tell me what went wrong.",
-        "ch2_jerrycan" => "Yes, runoff adds up.",
-        "ch2_maskbeast" => "Explain low oxygen.",
+        "ch2_jerrycan" => "Yes, small leaks count.",
+        "ch2_maskbeast" => "Explain toxic water.",
         "ch2_flask" => "Tell me the safe way.",
         "ch2_wastebag" => "Yes, hiding is not fixing.",
         "ch2_vent" => "Trace the pipe.",
@@ -330,11 +330,11 @@ public static class ChapterCast
     {
         "ch2_testtube" => "I'll keep moving upstream.",
         "ch2_drumcone" => "I see. The trench can't breathe.",
-        "ch2_gascloud" => "I get it. Too many nutrients.",
+        "ch2_gascloud" => "I get it. Chemical waste spreads.",
         "ch2_radiodrum" => "The warning came too late.",
-        "ch2_jerrycan" => "I'll clean the runoff.",
+        "ch2_jerrycan" => "I'll clean the leak.",
         "ch2_maskbeast" => "I'll restore the current.",
-        "ch2_flask" => "I'll keep it from feeding the bloom.",
+        "ch2_flask" => "I'll contain it.",
         "ch2_wastebag" => "I'll stop the next one.",
         "ch2_vent" => "I'll clean what came through.",
         "ch3_slickblob" => "I'll keep my distance.",
@@ -352,14 +352,14 @@ public static class ChapterCast
     private static string ChoiceDetail(CastMember member) => member.Id switch
     {
         "ch2_testtube" => "Pollution here did not start in the trench. It rode down from somewhere people thought was far away.",
-        "ch2_drumcone" => "The green water looks alive, but too much of it can make the whole place run out of oxygen.",
-        "ch2_gascloud" => "I did not appear from nowhere. Extra nutrients fed me until I covered the water.",
+        "ch2_drumcone" => "The strange color is not just ugly. It means the water has changed in a way animals can feel.",
+        "ch2_gascloud" => "I did not appear from nowhere. Waste mixed in the water until it became a cloud.",
         "ch2_radiodrum" => "A warning sign only helps if people still choose to handle the waste safely.",
-        "ch2_jerrycan" => "One runoff stream is small. A hundred runoff streams can feed one huge bloom.",
-        "ch2_maskbeast" => "Low oxygen is quiet. Fish do not always get a dramatic warning; they just cannot breathe.",
-        "ch2_flask" => "Do not scatter it. Clean the nutrient-heavy water first, before it feeds more algae.",
+        "ch2_jerrycan" => "One leak is small. A hundred small leaks become the water everyone has to live in.",
+        "ch2_maskbeast" => "Toxic water can be quiet. Fish do not always get a dramatic warning; they just cannot breathe.",
+        "ch2_flask" => "Do not scatter it. Contain it first, then let the current carry it to a safer place.",
         "ch2_wastebag" => "Throwing something out of sight only moves the problem to someone else's home.",
-        "ch2_vent" => "The drain connects land and sea. Fertilizer and wastewater upstream can become a dead zone down here.",
+        "ch2_vent" => "The drain connects land and sea. Chemical wastewater upstream can become a monster down here.",
         "ch3_slickblob" => "Oil spreads thin and fast. Even a small patch can coat feathers, gills, and coral.",
         "ch3_reddrum" => "Old fuel solved one problem and created another. The lighthouse needs a cleaner way to shine.",
         "ch3_pufferfish" => "Bleaching means the coral lost the tiny helpers it depends on for food.",

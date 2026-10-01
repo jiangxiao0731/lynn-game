@@ -27,8 +27,8 @@ public static class ChapterRuntime
         if (CurrentChapter == 2)
         {
             RequiredForm = ElementForm.Ice;
-            FragmentLabel = "Runoff cleaned";
-            BossName = "Dead Zone Bloom";
+            FragmentLabel = "Chemical waste cleaned";
+            BossName = "Chemical Waste Monster";
             Zones = new[] { "Frozen Inlet", "Ice Ridge", "Frost Nursery" };
         }
         else if (CurrentChapter == 3)
@@ -60,8 +60,8 @@ public static class ChapterRuntime
                 ObjectiveStage.FindNpc => "Find Lanternfish: learn why the water stopped",
                 ObjectiveStage.TalkStarfish => "Talk to the resident by the first Flow Switch",
                 ObjectiveStage.TalkSeaweed => "Follow each resident clue, then restore the Flow Switches",
-                ObjectiveStage.CollectShards => "Clean nutrient runoff so Shimmer can face the bloom",
-                ObjectiveStage.DefeatBoss => "Keep distance. Press 2 to freeze the Dead Zone Bloom",
+                ObjectiveStage.CollectShards => "Clean chemical waste so Shimmer can face the monster",
+                ObjectiveStage.DefeatBoss => "Keep distance. Press 2 to seal the Chemical Waste Monster",
                 ObjectiveStage.ExitLevel => "Follow the clean current toward the lighthouse",
                 _ => "Frozen Trench is flowing again",
             };

@@ -862,7 +862,7 @@ public partial class GameSceneController : Node2D
             zone switch
             {
                 0 => "Plastic and lost gear can trap wildlife. The coral shortcut is clear.",
-                1 => "Runoff can feed algal blooms and lower oxygen. The migration route is open.",
+                1 => "Dirty runoff can make nursery water unsafe. The migration route is open.",
                 _ => "Removing pollution helps. Stopping it upstream protects the nursery for longer.",
             });
     }

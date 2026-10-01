@@ -380,17 +380,11 @@ public partial class DialogueRunner : CanvasLayer
             return new[]
             {
                 DialoguePicture.Photo("ch2_sediment_plume.jpg",
-                    "Sediment and nutrients flowing from land into the Gulf of Mexico.", "NASA Goddard Space Flight Center"),
-                DialoguePicture.Photo("ch2_dead_zone.jpg",
-                    "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
-                DialoguePicture.Photo("ch2_algal_bloom.jpg",
-                    "A harmful algal bloom spreading across Lake Erie, seen from space.", "NOAA GLERL"),
-                DialoguePicture.Photo("ch2_lake_erie_habs_2015.jpg",
-                    "Harmful algal bloom water in Lake Erie during a 2015 survey.", "NOAA GLERL"),
+                    "Polluted runoff spreading from land into coastal water.", "NASA Goddard Space Flight Center"),
+                DialoguePicture.Photo("ch2_after_monitor_buoy.jpg",
+                    "A monitoring buoy tracks water quality changes.", "USGS"),
                 DialoguePicture.Photo("ch2_habs_sample.jpg",
-                    "A water sample shows how dense a harmful algal bloom can become.", "NOAA GLERL"),
-                DialoguePicture.Photo("ch2_habs_buoy.jpg",
-                    "Scientists monitor harmful algal bloom conditions on Lake Erie.", "NOAA GLERL"),
+                    "A water sample shows how contaminated water can become dense and cloudy.", "NOAA GLERL"),
             };
 
         if (timelineId.StartsWith("ch3_") || timelineId == NarrativeData.Chapter3Guardian ||
