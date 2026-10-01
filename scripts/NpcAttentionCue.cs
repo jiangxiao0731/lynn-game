@@ -9,6 +9,8 @@ public static class NpcAttentionCue
 {
     public static void Attach(Node2D node, Sprite2D sprite, Color tint, float displaySize)
     {
+        node.AddToGroup("optional_npc");
+
         var glow = new Sprite2D
         {
             Name = "OptionalTalkGlow",

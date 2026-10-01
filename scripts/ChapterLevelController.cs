@@ -148,6 +148,7 @@ public partial class ChapterLevelController : Node2D
         BuildExit(map);
         BossAura.Attach(this, _boss, Palette.ArenaTint(ChapterId));
         ObjectiveGuide.Attach(this, CurrentTarget, () => _dialogue != null && _dialogue.IsActive);
+        OptionalInteractionGuide.Attach(this, () => _dialogue != null && _dialogue.IsActive);
     }
 
     private void BuildBackdrop(Node2D map)

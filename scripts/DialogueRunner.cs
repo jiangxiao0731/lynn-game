@@ -367,8 +367,16 @@ public partial class DialogueRunner : CanvasLayer
             {
                 DialoguePicture.Photo("ch1_seal_net.jpg",
                     "A Hawaiian monk seal caught in an abandoned fishing net.", "NOAA Fisheries"),
+                DialoguePicture.Photo("ch1_derelict_gear_reef.jpg",
+                    "A NOAA diver removes derelict fishing gear from a reef.", "NOAA"),
+                DialoguePicture.Photo("ch1_albatross_plastic_chick.jpg",
+                    "A young albatross sits beside plastic debris on Midway Atoll.", "U.S. Fish and Wildlife Service"),
+                DialoguePicture.Photo("ch1_laysan_plastic_remains.jpg",
+                    "Plastic pieces remain around a young albatross on Midway Atoll.", "U.S. Fish and Wildlife Service"),
                 DialoguePicture.Photo("ch1_cleanup.jpg",
                     "A cleanup crew lifts derelict fishing gear from Midway Atoll.", "U.S. Fish and Wildlife Service"),
+                DialoguePicture.Photo("ch1_albatross_cleanup.jpg",
+                    "Albatrosses stand near plastic debris collected on Midway Atoll.", "U.S. Fish and Wildlife Service"),
             };
 
         if (timelineId.StartsWith("ch2_") || timelineId == NarrativeData.Chapter2Guardian)
@@ -380,6 +388,14 @@ public partial class DialogueRunner : CanvasLayer
                     "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
                 DialoguePicture.Photo("ch2_algal_bloom.jpg",
                     "A harmful algal bloom spreading across Lake Erie, seen from space.", "NOAA GLERL"),
+                DialoguePicture.Photo("ch2_toxic_algae_lake_erie.jpg",
+                    "A thick green algal bloom spreads across Lake Erie.", "NOAA"),
+                DialoguePicture.Photo("ch2_lake_erie_habs_2015.jpg",
+                    "Harmful algal bloom water in Lake Erie during a 2015 survey.", "NOAA GLERL"),
+                DialoguePicture.Photo("ch2_habs_sample.jpg",
+                    "A water sample shows how dense a harmful algal bloom can become.", "NOAA GLERL"),
+                DialoguePicture.Photo("ch2_habs_buoy.jpg",
+                    "Scientists monitor harmful algal bloom conditions on Lake Erie.", "NOAA GLERL"),
             };
 
         if (timelineId.StartsWith("ch3_") || timelineId == NarrativeData.Chapter3Guardian ||
@@ -394,6 +410,10 @@ public partial class DialogueRunner : CanvasLayer
                     "Bleached brain coral during the 2023 Florida Keys marine heatwave.", "NOAA"),
                 DialoguePicture.Photo("ch3_rig_fire.jpg",
                     "The Deepwater Horizon drilling rig burning in April 2010.", "U.S. Coast Guard"),
+                DialoguePicture.Photo("ch3_oil_spill_satellite.jpg",
+                    "The Deepwater Horizon oil slick spreading across the Gulf of Mexico.", "NASA"),
+                DialoguePicture.Photo("ch3_oil_approaches_coast.jpg",
+                    "Oil response teams watch slick water near the Gulf coast.", "U.S. Navy"),
             };
 
         return Array.Empty<DialoguePicture>();

@@ -37,10 +37,12 @@ public partial class BossController : CharacterBody2D
     private float _attackCooldown;
     private Player? _player;
     private AnimatedSprite2D? _sprite;
+    private CollisionShape2D? _bodyShape;
     private float _pulse;
     private float _dropPulse;
     private Vector2 _dropRestPosition;
     private bool _dialogueActive;
+    private Vector2 _spriteBaseScale = Vector2.One;
 
     public override void _Ready()
     {
@@ -75,13 +77,14 @@ public partial class BossController : CharacterBody2D
             float longest = Mathf.Max(frame.GetWidth(), frame.GetHeight());
             if (longest > 0f) _sprite.Scale = Vector2.One * (DisplaySize / longest);
         }
+        _spriteBaseScale = _sprite.Scale;
         _sprite.Play("Idle");
         AddChild(_sprite);
 
         // Scale with the drawing: a fixed 58px body left the enlarged guardians with a
         // hitbox floating in the middle of their silhouette.
-        var shape = new CollisionShape2D { Shape = new CircleShape2D { Radius = DisplaySize * 0.38f } };
-        AddChild(shape);
+        _bodyShape = new CollisionShape2D { Shape = new CircleShape2D { Radius = DisplaySize * 0.38f } };
+        AddChild(_bodyShape);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -90,7 +93,7 @@ public partial class BossController : CharacterBody2D
 
         // Pulsing arena presentation (procedural — DESIGN_BRIEF §2 layer 2).
         _pulse += (float)delta * 2.0f;
-        if (_sprite != null)
+        if (_sprite != null && !IsDefeated)
         {
             // Keep the brood-mother illustration bright; pulse only a light teal sheen
             // over near-white so the art stays readable instead of washed dark.
@@ -105,10 +108,10 @@ public partial class BossController : CharacterBody2D
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "The Chemical Waste Monster is spreading toxic waste. Use Ice to contain the leaks and break it apart."
+                ? "The Chemical Waste Monster is spreading toxic waste. Keep your distance and press 2 to release Ice."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "The Oil Monster is covering the reef. Use Electric to activate the cleanup system."
-                    : GameStrings.Tr("STATUS_BOSS_GATE");
+                    ? "The Oil Monster is covering the reef. Keep your distance and press 3 to release Electric."
+                    : "The Plastic Monster will attack if you get too close. Keep distance and press 1 to release Water.";
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint, hint);
         }
 
@@ -135,22 +138,69 @@ public partial class BossController : CharacterBody2D
 
     private void PerformAttack()
     {
+        AnimateAttack();
         _player?.TakeDamage(AttackDamage);
         Events.Instance?.EmitSignal(Events.SignalName.BossAttacked, AttackDamage);
         AudioManager.Instance?.PlaySfx("boss_attack");
     }
 
+    private void AnimateAttack()
+    {
+        if (_sprite == null || _player == null) return;
+        Vector2 dir = (_player.GlobalPosition - GlobalPosition).Normalized();
+        var restPos = _sprite.Position;
+        var tween = _sprite.CreateTween();
+        tween.TweenProperty(_sprite, "position", restPos - dir * 18f, 0.10f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        tween.Parallel().TweenProperty(_sprite, "scale", _spriteBaseScale * 1.10f, 0.10f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(_sprite, "position", restPos + dir * 38f, 0.16f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
+        tween.Parallel().TweenProperty(_sprite, "modulate", new Color(1f, 0.68f, 0.58f, 1f), 0.08f);
+        tween.TweenProperty(_sprite, "position", restPos, 0.22f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        tween.Parallel().TweenProperty(_sprite, "scale", _spriteBaseScale, 0.22f);
+        tween.Parallel().TweenProperty(_sprite, "modulate", Colors.White, 0.22f);
+    }
+
     private void Defeat()
     {
         IsDefeated = true;
-        if (_sprite != null) _sprite.Modulate = Palette.CoastalCyan;
+        AggressionEnabled = false;
+        CombatEnabled = false;
+        CollisionLayer = 0;
+        CollisionMask = 0;
+        if (_bodyShape != null)
+            _bodyShape.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
         EmitSignal(SignalName.Defeated);
         Events.Instance?.EmitSignal(Events.SignalName.BossDefeated);
         AudioManager.Instance?.PlaySfx("boss_defeat");
         if (EmitNextElementUnlock)
         {
-            SpawnNextLevelElementDrop();
+            PlayDefeatAndSpawnDrop();
         }
+    }
+
+    private void PlayDefeatAndSpawnDrop()
+    {
+        if (_sprite == null)
+        {
+            SpawnNextLevelElementDrop();
+            return;
+        }
+
+        var tween = _sprite.CreateTween();
+        tween.Parallel().TweenProperty(_sprite, "modulate", new Color(Palette.CoastalCyan, 0f), 0.75f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        tween.Parallel().TweenProperty(_sprite, "scale", _spriteBaseScale * 0.72f, 0.75f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        tween.Parallel().TweenProperty(_sprite, "position:y", _sprite.Position.Y + 30f, 0.75f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        tween.Finished += () =>
+        {
+            if (_sprite != null) _sprite.Visible = false;
+            SpawnNextLevelElementDrop();
+        };
     }
 
     /// Float the next chapter's elemental key above the restored guardian. The
@@ -164,7 +214,7 @@ public partial class BossController : CharacterBody2D
         var drop = new Node2D
         {
             Name = $"{GameStrings.FormLabel(NextUnlockedElement)}OrbDrop",
-            ZIndex = 12,
+            ZIndex = 80,
         };
         parent.AddChild(drop);
         float rise = Mathf.Clamp(DisplaySize * 0.42f, 140f, 240f);

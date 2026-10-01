@@ -149,6 +149,7 @@ public partial class GameSceneController : Node2D
             BossAura.Attach(this, boss, Palette.ArenaTint(1));
         }
         ObjectiveGuide.Attach(this, CurrentTarget, () => _dialogue != null && _dialogue.IsActive);
+        OptionalInteractionGuide.Attach(this, () => _dialogue != null && _dialogue.IsActive);
     }
 
     /// What the guide arrow points at for the current step.

@@ -32,24 +32,34 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
     /// authored line-specific photos still take priority.
     public static DialoguePicture PollutionForChapter(int chapter, int variant) => chapter switch
     {
-        2 => Mathf.PosMod(variant, 3) switch
+        2 => Mathf.PosMod(variant, 7) switch
         {
             0 => Photo("ch2_algal_bloom.jpg", "A harmful algal bloom spreading across Lake Erie, seen from space.", "NOAA GLERL"),
             1 => Photo("ch2_sediment_plume.jpg", "Sediment and nutrients flowing from land into the Gulf of Mexico.", "NASA Goddard Space Flight Center"),
-            _ => Photo("ch2_dead_zone.jpg", "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
+            2 => Photo("ch2_dead_zone.jpg", "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
+            3 => Photo("ch2_toxic_algae_lake_erie.jpg", "A thick green algal bloom spreads across Lake Erie.", "NOAA"),
+            4 => Photo("ch2_lake_erie_habs_2015.jpg", "Harmful algal bloom water in Lake Erie during a 2015 survey.", "NOAA GLERL"),
+            5 => Photo("ch2_habs_sample.jpg", "A water sample shows how dense a harmful algal bloom can become.", "NOAA GLERL"),
+            _ => Photo("ch2_habs_buoy.jpg", "Scientists monitor harmful algal bloom conditions on Lake Erie.", "NOAA GLERL"),
         },
-        3 => Mathf.PosMod(variant, 4) switch
+        3 => Mathf.PosMod(variant, 6) switch
         {
             0 => Photo("ch3_oiled_pelican.jpg", "A wildlife officer reaches an oiled brown pelican after the Deepwater Horizon spill.", "U.S. Fish and Wildlife Service"),
             1 => Photo("ch3_bleaching.jpg", "Bleached brain coral during the 2023 Florida Keys marine heatwave.", "NOAA"),
             2 => Photo("ch3_oil_slick.jpg", "Oil smoothing the surface of the Gulf of Mexico, seen by satellite.", "NASA Goddard Space Flight Center"),
-            _ => Photo("ch3_rig_fire.jpg", "The Deepwater Horizon drilling rig burning in April 2010.", "U.S. Coast Guard"),
+            3 => Photo("ch3_rig_fire.jpg", "The Deepwater Horizon drilling rig burning in April 2010.", "U.S. Coast Guard"),
+            4 => Photo("ch3_oil_spill_satellite.jpg", "The Deepwater Horizon oil slick spreading across the Gulf of Mexico.", "NASA"),
+            _ => Photo("ch3_oil_approaches_coast.jpg", "Oil response teams watch slick water near the Gulf coast.", "U.S. Navy"),
         },
-        _ => Mathf.PosMod(variant, 3) switch
+        _ => Mathf.PosMod(variant, 7) switch
         {
             0 => Photo("ch1_albatross_debris.jpg", "A Laysan albatross chick surrounded by marine debris on Midway Atoll.", "NOAA Marine Debris Program"),
             1 => Photo("ch1_seal_net.jpg", "A Hawaiian monk seal caught in an abandoned fishing net.", "NOAA Fisheries"),
-            _ => Photo("ch1_cleanup.jpg", "A cleanup crew lifts derelict fishing gear from Midway Atoll.", "U.S. Fish and Wildlife Service"),
+            2 => Photo("ch1_cleanup.jpg", "A cleanup crew lifts derelict fishing gear from Midway Atoll.", "U.S. Fish and Wildlife Service"),
+            3 => Photo("ch1_albatross_plastic_chick.jpg", "A young albatross sits beside plastic debris on Midway Atoll.", "U.S. Fish and Wildlife Service"),
+            4 => Photo("ch1_derelict_gear_reef.jpg", "A NOAA diver removes derelict fishing gear from a reef.", "NOAA"),
+            5 => Photo("ch1_albatross_cleanup.jpg", "Albatrosses stand near plastic debris collected on Midway Atoll.", "U.S. Fish and Wildlife Service"),
+            _ => Photo("ch1_laysan_plastic_remains.jpg", "Plastic pieces remain around a young albatross on Midway Atoll.", "U.S. Fish and Wildlife Service"),
         },
     };
 }
