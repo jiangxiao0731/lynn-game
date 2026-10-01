@@ -165,11 +165,28 @@ public partial class DialogueRunner : CanvasLayer
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
         };
         _photoStack.AddChild(_picture);
-        _photoStack.AddChild(UiTheme.Role(UiTheme.TypeRole.Eyebrow, "Real photo"));
+
+        var captionPanel = new PanelContainer { Name = "PhotoCaption" };
+        captionPanel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = new Color(UiTheme.GlassBgDeep, 0.40f),
+            BorderColor = new Color(UiTheme.Accent, 0.36f),
+            BorderWidthLeft = 3,
+            ContentMarginLeft = UiTheme.GapBlock,
+            ContentMarginRight = UiTheme.GapPair,
+            ContentMarginTop = UiTheme.GapPair,
+            ContentMarginBottom = UiTheme.GapPair,
+        });
+        _photoStack.AddChild(captionPanel);
+        var captionStack = new VBoxContainer();
+        captionStack.AddThemeConstantOverride("separation", 2);
+        captionPanel.AddChild(captionStack);
         _pictureCaption = UiTheme.Role(UiTheme.TypeRole.Meta, "", wrap: true);
-        _photoStack.AddChild(_pictureCaption);
+        _pictureCaption.AddThemeColorOverride("font_color", UiTheme.InkDim);
+        captionStack.AddChild(_pictureCaption);
         _pictureCredit = UiTheme.Role(UiTheme.TypeRole.Hint, "");
-        _photoStack.AddChild(_pictureCredit);
+        _pictureCredit.AddThemeColorOverride("font_color", UiTheme.InkFaint);
+        captionStack.AddChild(_pictureCredit);
 
         _artRow = new HBoxContainer();
         _artRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
@@ -206,7 +223,7 @@ public partial class DialogueRunner : CanvasLayer
             float aspect = texture.GetWidth() / (float)Mathf.Max(1, texture.GetHeight());
             _picture.CustomMinimumSize = new Vector2(0, Mathf.Min(PhotoMaxHeight, PictureWidth / aspect));
             _pictureCaption.Text = picture.Caption;
-            _pictureCredit.Text = $"{picture.Credit} · public domain".ToUpperInvariant();
+            _pictureCredit.Text = $"Source: {picture.Credit}";
             return;
         }
         _artImage.Texture = texture;
