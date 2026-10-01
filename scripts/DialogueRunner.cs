@@ -34,6 +34,7 @@ public partial class DialogueRunner : CanvasLayer
     private TextureRect _artImage = null!;
     private Label _artTitle = null!;
     private Label _artSubtitle = null!;
+    private readonly HashSet<string> _shownPhotoPaths = new();
     /// Width a photo gets inside the card: the bubble minus its padding, the speaker
     /// portrait column and the card's own padding.
     private static float PictureWidth =>
@@ -322,23 +323,80 @@ public partial class DialogueRunner : CanvasLayer
 
     private DialoguePicture? PictureForLine(DialogueLine line)
     {
-        if (line.Picture != null) return line.Picture;
+        if (line.Picture != null)
+            return AcceptPictureIfFresh(line.Picture);
         if (_timeline == null || _timeline.Lines.Count == 0) return null;
 
-        // Every conversation opens on a real pollution image. Longer exchanges also
-        // close on another one, so the real ecosystem stays present rather than being
-        // a single isolated fact card. Authored photos/art on specific lines win above.
-        bool showcase = _lineIndex == 0 || (_timeline.Lines.Count >= 4 && _lineIndex == _timeline.Lines.Count - 1);
-        if (!showcase) return null;
-        int seed = StableSeed(_timeline.Id) + _lineIndex;
-        return DialoguePicture.PollutionForChapter(ChapterRuntime.CurrentChapter, seed);
+        // Authored line-specific photos are already the most accurate ones. If a
+        // timeline has one, do not also add a generic image at the start/end.
+        if (TimelineHasAuthoredPhoto(_timeline)) return null;
+
+        // Only add an automatic photo at the conversation's opening, and only from a
+        // topic-specific pool. If all matching photos were already used in this level,
+        // skip the image instead of repeating it or forcing an unrelated one.
+        if (_lineIndex != 0) return null;
+        foreach (var candidate in AutoPhotoPool(_timeline.Id))
+        {
+            var fresh = AcceptPictureIfFresh(candidate);
+            if (fresh != null) return fresh;
+        }
+        return null;
     }
 
-    private static int StableSeed(string value)
+    private DialoguePicture? AcceptPictureIfFresh(DialoguePicture picture)
     {
-        int hash = 17;
-        foreach (char c in value) hash = unchecked(hash * 31 + c);
-        return hash;
+        if (!picture.IsPhoto) return picture;
+        if (_shownPhotoPaths.Contains(picture.Path)) return null;
+        _shownPhotoPaths.Add(picture.Path);
+        return picture;
+    }
+
+    private static bool TimelineHasAuthoredPhoto(DialogueTimeline timeline)
+    {
+        foreach (var line in timeline.Lines)
+            if (line.Picture is { IsPhoto: true })
+                return true;
+        return false;
+    }
+
+    private static IReadOnlyList<DialoguePicture> AutoPhotoPool(string timelineId)
+    {
+        if (timelineId == DialogueData.Seaweed || timelineId == NarrativeData.SeaweedDeep ||
+            timelineId == NarrativeData.BossPre || timelineId == "bannerfish")
+            return new[]
+            {
+                DialoguePicture.Photo("ch1_seal_net.jpg",
+                    "A Hawaiian monk seal caught in an abandoned fishing net.", "NOAA Fisheries"),
+                DialoguePicture.Photo("ch1_cleanup.jpg",
+                    "A cleanup crew lifts derelict fishing gear from Midway Atoll.", "U.S. Fish and Wildlife Service"),
+            };
+
+        if (timelineId.StartsWith("ch2_") || timelineId == NarrativeData.Chapter2Guardian)
+            return new[]
+            {
+                DialoguePicture.Photo("ch2_sediment_plume.jpg",
+                    "Sediment and nutrients flowing from land into the Gulf of Mexico.", "NASA Goddard Space Flight Center"),
+                DialoguePicture.Photo("ch2_dead_zone.jpg",
+                    "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
+                DialoguePicture.Photo("ch2_algal_bloom.jpg",
+                    "A harmful algal bloom spreading across Lake Erie, seen from space.", "NOAA GLERL"),
+            };
+
+        if (timelineId.StartsWith("ch3_") || timelineId == NarrativeData.Chapter3Guardian ||
+            timelineId == NarrativeData.Chapter3Ending)
+            return new[]
+            {
+                DialoguePicture.Photo("ch3_oil_slick.jpg",
+                    "Oil smoothing the surface of the Gulf of Mexico, seen by satellite.", "NASA Goddard Space Flight Center"),
+                DialoguePicture.Photo("ch3_oiled_pelican.jpg",
+                    "A wildlife officer reaches an oiled brown pelican after the Deepwater Horizon spill.", "U.S. Fish and Wildlife Service"),
+                DialoguePicture.Photo("ch3_bleaching.jpg",
+                    "Bleached brain coral during the 2023 Florida Keys marine heatwave.", "NOAA"),
+                DialoguePicture.Photo("ch3_rig_fire.jpg",
+                    "The Deepwater Horizon drilling rig burning in April 2010.", "U.S. Coast Guard"),
+            };
+
+        return Array.Empty<DialoguePicture>();
     }
 
     /// The whole line is laid out up front and revealed with VisibleCharacters.
