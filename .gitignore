@@ -17,3 +17,6 @@ assets/sprites/_water_attack_frames/
 
 # Exported game builds (the macOS binary alone is ~170MB, over GitHub's 100MB limit)
 build/
+recordings/
+scenes.zip
+.omc/sessions/

@@ -49,7 +49,7 @@ layout_mode = 2
 
 [node name="PageTitle" type="Label" parent="Modal/VBox"]
 layout_mode = 2
-text = "Chapter 1 · Tidepool Nursery"
+text = "Chapter 1 The Starting Tide Pool"
 
 [node name="PageBody" type="Label" parent="Modal/VBox"]
 layout_mode = 2

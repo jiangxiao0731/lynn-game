@@ -48,7 +48,7 @@ The corresponding `assets/img/_raw/` copies contain the same source-derived art.
 
 | Runtime files | Supplied source | Treatment |
 |---|---|---|
-| `title_bg.png` | `资源/IMG_2030.PNG` | Lower key-art crop, resized and ocean-tinted |
+| `title_bg.png` | `game_assets/IMG_2586.JPG` | User-selected full cover art, converted to 1920×1080 PNG for the title screen |
 | `zone_shallows.png`, `zone_sediment.png`, `zone_depths.png` | `资源/IMG_2030.PNG` | Three contiguous left/centre/right crops with identical colour treatment |
 | `maze_map.png` | derived `zone_sediment.png` | Runtime compatibility copy |
 | `wall_tile.png` | `资源/IMG_2030.PNG` | Dark ruin-and-water crop used inside organic reef polygons |

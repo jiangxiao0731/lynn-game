@@ -14,7 +14,7 @@ public static class ChapterRuntime
 
     public static int CurrentChapter { get; private set; } = 1;
     public static ElementForm RequiredForm { get; private set; } = ElementForm.Water;
-    public static string FragmentLabel { get; private set; } = "Tidal Shards";
+    public static string FragmentLabel { get; private set; } = "Water Shards";
     public static string BossName { get; private set; } = GameConstants.MonsterBossName;
     public static string[] Zones { get; private set; } =
         { NarrativeData.ZoneShallows, NarrativeData.ZoneSediment, NarrativeData.ZoneDepths };
@@ -26,20 +26,20 @@ public static class ChapterRuntime
         {
             RequiredForm = ElementForm.Ice;
             FragmentLabel = "Frost Crystals";
-            BossName = "Frostshell Guardian";
+            BossName = "Chemical Waste Monster";
             Zones = new[] { "Frozen Inlet", "Ice Ridge", "Frost Nursery" };
         }
         else if (CurrentChapter == 3)
         {
             RequiredForm = ElementForm.Electric;
             FragmentLabel = "Circuit Sparks";
-            BossName = "Overheated Core";
-            Zones = new[] { "Wrecked Grid", "Heat Channel", "Silent Lighthouse" };
+            BossName = "Oil Monster";
+            Zones = new[] { "Broken Power Grid", "Warm Current", "Silent Lighthouse" };
         }
         else
         {
             RequiredForm = ElementForm.Water;
-            FragmentLabel = "Tidal Shards";
+            FragmentLabel = "Water Shards";
             BossName = GameConstants.MonsterBossName;
             Zones = new[] { NarrativeData.ZoneShallows, NarrativeData.ZoneSediment, NarrativeData.ZoneDepths };
         }
@@ -51,21 +51,21 @@ public static class ChapterRuntime
             return stage switch
             {
                 ObjectiveStage.FindNpc => "Find Lanternfish",
-                ObjectiveStage.TalkStarfish => "Wake the first Thaw Anchor",
-                ObjectiveStage.TalkSeaweed => "Wake all three Thaw Anchors",
+                ObjectiveStage.TalkStarfish => "Wake the first Flow Switch",
+                ObjectiveStage.TalkSeaweed => "Wake all three Flow Switches",
                 ObjectiveStage.CollectShards => "Collect Frost Crystals",
-                ObjectiveStage.DefeatBoss => "Calm the Frostshell Guardian with Ice",
+                ObjectiveStage.DefeatBoss => "Freeze and clean up the Chemical Waste Monster",
                 ObjectiveStage.ExitLevel => "Cross the restored nursery gate",
-                _ => "Frostbound Trench is flowing again",
+                _ => "Frozen Trench is flowing again",
             };
         if (CurrentChapter == 3)
             return stage switch
             {
                 ObjectiveStage.FindNpc => "Find the Lost Shoal",
-                ObjectiveStage.TalkStarfish => "Connect the first Tide Relay",
-                ObjectiveStage.TalkSeaweed => "Reconnect all three Tide Relays",
+                ObjectiveStage.TalkStarfish => "Connect the first Power Relay",
+                ObjectiveStage.TalkSeaweed => "Reconnect all three Power Relays",
                 ObjectiveStage.CollectShards => "Collect Circuit Sparks",
-                ObjectiveStage.DefeatBoss => "Restore the Overheated Core with Electric",
+                ObjectiveStage.DefeatBoss => "Clean up the Oil Monster with Electric",
                 ObjectiveStage.ExitLevel => "Light the Silent Lighthouse",
                 _ => "Safe lights have returned to the ocean",
             };

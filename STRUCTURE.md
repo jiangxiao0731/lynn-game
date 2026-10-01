@@ -52,6 +52,12 @@
 - **Root type:** Node2D → GameSceneController
 - **Children:** BackgroundLayer, Map/Walls, Player (4 form AnimatedSprite2D + InteractArea + Camera2D), BroodMother, GasolineBarrel, GrannyLan, StarfishNPC, SeaweedNPC, SkillSystem, ObjectiveManager, ElementSpawner, HUD (instances SettlementPanel + FailurePanel). Fog-of-war (VisionMask/FogRect + vision_mask shader) was REMOVED — the level is always visible. New NPCs (HermitNPC/ShoalNPC/LanternNPC) and lore objects are added at runtime by GameSceneController.
 
+### GameScene2 / GameScene3 (Chapters 2 and 3)
+- **Files:** res://scenes/game_scene2.tscn, res://scenes/game_scene3.tscn
+- **Root script:** `ChapterLevelController`
+- The shared final arena doorway opens and disables its collision as soon as the third Flow Switch / Power Relay is restored. The monster remains non-combatant and cannot be targeted until the required chapter fragments have been collected.
+- Chapter 1 drops the next elemental current and Chapter 2 drops the Electric current above the cleaned-up monster. `BossController` owns the visible orb and proximity pickup; `NextLevelElementUnlocked` fires only on pickup, and the exit stage remains locked until then. Chapter 3 intentionally emits no next current and proceeds to the final ending.
+
 ### SettlementPanel (instanced into GameScene1 HUD)
 - **File:** res://scenes/settlement_panel.tscn
 - **Root type:** Control → SettlementPanel

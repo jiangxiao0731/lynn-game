@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Godot;
 
 namespace ShallowSeaDream;
 
@@ -25,6 +26,32 @@ public sealed record DialoguePicture(string Path, string Caption, string? Credit
     /// A public-domain photo from res://assets/photos (see assets/photos/CREDITS.md).
     public static DialoguePicture Photo(string file, string caption, string credit) =>
         new($"res://assets/photos/{file}", caption, credit);
+
+    /// A rotating public-domain reality check for conversations that otherwise only
+    /// carry character art. Every timeline now opens with real-world context, while
+    /// authored line-specific photos still take priority.
+    public static DialoguePicture PollutionForChapter(int chapter, int variant) => chapter switch
+    {
+        2 => Mathf.PosMod(variant, 3) switch
+        {
+            0 => Photo("ch2_algal_bloom.jpg", "A harmful algal bloom spreading across Lake Erie, seen from space.", "NOAA GLERL"),
+            1 => Photo("ch2_sediment_plume.jpg", "Sediment and nutrients flowing from land into the Gulf of Mexico.", "NASA Goddard Space Flight Center"),
+            _ => Photo("ch2_dead_zone.jpg", "A Gulf survey maps bottom water with too little oxygen for most marine life.", "NOAA"),
+        },
+        3 => Mathf.PosMod(variant, 4) switch
+        {
+            0 => Photo("ch3_oiled_pelican.jpg", "A wildlife officer reaches an oiled brown pelican after the Deepwater Horizon spill.", "U.S. Fish and Wildlife Service"),
+            1 => Photo("ch3_bleaching.jpg", "Bleached brain coral during the 2023 Florida Keys marine heatwave.", "NOAA"),
+            2 => Photo("ch3_oil_slick.jpg", "Oil smoothing the surface of the Gulf of Mexico, seen by satellite.", "NASA Goddard Space Flight Center"),
+            _ => Photo("ch3_rig_fire.jpg", "The Deepwater Horizon drilling rig burning in April 2010.", "U.S. Coast Guard"),
+        },
+        _ => Mathf.PosMod(variant, 3) switch
+        {
+            0 => Photo("ch1_albatross_debris.jpg", "A Laysan albatross chick surrounded by marine debris on Midway Atoll.", "NOAA Marine Debris Program"),
+            1 => Photo("ch1_seal_net.jpg", "A Hawaiian monk seal caught in an abandoned fishing net.", "NOAA Fisheries"),
+            _ => Photo("ch1_cleanup.jpg", "A cleanup crew lifts derelict fishing gear from Midway Atoll.", "U.S. Fish and Wildlife Service"),
+        },
+    };
 }
 
 /// One dialogue line. PortraitId selects the speaker art; Label allows choice jumps.
@@ -52,13 +79,13 @@ public static class DialogueData
     public const string SpeakerStarfish = "Starfish";
     public const string SpeakerSeaweed = "Seaweed";
     public const string SpeakerShimmer = "Shimmer";
-    public const string SpeakerBox = "Oil Barrel";
+    public const string SpeakerBox = "Oil Drum";
     public const string SpeakerHermit = "Old Zheng";
     public const string SpeakerLantern = "Lanternfish";
     public const string SpeakerShoal = "Lost Shoal";
-    public const string SpeakerBoss = "Brood Mother";
-    public const string SpeakerFrostshell = "Frostshell Guardian";
-    public const string SpeakerCore = "Overheated Core";
+    public const string SpeakerBoss = "Plastic Monster";
+    public const string SpeakerFrostshell = "Chemical Waste Monster";
+    public const string SpeakerCore = "Oil Monster";
 
     private static readonly Dictionary<string, DialogueTimeline> Timelines = Build();
 
@@ -82,55 +109,54 @@ public static class DialogueData
         // 岚婆婆 — first meeting (anchor lore verbatim, with a small branching choice).
         d[GrannyLan] = new DialogueTimeline(GrannyLan, new List<DialogueLine>
         {
-            new(SpeakerGranny, "Your light is still clean, Shimmer.", "npc1giving"),
-            new(SpeakerGranny, "Different kinds of pollution need different elements.", "npc1giving"),
-            new(SpeakerGranny, "First, I will teach you to use Water.", "npc1giving"),
-            new(SpeakerGranny, "Will you help me restore this nursery?", "npc1giving", new List<DialogueChoice>
+            new(SpeakerGranny, "Your light is still clear, Shimmer. That's a good sign.", "npc1giving"),
+            new(SpeakerGranny, "Different kinds of pollution need different powers to clean up.", "npc1giving"),
+            new(SpeakerGranny, "Let's start with Water. I'll show you how it works.", "npc1giving"),
+            new(SpeakerGranny, "Will you help me clean up this bay?", "npc1giving", new List<DialogueChoice>
             {
-                new("I'll try.", SetFlag: "granny_accept", GotoLabel: "granny_yes"),
-                new("I'm still scared.", SetFlag: "granny_hesitate", GotoLabel: "granny_soft"),
+                new("I'll give it a try.", SetFlag: "granny_accept", GotoLabel: "granny_yes"),
+                new("I'm a little scared.", SetFlag: "granny_hesitate", GotoLabel: "granny_soft"),
             }),
-            new(SpeakerGranny, "That makes sense. You do not have to be fearless. I will guide you through the first current.", "npc1giving", Label: "granny_soft"),
-            new(SpeakerGranny, "The Water Shards are hiding inside the rubbish that drifted in. Gather them and the water will answer you.", "npc1giving", Label: "granny_yes",
+            new(SpeakerGranny, "It's okay to be scared. I'll guide you through the first part.", "npc1giving", Label: "granny_soft"),
+            new(SpeakerGranny, "Go gather the nearby Water Element fragments. When you reach the Plastic Monster, press the 1 key to release the water flow.", "npc1giving", Label: "granny_yes",
                 Picture: new(AssetLoader.ChapterElement(1), "Look for these · 8 are scattered through the Shallows")),
-            new(SpeakerGranny, "Then, at the Brood Mother, press 1 to release Water.", "npc1giving"),
-            new(SpeakerGranny, "Ice and Electric currents wait farther below. One step at a time.", "npc1giving"),
-            new(SpeakerShimmer, "I will remember every light we bring back.", "npc1giving"),
+            new(SpeakerGranny, "You'll learn Ice and Electric later. For now, let's take it one step at a time.", "npc1giving"),
+            new(SpeakerShimmer, "I will. I'll remember every light we bring back.", "npc1giving"),
         });
 
         d[Starfish] = new DialogueTimeline(Starfish, new List<DialogueLine>
         {
-            new(SpeakerStarfish, "I have not seen another living light in a long time.", "starfish"),
-            new(SpeakerStarfish, "Plastic can trap animals, or be mistaken for food.", "starfish"),
-            new(SpeakerStarfish, "Far above us, seabirds feed it to their chicks without knowing. Their stomachs fill up, and there is no room left for real food.", "starfish",
+            new(SpeakerStarfish, "Wow... I haven't seen another glowing jellyfish in a long time.", "starfish"),
+            new(SpeakerStarfish, "There's plastic everywhere. Animals get trapped in it; some even mistake it for food.", "starfish"),
+            new(SpeakerStarfish, "Far above us, seabirds feed plastic to their chicks without knowing. Their stomachs fill up, and there is no room left for real food.", "starfish",
                 Picture: DialoguePicture.Photo("ch1_albatross_debris.jpg",
                     "A Laysan albatross chick among plastic debris on Midway Atoll.", "NOAA Marine Debris Program")),
-            new(SpeakerStarfish, "Seaweed heard something moving below. Talk to them before you go deeper.", "starfish",
+            new(SpeakerStarfish, "Seagrass is just below. Talk to them before you move on.", "starfish",
                 Picture: new(AssetLoader.NpcPortrait("seaweed"), "Seaweed · a little further along the reef")),
         });
 
         d[Seaweed] = new DialogueTimeline(Seaweed, new List<DialogueLine>
         {
-            new(SpeakerSeaweed, "Can you hear that low pulse?", "seaweed"),
-            new(SpeakerSeaweed, "It was once a group of young jellyfish. Wastewater fused them together.", "seaweed"),
-            new(SpeakerSeaweed, "Collect the shards, then use Water on the thinnest part of the membrane.", "seaweed"),
+            new(SpeakerSeaweed, "Wait... Do you hear that low, rumbling sound?", "seaweed"),
+            new(SpeakerSeaweed, "That sound is coming from a group of young jellyfish. Wastewater tangled their bodies together.", "seaweed"),
+            new(SpeakerSeaweed, "Collect the shards first. Then, use Water on the loosest part of the trash pile.", "seaweed"),
         });
 
         d[JellyfishBox] = new DialogueTimeline(JellyfishBox, new List<DialogueLine>
         {
-            new(SpeakerShimmer, "What is this... a rusted barrel?"),
-            new(SpeakerBox, "I once carried fuel for a factory on land.", "barrel"),
-            new(SpeakerBox, "They said dropping me into the sea was the easiest solution.", "barrel"),
-            new(SpeakerBox, "I do not want to leak anymore. Please take this oil away.", "barrel"),
-            new(SpeakerBox, "Oil can coat bodies, block light, and harm eggs before anyone sees the damage.", "barrel"),
-            new(SpeakerShimmer, "I will keep its story in the Tidal Memories. Even this barrel wanted another ending."),
+            new(SpeakerShimmer, "How did this get here... an old, rusty barrel?"),
+            new(SpeakerBox, "I used to transport fuel to factories on land.", "barrel"),
+            new(SpeakerBox, "Once they were done with me, they decided it was easier to just toss me into the sea.", "barrel"),
+            new(SpeakerBox, "I don't want to keep leaking.", "barrel"),
+            new(SpeakerBox, "The oil sticks to animals and blocks out the light; it even harms the fish before it spreads any further.", "barrel"),
+            new(SpeakerShimmer, "I'll save its story in my journal. Even an old oil drum deserves a better ending."),
         });
 
         d[BossDefeated] = new DialogueTimeline(BossDefeated, new List<DialogueLine>
         {
-            new(SpeakerShimmer, "The shell is opening."),
-            new(SpeakerShimmer, "The trapped lights are returning to the water."),
-            new(SpeakerShimmer, "A new element rises from the current. It will guide me to the next sea."),
+            new(SpeakerShimmer, "The pile is breaking apart!"),
+            new(SpeakerShimmer, "The trapped animals are returning to the current."),
+            new(SpeakerShimmer, "There's something new in the current. Maybe it can lead me to the next area."),
         });
 
         return d;

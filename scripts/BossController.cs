@@ -3,7 +3,7 @@ using Godot;
 namespace ShallowSeaDream;
 
 /// res://scripts/BossController.cs
-/// The 潮涡巢母 / Tide-Vortex Brood Mother (split from the god-class + the original
+/// Pollution monster controller (split from the god-class + the original
 /// pollution_monster / pollution_monster_base pair, now unified). Its weakness,
 /// painting and next-chapter key are configured per scene.
 public partial class BossController : CharacterBody2D
@@ -23,6 +23,14 @@ public partial class BossController : CharacterBody2D
 
     public int CurrentHealth { get; private set; } = GameConstants.BossMaxHealth;
     public bool IsDefeated { get; private set; }
+    /// Chapters two and three open their arena after the third restoration node, but
+    /// the guardian stays dormant until the player has gathered the required shards.
+    public bool CombatEnabled { get; set; } = true;
+    /// Hostility and vulnerability are separate. The guardian begins attacking as
+    /// soon as its arena opens, even while the player is still gathering enough
+    /// elemental charge to purify it.
+    public bool AggressionEnabled { get; set; } = true;
+    public Node2D? NextElementDrop { get; private set; }
     /// Set true once the player has come close enough to read the codex profile.
     public bool ProfileViewed { get; private set; }
 
@@ -30,6 +38,8 @@ public partial class BossController : CharacterBody2D
     private Player? _player;
     private AnimatedSprite2D? _sprite;
     private float _pulse;
+    private float _dropPulse;
+    private Vector2 _dropRestPosition;
     private bool _dialogueActive;
 
     public override void _Ready()
@@ -48,6 +58,12 @@ public partial class BossController : CharacterBody2D
 
     private void BuildVisual()
     {
+        // Player collision mask includes layer 32. Giving the guardian that layer
+        // makes it a real obstacle: Shimmer cannot swim through its painting to loot
+        // the far side of the arena.
+        CollisionLayer = InteractionSpacing.WorldCollisionLayer;
+        CollisionMask = 0;
+        ZIndex = 20;
         _sprite = new AnimatedSprite2D { Name = "BossSprite" };
         var tex = AssetLoader.Texture(SpritePath);
         _sprite.SpriteFrames = tex != null
@@ -64,12 +80,14 @@ public partial class BossController : CharacterBody2D
 
         // Scale with the drawing: a fixed 58px body left the enlarged guardians with a
         // hitbox floating in the middle of their silhouette.
-        var shape = new CollisionShape2D { Shape = new CircleShape2D { Radius = DisplaySize * 0.26f } };
+        var shape = new CollisionShape2D { Shape = new CircleShape2D { Radius = DisplaySize * 0.38f } };
         AddChild(shape);
     }
 
     public override void _PhysicsProcess(double delta)
     {
+        UpdateNextElementDrop((float)delta);
+
         // Pulsing arena presentation (procedural — DESIGN_BRIEF §2 layer 2).
         _pulse += (float)delta * 2.0f;
         if (_sprite != null)
@@ -80,16 +98,16 @@ public partial class BossController : CharacterBody2D
             _sprite.Modulate = Colors.White.Lerp(sheen, 0.35f);
         }
 
-        if (IsDefeated || _player == null || _dialogueActive) return;
+        if (!AggressionEnabled || IsDefeated || _player == null || _dialogueActive) return;
 
         float dist = GlobalPosition.DistanceTo(_player.GlobalPosition);
         if (!ProfileViewed && dist <= AutoAttackRange + 120f)
         {
             ProfileViewed = true;
             string hint = ChapterRuntime.CurrentChapter == 2
-                ? "The Frostshell Guardian is holding back the pollution. Use Ice to release it without breaking the shell."
+                ? "The Chemical Waste Monster is spreading toxic waste. Use Ice to contain the leaks and break it apart."
                 : ChapterRuntime.CurrentChapter == 3
-                    ? "The core is overheating. Use Electric to guide the loose energy back into the safe circuit."
+                    ? "The Oil Monster is covering the reef. Use Electric to activate the cleanup system."
                     : GameStrings.Tr("STATUS_BOSS_GATE");
             Events.Instance?.EmitSignal(Events.SignalName.StatusHint, hint);
         }
@@ -107,7 +125,7 @@ public partial class BossController : CharacterBody2D
     /// Apply purification damage from a skill cast.
     public void ApplyDamage(int amount)
     {
-        if (IsDefeated) return;
+        if (!CombatEnabled || IsDefeated) return;
         CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
         Events.Instance?.EmitSignal(Events.SignalName.BossHealthChanged, CurrentHealth, MaxHealthValue);
         AudioManager.Instance?.PlaySfx("boss_hit");
@@ -132,25 +150,114 @@ public partial class BossController : CharacterBody2D
         if (EmitNextElementUnlock)
         {
             SpawnNextLevelElementDrop();
-            Events.Instance?.EmitSignal(Events.SignalName.NextLevelElementUnlocked, (int)NextUnlockedElement);
         }
     }
 
-    /// Float the next chapter's elemental key at the guardian position.
+    /// Float the next chapter's elemental key above the restored guardian. The
+    /// unlock signal is deliberately emitted on pickup, not on boss defeat: this
+    /// makes the visible orb a real chapter key instead of decorative feedback.
     private void SpawnNextLevelElementDrop()
     {
-        var orb = new Sprite2D
+        var parent = GetParent();
+        if (parent == null || NextElementDrop != null) return;
+
+        var drop = new Node2D
         {
             Name = $"{GameStrings.FormLabel(NextUnlockedElement)}OrbDrop",
-            Texture = AssetLoader.Texture(AssetLoader.MemoryIcon)
-                      ?? PlaceholderArt.RoundBlob(64, Palette.ForForm(NextUnlockedElement)),
-            GlobalPosition = GlobalPosition,
-            Modulate = Palette.ForForm(NextUnlockedElement),
+            ZIndex = 12,
         };
-        PlaceholderArt.FitSprite(orb, 76f);
-        GetParent().AddChild(orb);
-        var tween = orb.CreateTween().SetLoops();
-        tween.TweenProperty(orb, "position:y", orb.Position.Y - 24f, 1.2f);
-        tween.TweenProperty(orb, "position:y", orb.Position.Y, 1.2f);
+        parent.AddChild(drop);
+        float rise = Mathf.Clamp(DisplaySize * 0.42f, 140f, 240f);
+        drop.GlobalPosition = GlobalPosition + Vector2.Up * rise;
+        _dropRestPosition = drop.Position;
+
+        Color elementColor = Palette.ForForm(NextUnlockedElement);
+
+        var orb = new Sprite2D
+        {
+            Name = "ElementOrb",
+            // ChapterElement is the chapter's pollution pickup (bottle/sludge/oil),
+            // not the next-form key. Use the supplied painted energy orb here and
+            // distinguish its element with colour plus a hand-drawn glyph.
+            Texture = AssetLoader.Texture(AssetLoader.ShardIcon)
+                      ?? AssetLoader.Texture(AssetLoader.MemoryIcon)
+                      ?? PlaceholderArt.RoundBlob(96, elementColor),
+            Modulate = Colors.White.Lerp(elementColor, 0.24f),
+        };
+        PlaceholderArt.FitSprite(orb, 132f);
+        drop.AddChild(orb);
+        drop.AddChild(MakeElementGlyph(NextUnlockedElement, elementColor));
+
+        var label = UiTheme.WorldRole(UiTheme.TypeRole.Name,
+            $"{GameStrings.FormLabel(NextUnlockedElement)} TIDAL KEY");
+        label.Position = new Vector2(-240f, 105f);
+        label.Size = new Vector2(480f, 44f);
+        drop.AddChild(label);
+        var hint = UiTheme.WorldRole(UiTheme.TypeRole.Hint, "SWIM CLOSE TO COLLECT");
+        hint.Position = new Vector2(-240f, 145f);
+        hint.Size = new Vector2(480f, 36f);
+        drop.AddChild(hint);
+
+        NextElementDrop = drop;
+        Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+            $"A {GameStrings.FormLabel(NextUnlockedElement)} current has appeared. Swim close to collect it.");
+    }
+
+    private void UpdateNextElementDrop(float delta)
+    {
+        if (NextElementDrop == null || !IsInstanceValid(NextElementDrop)) return;
+
+        _dropPulse += delta;
+        NextElementDrop.Position = _dropRestPosition + new Vector2(0f, Mathf.Sin(_dropPulse * 2.4f) * 12f);
+        float pulse = 1f + Mathf.Sin(_dropPulse * 3.1f) * 0.045f;
+        NextElementDrop.Scale = Vector2.One * pulse;
+
+        if (_player != null && NextElementDrop.GlobalPosition.DistanceTo(_player.GlobalPosition)
+            <= GameConstants.ElementPickupDistance + 50f)
+            CollectNextElementDrop();
+    }
+
+    /// Public for deterministic chapter-chain verification; normal play reaches this
+    /// through proximity in UpdateNextElementDrop.
+    public void CollectNextElementDrop()
+    {
+        if (NextElementDrop == null || !IsInstanceValid(NextElementDrop)) return;
+
+        var drop = NextElementDrop;
+        NextElementDrop = null;
+        _player?.SetForm(NextUnlockedElement);
+        Events.Instance?.EmitSignal(Events.SignalName.NextLevelElementUnlocked, (int)NextUnlockedElement);
+        Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+            $"{GameStrings.FormLabel(NextUnlockedElement)} unlocked. The way to the next sea is open.");
+        AudioManager.Instance?.PlaySfx("objective_advance");
+
+        var tween = drop.CreateTween();
+        tween.Parallel().TweenProperty(drop, "scale", drop.Scale * 1.7f, 0.28f)
+            .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+        tween.Parallel().TweenProperty(drop, "modulate:a", 0f, 0.28f);
+        tween.Finished += drop.QueueFree;
+    }
+
+    private static Polygon2D MakeElementGlyph(ElementForm form, Color color)
+    {
+        Vector2[] points = form == ElementForm.Electric
+            ? new[]
+            {
+                new Vector2(12,-48), new Vector2(-24,-4), new Vector2(-4,-4),
+                new Vector2(-18,46), new Vector2(28,-14), new Vector2(7,-14),
+            }
+            : new[]
+            {
+                new Vector2(0,-42), new Vector2(14,-14), new Vector2(42,0),
+                new Vector2(14,14), new Vector2(0,42), new Vector2(-14,14),
+                new Vector2(-42,0), new Vector2(-14,-14),
+            };
+        return new Polygon2D
+        {
+            Name = "ElementGlyph",
+            Polygon = points,
+            Color = new Color(color.Lightened(0.22f), 0.94f),
+            ZIndex = 2,
+        };
     }
 }

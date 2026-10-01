@@ -42,7 +42,7 @@ public partial class BuildTutorial : SceneBuilderBase
 
         var pageTitle = new Label();
         pageTitle.Name = "PageTitle";
-        pageTitle.Text = "Chapter 1 · Tidepool Nursery";
+        pageTitle.Text = "Chapter 1 The Starting Tide Pool";
         vbox.AddChild(pageTitle);
 
         var pageBody = new Label();

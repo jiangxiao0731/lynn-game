@@ -73,8 +73,16 @@ public partial class ElementSpawner : Node2D
             new Vector2(3280, 840), new Vector2(3540, 300),
         };
         // Authored against ChapterMap.AuthoredWidth; restretch onto the long map.
+        float guardianFront = ChapterMap.BossPoint(ChapterRuntime.CurrentChapter).X - 720f;
         foreach (var point in authored)
-            _spawnPoints.Add(ChapterMap.Place(ChapterRuntime.CurrentChapter, point));
+        {
+            var placed = ChapterMap.Place(ChapterRuntime.CurrentChapter, point);
+            // Never put required pollution behind a living guardian. The arena is a
+            // confrontation, not a corridor the player can swim through to vacuum up
+            // rewards on the other side.
+            if (placed.X < guardianFront)
+                _spawnPoints.Add(placed);
+        }
     }
 
     public override void _Process(double delta)
@@ -99,7 +107,7 @@ public partial class ElementSpawner : Node2D
                     if (_lockedHintCooldown <= 0f)
                     {
                         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
-                            "Listen to the residents before you collect the scattered Tidal Memories.");
+                            "Listen to the residents before you collect the scattered Ocean Memories.");
                         _lockedHintCooldown = 2f;
                     }
                     continue;

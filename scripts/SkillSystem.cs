@@ -95,7 +95,7 @@ public partial class SkillSystem : Node
         float bestDist = TargetSearchRadius;
         foreach (var node in GetTree().GetNodesInGroup("monster"))
         {
-            if (node is not BossController boss || boss.IsDefeated || !boss.ProfileViewed) continue;
+            if (node is not BossController boss || !boss.CombatEnabled || boss.IsDefeated || !boss.ProfileViewed) continue;
             float d = boss.GlobalPosition.DistanceTo(_player.GlobalPosition);
             if (d <= bestDist)
             {

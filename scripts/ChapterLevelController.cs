@@ -43,6 +43,7 @@ public partial class ChapterLevelController : Node2D
     private int _restoredNodes;
     private int _zone = -1;
     private bool _guardianBeatPlayed;
+    private bool _guardianRestored;
     private bool _completed;
     private bool _smokeMode;
     private float _time;
@@ -67,7 +68,6 @@ public partial class ChapterLevelController : Node2D
             ? new Color(0.12f, 0.30f, 0.48f, 0.35f).Lerp(new Color(0.10f, 0.24f, 0.42f, 0.26f), t)
             : new Color(0.16f, 0.08f, 0.08f, 0.43f).Lerp(new Color(0.13f, 0.06f, 0.06f, 0.32f), t);
     }
-    private readonly List<Line2D> _energyLines = new();
     private readonly List<Node2D> _residents = new();
     private readonly List<Control> _residentPrompts = new();
     private readonly List<string> _residentTimelines = new();
@@ -84,6 +84,10 @@ public partial class ChapterLevelController : Node2D
         _player = GetNode<Player>("Player");
         _skills = GetNode<SkillSystem>("SkillSystem");
         _boss = GetNode<BossController>("BroodMother");
+        // The third anchor/relay opens the physical route. Shards still gate the
+        // guardian encounter, so crossing early cannot start or damage the boss.
+        _boss.CombatEnabled = false;
+        _boss.AggressionEnabled = false;
         _settlement = GetNodeOrNull<SettlementPanel>("HUD/SettlementPanel");
 
         StretchAuthoredScene();
@@ -96,6 +100,7 @@ public partial class ChapterLevelController : Node2D
         {
             bus.BossDefeated += OnGuardianRestored;
             bus.BossHealthChanged += OnGuardianHealthChanged;
+            bus.NextLevelElementUnlocked += OnNextLevelElementUnlocked;
         }
 
         AudioManager.Instance?.PlayMusic("level1_underwater_ambient");
@@ -105,8 +110,8 @@ public partial class ChapterLevelController : Node2D
         Events.Instance?.EmitSignal(Events.SignalName.ZoneEntered, ChapterRuntime.Zones[0]);
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
             ChapterId == 2
-                ? "CHAPTER 2 · FROSTBOUND TRENCH   Find Lanternfish and press E"
-                : "CHAPTER 3 · THE SILENT LIGHTHOUSE   Find the Lost Shoal and press E");
+                ? "CHAPTER 2  FROZEN TRENCH Find Lanternfish and press E"
+                : "CHAPTER 3  THE OLD LIGHTHOUSE Find the Lost Shoal and press E");
 
         RestoreProgressIfSaved();
         _smokeMode = Array.IndexOf(OS.GetCmdlineUserArgs(), "--smoke-complete") >= 0;
@@ -180,28 +185,7 @@ public partial class ChapterLevelController : Node2D
             map.AddChild(veil);
             _veils.Add(veil);
 
-            var zoneName = UiTheme.Role(UiTheme.TypeRole.Heading, ChapterRuntime.Zones[i]);
-            zoneName.AddThemeColorOverride("font_color",
-                ChapterId == 2 ? new Color(0.72f, 0.92f, 1f, 0.46f) : new Color(0.46f, 0.94f, 0.78f, 0.46f));
-            zoneName.Position = new Vector2(x0 + 76, 930);
-            zoneName.ZIndex = -10;
-            map.AddChild(zoneName);
-
-            var flow = new Line2D
-            {
-                Name = $"RestorationCurrent{i + 1}", Width = ChapterId == 2 ? 14f : 8f,
-                DefaultColor = ChapterId == 2 ? new Color(0.55f, 0.96f, 1f, 0.08f) : new Color(0.42f, 0.92f, 0.74f, 0.08f),
-                ZIndex = -20, Antialiased = true,
-            };
-            var anchors = ChapterId == 2
-                ? new[] { new Vector2(x0 + 80, 820), new Vector2(x0 + 360, 710), new Vector2(x0 + 640, 790), new Vector2(x0 + 1110, 650) }
-                : new[] { new Vector2(x0 + 90, 230), new Vector2(x0 + 390, 420), new Vector2(x0 + 710, 280), new Vector2(x0 + 1110, 510) };
-            flow.Points = HandDrawnPath(anchors, ChapterId * 17 + i);
-            map.AddChild(flow);
-            _energyLines.Add(flow);
         }
-        AddCurrentSeam(map, ChapterMap.PanelStart(ChapterId, 1));
-        AddCurrentSeam(map, 2400f);
     }
 
     private void BuildBoundsAndMaze(Node2D map)
@@ -249,13 +233,12 @@ public partial class ChapterLevelController : Node2D
         bool ice = ChapterId == 2;
         _guide = new Node2D { Name = ice ? "LanternNPC" : "ShoalNPC", Position = SX(ice ? new Vector2(330, 530) : new Vector2(340, 650)) };
         AddChild(_guide);
-        var halo = CircleLine(82f, ice ? new Color(0.52f, 0.94f, 1f, 0.72f) : new Color(0.42f, 0.94f, 0.76f, 0.78f), 5f);
-        _guide.AddChild(halo);
         var sprite = new Sprite2D { Texture = AssetLoader.Texture(AssetLoader.NpcPortrait(ice ? "lantern" : "shoal")), ZIndex = 1 };
         if (sprite.Texture != null) PlaceholderArt.FitSprite(sprite, 152f);
         _guide.AddChild(sprite);
+        InteractionSpacing.AddSolid(_guide, 152f);
         _guidePrompt = UiTheme.WorldPlate(_guide, 88f, ice ? "Lanternfish" : "Lost Shoal",
-            ice ? "Thaw guide" : "Circuit guide", "Talk");
+            ice ? "Flow guide" : "Power guide", "Talk");
         _guidePrompt.Visible = false;
         StartBob(_guide, 8f, 1.7f);
     }
@@ -269,12 +252,12 @@ public partial class ChapterLevelController : Node2D
             var node = new Node2D { Name = $"Cast_{member.Id}", Position = SX(member.Position) };
             node.AddToGroup("npc");
             AddChild(node);
-            node.AddChild(CircleLine(member.DisplaySize * 0.49f, new Color(member.Tint, 0.34f), 3f));
 
             var portrait = AssetLoader.Texture(AssetLoader.NpcPortrait(member.PortraitId));
             var sprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(72, member.Tint), ZIndex = 1 };
             if (portrait != null) PlaceholderArt.FitSprite(sprite, member.DisplaySize);
             node.AddChild(sprite);
+            InteractionSpacing.AddSolid(node, member.DisplaySize);
 
             float labelY = member.DisplaySize * 0.56f + 16f;
             var prompt = UiTheme.WorldPlate(node, labelY, member.DisplayName, null, "Talk");
@@ -291,12 +274,11 @@ public partial class ChapterLevelController : Node2D
     {
         Vector2[] positions = ChapterId == 2
             ? new[] { SX(new Vector2(900, 220)), SX(new Vector2(1680, 880)), SX(new Vector2(2420, 230)) }
-            : new[] { SX(new Vector2(980, 850)), SX(new Vector2(1850, 250)), SX(new Vector2(2590, 850)) };
+            : new[] { SX(new Vector2(980, 850)), SX(new Vector2(1850, 250)), SX(new Vector2(2820, 690)) };
         for (int i = 0; i < positions.Length; i++)
         {
-            var node = new Node2D { Name = ChapterId == 2 ? $"ThawAnchor{i + 1}" : $"Relay{i + 1}", Position = positions[i] };
+            var node = new Node2D { Name = ChapterId == 2 ? $"FlowSwitch{i + 1}" : $"PowerRelay{i + 1}", Position = positions[i] };
             map.AddChild(node);
-            node.AddChild(CircleLine(64f, ChapterId == 2 ? new Color(0.62f, 0.90f, 1f, 0.62f) : new Color(0.38f, 0.90f, 0.70f, 0.72f), 6f));
             var icon = new Sprite2D
             {
                 Texture = AssetLoader.Texture(AssetLoader.MemoryIcon) ?? PlaceholderArt.RoundBlob(64, Palette.ForForm(RequiredForm)),
@@ -304,7 +286,8 @@ public partial class ChapterLevelController : Node2D
             };
             PlaceholderArt.FitSprite(icon, 88f);
             node.AddChild(icon);
-            var prompt = UiTheme.WorldPlate(node, 72f, ChapterId == 2 ? "Thaw Anchor" : "Tide Relay",
+            InteractionSpacing.AddSolid(node, 88f, 46f);
+            var prompt = UiTheme.WorldPlate(node, 72f, ChapterId == 2 ? "Flow Switch" : "Power Relay",
                 $"{i + 1} of 3", "Restore");
             prompt.Visible = false;
             _restoreNodes.Add(node);
@@ -324,6 +307,7 @@ public partial class ChapterLevelController : Node2D
         foreach (var authored in ChapterId == 2 ? ice : electric)
         {
             var point = SX(authored);
+            if (point.X >= _boss.GlobalPosition.X - 720f) continue;
             // Residents, the guide and the restore nodes are already in the tree, so a
             // fragment that would sit on one is simply skipped.
             if (!ChapterMap.IsClearOfOccupants(this, point, FragmentClearance, "npc")) continue;
@@ -368,6 +352,7 @@ public partial class ChapterLevelController : Node2D
         if (_stage == ObjectiveStage.DefeatBoss && !_guardianBeatPlayed && _player.GlobalPosition.DistanceTo(_boss.GlobalPosition) < 520f)
         {
             _guardianBeatPlayed = true;
+            InteractionSpacing.FrameConversation(_player, _boss, InteractionSpacing.GuardianConversationDistance);
             _dialogue.Play(GuardianTimeline);
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
@@ -428,6 +413,7 @@ public partial class ChapterLevelController : Node2D
         if (!@event.IsActionPressed("e") || _dialogue.IsActive) return;
         if (_stage == ObjectiveStage.FindNpc && Near(_guide))
         {
+            InteractionSpacing.FrameConversation(_player, _guide, InteractionSpacing.NpcConversationDistance);
             _dialogue.Play(GuideTimeline, () => Advance(ObjectiveStage.TalkStarfish));
             GetViewport().SetInputAsHandled();
             return;
@@ -447,6 +433,7 @@ public partial class ChapterLevelController : Node2D
         {
             if (Near(_residents[i]))
             {
+                InteractionSpacing.FrameConversation(_player, _residents[i], InteractionSpacing.NpcConversationDistance);
                 _dialogue.Play(_residentTimelines[i]);
                 GetViewport().SetInputAsHandled();
                 return;
@@ -461,7 +448,7 @@ public partial class ChapterLevelController : Node2D
         ObjectiveStage.TalkStarfish or ObjectiveStage.TalkSeaweed
             => _restoredNodes < _restoreNodes.Count ? _restoreNodes[_restoredNodes] : null,
         ObjectiveStage.CollectShards => Nearest(_fragmentsInWorld),
-        ObjectiveStage.DefeatBoss => _boss,
+        ObjectiveStage.DefeatBoss => _boss.NextElementDrop ?? _boss,
         ObjectiveStage.ExitLevel => _exit,
         _ => null,
     };
@@ -518,18 +505,17 @@ public partial class ChapterLevelController : Node2D
         Events.Instance?.EmitSignal(Events.SignalName.StatusHint, chapterFacts[index]);
         AudioManager.Instance?.PlaySfx("objective_advance");
         if (index == 0) Advance(ObjectiveStage.TalkSeaweed);
-        else if (_restoredNodes >= 3) Advance(ObjectiveStage.CollectShards);
+        else if (_restoredNodes >= 3)
+        {
+            OpenArenaGate();
+            Advance(ObjectiveStage.CollectShards);
+        }
     }
 
     private void SetZoneRestored(int index)
     {
         if (index < _veils.Count)
             _veils[index].CreateTween().TweenProperty(_veils[index], "modulate:a", 0.18f, 0.85f);
-        if (index < _energyLines.Count)
-        {
-            var c = _energyLines[index].DefaultColor; c.A = 0.82f;
-            _energyLines[index].CreateTween().TweenProperty(_energyLines[index], "default_color", c, 0.8f);
-        }
     }
 
     private void CollectFragment(Sprite2D shard)
@@ -546,14 +532,35 @@ public partial class ChapterLevelController : Node2D
             .Finished += shard.QueueFree;
         if (_fragments >= RequiredFragments)
         {
+            _boss.CombatEnabled = true;
             Advance(ObjectiveStage.DefeatBoss);
-            if (_arenaGate != null && IsInstanceValid(_arenaGate))
-            {
-                _arenaGate.CollisionLayer = 0;
-                _arenaGate.CreateTween().TweenProperty(_arenaGate, "modulate:a", 0f, 0.65f).Finished += _arenaGate.QueueFree;
-            }
             Events.Instance?.EmitSignal(Events.SignalName.BossHealthChanged, _boss.CurrentHealth, _boss.MaxHealthValue);
         }
+    }
+
+    /// The three restoration nodes power this doorway, so the doorway opens with
+    /// the third node instead of waiting for the later shard objective. Disable the
+    /// shape as well as its layer before fading it out; this avoids an invisible
+    /// collision body during the tween or on a slow physics frame.
+    private void OpenArenaGate()
+    {
+        if (_arenaGate == null || !IsInstanceValid(_arenaGate)) return;
+
+        var gate = _arenaGate;
+        _arenaGate = null;
+        gate.CollisionLayer = 0;
+        gate.CollisionMask = 0;
+        foreach (var child in gate.GetChildren())
+            if (child is CollisionShape2D shape)
+                shape.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
+
+        gate.CreateTween().TweenProperty(gate, "modulate:a", 0f, 0.65f)
+            .Finished += gate.QueueFree;
+        _boss.AggressionEnabled = true;
+        Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+            ChapterId == 2
+                ? "The three Flow Switches have opened the nursery gate."
+                : "The three Power Relays have opened the lighthouse gate.");
     }
 
     private void OnGuardianHealthChanged(int current, int max)
@@ -566,8 +573,20 @@ public partial class ChapterLevelController : Node2D
     private void OnGuardianRestored()
     {
         if (_stage != ObjectiveStage.DefeatBoss) return;
+        _guardianRestored = true;
         for (int i = 0; i < 3; i++) SetZoneRestored(i);
         _exit.CreateTween().TweenProperty(_exit, "modulate", Colors.White, 0.9f);
+        if (ChapterId == 3)
+            _dialogue.Play(EndingTimeline, () => Advance(ObjectiveStage.ExitLevel));
+        else
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                "The Chemical Waste Monster released a new current. Collect it to open the next area.");
+    }
+
+    private void OnNextLevelElementUnlocked(int form)
+    {
+        if (ChapterId != 2 || !_guardianRestored || _stage != ObjectiveStage.DefeatBoss) return;
+        if ((ElementForm)form != ElementForm.Electric) return;
         _dialogue.Play(EndingTimeline, () => Advance(ObjectiveStage.ExitLevel));
     }
 
@@ -579,7 +598,7 @@ public partial class ChapterLevelController : Node2D
         if (_smokeMode) return;
         PersistProgress();
         _settlement?.ShowResult(ChapterId == 2
-            ? "The three Thaw Anchors are moving oxygen through the nursery again. The Frostshell Guardian has released its ice.\nRunoff begins on land. Restoring flow gives this habitat time to heal."
+            ? "The three Flow Switches are moving oxygen through the nursery again. The chemical waste has been contained.\nRunoff begins on land. Restoring flow gives this habitat time to heal."
             : "The safe circuit is running, and waste heat is no longer spilling into the nursery. Coral recovery will take time.\nProtecting the ocean means stopping pollution at its source, not only cleaning it up later." );
     }
 
@@ -607,7 +626,8 @@ public partial class ChapterLevelController : Node2D
         const int boundaryLevel = 3;
         var boundaryStage = ChapterId == 2 ? ObjectiveStage.FindNpc : ObjectiveStage.Complete;
         var state = new SaveState(SaveManager.SaveVersion, Time.GetDatetimeStringFromSystem(true), _player.CurrentForm,
-            _player.CurrentHealth, 0, 0, 0, boundaryStage, null, true, true, boundaryLevel, 0);
+            _player.CurrentHealth, 0, 0, 0, boundaryStage,
+            ChapterId == 2 ? ElementForm.Electric : null, true, true, boundaryLevel, 0);
         SaveManager.Instance?.SaveState(state);
     }
 
@@ -626,10 +646,35 @@ public partial class ChapterLevelController : Node2D
     {
         Advance(ObjectiveStage.TalkStarfish);
         RestoreNode(0); RestoreNode(1); RestoreNode(2);
+        if (_arenaGate != null)
+        {
+            GD.PushError($"CHAPTER_GATE_FAILED level={ChapterId}: arena gate stayed active after node 3");
+            GetTree().Quit(1);
+            return;
+        }
+        GD.Print($"CHAPTER_GATE_OK level={ChapterId}: arena gate opened after node 3");
         var copy = _fragmentsInWorld.ToArray();
         for (int i = 0; i < RequiredFragments && i < copy.Length; i++) CollectFragment(copy[i]);
         _guardianBeatPlayed = true;
         _boss.ApplyDamage(_boss.MaxHealthValue);
+        if (ChapterId == 2)
+        {
+            if (_boss.NextElementDrop == null)
+            {
+                GD.PushError("CHAPTER_KEY_FAILED level=2: Electric current did not spawn");
+                GetTree().Quit(1);
+                return;
+            }
+            GD.Print("CHAPTER_KEY_OK level=2: Electric current spawned");
+            _boss.CollectNextElementDrop();
+        }
+        else if (_boss.NextElementDrop != null)
+        {
+            GD.PushError("CHAPTER_KEY_FAILED level=3: final chapter spawned a nonexistent next key");
+            GetTree().Quit(1);
+            return;
+        }
+        else GD.Print("CHAPTER_KEY_OK level=3: final chapter correctly has no next key");
         Advance(ObjectiveStage.ExitLevel);
         CompleteChapter();
         GD.Print($"CHAPTER_SMOKE_OK level={ChapterId} stage={_stage} fragments={_fragments} nodes={_restoredNodes}");
@@ -640,8 +685,9 @@ public partial class ChapterLevelController : Node2D
         _guardianBeatPlayed = true;
         _fragments = RequiredFragments;
         for (int i = 0; i < 3; i++) SetZoneRestored(i);
-        _arenaGate?.QueueFree();
-        _player.GlobalPosition = new Vector2(2980, 540);
+        OpenArenaGate();
+        _boss.CombatEnabled = true;
+        _player.GlobalPosition = _boss.GlobalPosition + new Vector2(-300f, 0f);
         for (int i = 0; i < 5; i++) _skills.AddCharge(RequiredForm);
         _player.SetForm(RequiredForm);
         Advance(ObjectiveStage.DefeatBoss);
@@ -658,6 +704,13 @@ public partial class ChapterLevelController : Node2D
 
     private void AddReefVisual(Node2D map, Rect2 rect, int seed)
     {
+        // Skinny vertical blockers read as stray rectangular pillars in the painted
+        // world, especially when the camera frames them behind HUD/location plates.
+        // Keep their collision in AddWall/MakeGate, but do not draw a separate
+        // decorative tile over the background.
+        if (rect.Size.Y > rect.Size.X * 1.65f)
+            return;
+
         float j = 10f + seed % 9;
         var points = new[]
         {
@@ -676,8 +729,8 @@ public partial class ChapterLevelController : Node2D
             UV = uv,
             Texture = source,
             TextureRepeat = CanvasItem.TextureRepeatEnum.Enabled,
-            Color = ChapterId == 2 ? new Color(0.62f, 0.78f, 0.88f, 0.88f) : new Color(0.48f, 0.66f, 0.62f, 0.92f),
-            ZIndex = -40,
+            Color = ChapterId == 2 ? new Color(0.48f, 0.64f, 0.72f, 0.52f) : new Color(0.34f, 0.48f, 0.45f, 0.50f),
+            ZIndex = -92,
         };
         map.AddChild(poly);
     }
@@ -686,21 +739,6 @@ public partial class ChapterLevelController : Node2D
     {
         var gate = new StaticBody2D { Name = name, Position = rect.GetCenter(), CollisionLayer = 32, ZIndex = -30 };
         gate.AddChild(new CollisionShape2D { Shape = new RectangleShape2D { Size = rect.Size } });
-        var visual = new Polygon2D
-        {
-            Polygon = new[] { new Vector2(-rect.Size.X/2,-rect.Size.Y/2), new Vector2(rect.Size.X/2,-rect.Size.Y/2), new Vector2(rect.Size.X/2,rect.Size.Y/2), new Vector2(-rect.Size.X/2,rect.Size.Y/2) },
-            Color = new Color(color.R, color.G, color.B, .05f),
-        };
-        gate.AddChild(visual);
-        for (int i = 0; i < 4; i++)
-        {
-            float x = Mathf.Lerp(-rect.Size.X * .42f, rect.Size.X * .42f, i / 3f);
-            gate.AddChild(new Line2D
-            {
-                Points = new[] { new Vector2(x, -rect.Size.Y/2), new Vector2(x + (i%2==0?10:-10), 0), new Vector2(x, rect.Size.Y/2) },
-                Width = 4f, Antialiased = true, DefaultColor = new Color(color.R, color.G, color.B, .76f),
-            });
-        }
         map.AddChild(gate);
         return gate;
     }
@@ -717,38 +755,6 @@ public partial class ChapterLevelController : Node2D
             },
             Color = new Color(.02f,.09f,.13f,.24f), ZIndex = -95,
         });
-    }
-
-    private static Line2D CircleLine(float radius, Color color, float width)
-    {
-        var line = new Line2D { Width = width, DefaultColor = color, Closed = true, Antialiased = true, ZIndex = 0 };
-        var points = new Vector2[32];
-        for (int i = 0; i < points.Length; i++)
-        {
-            float angle = Mathf.Tau * i / points.Length;
-            float wobble = Mathf.Sin(angle * 5f + radius) * 2.8f + Mathf.Sin(angle * 9f) * 1.4f;
-            points[i] = Vector2.FromAngle(angle) * (radius + wobble);
-        }
-        line.Points = points;
-        return line;
-    }
-
-    private static Vector2[] HandDrawnPath(Vector2[] anchors, int seed)
-    {
-        var points = new List<Vector2> { anchors[0] };
-        for (int a = 0; a < anchors.Length - 1; a++)
-        {
-            Vector2 from = anchors[a], to = anchors[a + 1];
-            Vector2 normal = (to - from).Normalized().Orthogonal();
-            for (int step = 1; step <= 5; step++)
-            {
-                float t = step / 5f;
-                float inkWobble = Mathf.Sin((a * 5 + step) * 1.73f + seed) * 7f
-                                  + Mathf.Sin((a + step) * .91f + seed * .4f) * 3f;
-                points.Add(from.Lerp(to, t) + normal * inkWobble * Mathf.Sin(Mathf.Pi * t));
-            }
-        }
-        return points.ToArray();
     }
 
     private static void StartBob(Node2D node, float amount, float seconds)

@@ -22,12 +22,12 @@ public partial class TutorialController : Control
 
     private static readonly (string Title, string Body)[] Pages =
     {
-        ("Chapter 1 · Tidepool Nursery",
-         "The ocean carries memory through its currents.\n\nPollution has settled in the deep and changed the creatures living here. They are not enemies. Restore the flow, and they can recover."),
+        ("Chapter 1 The Starting Tide Pool",
+         "The ocean carries memories through its currents.\n\nPollution settles into the deep sea, altering the creatures that dwell there. They are not enemies; once the flow of water is restored, they can be reborn."),
         ("Controls",
-         "Move       ←  ↑  →  ↓\nInteract   E\nElements   1 Water  ·  2 Ice  ·  3 Electric\n\nR Base form    T Restart chapter    Esc Pause"),
+         "Move\nInteract E\nElements 1 Water  2 Ice  3 Electricity\n\nR Base Form T Restart Chapter Esc Pause"),
         ("Water Element",
-         "Guide Water through polluted gaps and wake the lights trapped inside.\n\nStart by finding Granny Lan. Listen to the residents, collect Tidal Shards, and restore the Brood Mother in the deep."),
+         "Guide the water flow through the polluted gaps to awaken the light trapped within.\n\nFirst, find Granny Lan. Listen to the residents, collect Water Shards, and restore life to the deep sea."),
     };
 
     public override void _Ready()

@@ -297,7 +297,7 @@ public partial class DialogueRunner : CanvasLayer
         // Lines rarely carry an explicit PortraitId, so fall back to mapping the
         // speaker name → portrait asset id (npc_{id}.png) for a meaningful frame.
         SetPortrait(line.PortraitId ?? PortraitForSpeaker(line.Speaker));
-        SetPicture(line.Picture);
+        SetPicture(PictureForLine(line));
         StartTypewriter(line.Text);
         AnimateBubbleEntry();
         Events.Instance?.EmitSignal(Events.SignalName.DialogueLineStarted, line.Speaker, line.Text);
@@ -305,6 +305,27 @@ public partial class DialogueRunner : CanvasLayer
 
         if (line.Choices is { Count: > 0 })
             OpenChoices(line.Choices);
+    }
+
+    private DialoguePicture? PictureForLine(DialogueLine line)
+    {
+        if (line.Picture != null) return line.Picture;
+        if (_timeline == null || _timeline.Lines.Count == 0) return null;
+
+        // Every conversation opens on a real pollution image. Longer exchanges also
+        // close on another one, so the real ecosystem stays present rather than being
+        // a single isolated fact card. Authored photos/art on specific lines win above.
+        bool showcase = _lineIndex == 0 || (_timeline.Lines.Count >= 4 && _lineIndex == _timeline.Lines.Count - 1);
+        if (!showcase) return null;
+        int seed = StableSeed(_timeline.Id) + _lineIndex;
+        return DialoguePicture.PollutionForChapter(ChapterRuntime.CurrentChapter, seed);
+    }
+
+    private static int StableSeed(string value)
+    {
+        int hash = 17;
+        foreach (char c in value) hash = unchecked(hash * 31 + c);
+        return hash;
     }
 
     /// The whole line is laid out up front and revealed with VisibleCharacters.

@@ -160,6 +160,14 @@ public partial class Player : CharacterBody2D
             sprite.Visible = form == CurrentForm;
     }
 
+    /// Face a conversation partner without changing position or movement state.
+    public void FaceTowards(Vector2 worldPoint)
+    {
+        if (_sprites.TryGetValue(CurrentForm, out var active) &&
+            Mathf.Abs(worldPoint.X - GlobalPosition.X) > 1f)
+            active.FlipH = worldPoint.X < GlobalPosition.X;
+    }
+
     /// Switch active form, update the visible sprite + modulate, emit FormChanged.
     public void SetForm(ElementForm form)
     {

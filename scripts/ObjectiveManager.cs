@@ -12,6 +12,7 @@ public partial class ObjectiveManager : Node
 
     public ObjectiveStage Stage { get; private set; } = ObjectiveStage.FindNpc;
     public int ShardsCollected { get; private set; }
+    private bool _bossDefeated;
 
     public const int ShardThreshold = GameConstants.ShardThresholdForBoss;
 
@@ -22,6 +23,7 @@ public partial class ObjectiveManager : Node
         {
             bus.ElementPickedUp += OnElementPickedUp;
             bus.BossDefeated += OnBossDefeated;
+            bus.NextLevelElementUnlocked += OnNextLevelElementUnlocked;
             bus.LevelExitReached += OnLevelExitReached;
         }
     }
@@ -80,6 +82,12 @@ public partial class ObjectiveManager : Node
     private void OnBossDefeated()
     {
         if (Stage == ObjectiveStage.DefeatBoss)
+            _bossDefeated = true;
+    }
+
+    private void OnNextLevelElementUnlocked(int form)
+    {
+        if (_bossDefeated && Stage == ObjectiveStage.DefeatBoss && (ElementForm)form == ElementForm.Ice)
             AdvanceTo(ObjectiveStage.ExitLevel);
     }
 

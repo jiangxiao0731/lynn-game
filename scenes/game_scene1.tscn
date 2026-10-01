@@ -1,85 +1,83 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3 uid="uid://bkdiwlx32uuu1"]
 
-[ext_resource type="Script" path="res://scripts/GameSceneController.cs" id="1"]
-[ext_resource type="Script" path="res://scripts/Player.cs" id="2"]
-[ext_resource type="Script" path="res://scripts/BossController.cs" id="3"]
-[ext_resource type="Script" path="res://scripts/SkillSystem.cs" id="4"]
-[ext_resource type="Script" path="res://scripts/ObjectiveManager.cs" id="5"]
-[ext_resource type="Script" path="res://scripts/ElementSpawner.cs" id="6"]
-[ext_resource type="Script" path="res://scripts/HudController.cs" id="7"]
+[ext_resource type="Script" uid="uid://dptq4fys18vdr" path="res://scripts/GameSceneController.cs" id="1"]
+[ext_resource type="Script" uid="uid://n03msfo1thom" path="res://scripts/Player.cs" id="2"]
+[ext_resource type="Script" uid="uid://d2hqi5xxlkkq" path="res://scripts/BossController.cs" id="3"]
+[ext_resource type="Script" uid="uid://jr3ehcuix3cp" path="res://scripts/SkillSystem.cs" id="4"]
+[ext_resource type="Script" uid="uid://b01xcbxhyp2b4" path="res://scripts/ObjectiveManager.cs" id="5"]
+[ext_resource type="Script" uid="uid://ca7ojv2qtrtys" path="res://scripts/ElementSpawner.cs" id="6"]
+[ext_resource type="Script" uid="uid://dqks143npjdkr" path="res://scripts/HudController.cs" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/settlement_panel.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/failure_panel.tscn" id="9"]
 
 [sub_resource type="CircleShape2D" id="PlayerShape"]
 radius = 36.0
 
-[node name="GameScene1" type="Node2D"]
+[node name="GameScene1" type="Node2D" unique_id=345392237]
 script = ExtResource("1")
 
-[node name="Map" type="Node2D" parent="."]
+[node name="Map" type="Node2D" parent="." unique_id=761072084]
 
-[node name="Walls" type="StaticBody2D" parent="Map"]
+[node name="Walls" type="StaticBody2D" parent="Map" unique_id=979403242]
 collision_layer = 32
 
-[node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1027579283 groups=["player"]]
 position = Vector2(220, 540)
-collision_layer = 1
 collision_mask = 32
 script = ExtResource("2")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=2080127053]
 shape = SubResource("PlayerShape")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player" unique_id=468839001]
 
-[node name="WaterSprite2D" type="AnimatedSprite2D" parent="Player"]
+[node name="WaterSprite2D" type="AnimatedSprite2D" parent="Player" unique_id=1990022548]
 visible = false
 
-[node name="IceSprite2D" type="AnimatedSprite2D" parent="Player"]
+[node name="IceSprite2D" type="AnimatedSprite2D" parent="Player" unique_id=2042910952]
 visible = false
 
-[node name="ElectricSprite2D" type="AnimatedSprite2D" parent="Player"]
+[node name="ElectricSprite2D" type="AnimatedSprite2D" parent="Player" unique_id=1494154300]
 visible = false
 
-[node name="InteractArea" type="Area2D" parent="Player"]
+[node name="InteractArea" type="Area2D" parent="Player" unique_id=1981104399]
 
-[node name="Camera2D" type="Camera2D" parent="Player"]
-enabled = true
-position_smoothing_enabled = true
-position_smoothing_speed = 6.0
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=614708989]
 limit_left = 0
 limit_top = 0
 limit_right = 3600
 limit_bottom = 1080
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
 
-[node name="BroodMother" type="CharacterBody2D" parent="." groups=["monster"]]
+[node name="BroodMother" type="CharacterBody2D" parent="." unique_id=1787604998 groups=["monster"]]
 position = Vector2(3100, 540)
 script = ExtResource("3")
 SpritePath = "res://assets/sprites/boss_ch1.png"
 DisplaySize = 600.0
 
-[node name="GasolineBarrel" type="StaticBody2D" parent="." groups=["box"]]
+[node name="GasolineBarrel" type="StaticBody2D" parent="." unique_id=1654837009 groups=["box"]]
 
-[node name="GrannyLan" type="Node2D" parent="." groups=["npc"]]
+[node name="GrannyLan" type="Node2D" parent="." unique_id=464670105 groups=["npc"]]
 
-[node name="StarfishNPC" type="Node2D" parent="." groups=["flavor_npc"]]
+[node name="StarfishNPC" type="Node2D" parent="." unique_id=167963167 groups=["flavor_npc"]]
 
-[node name="SeaweedNPC" type="Node2D" parent="." groups=["flavor_npc"]]
+[node name="SeaweedNPC" type="Node2D" parent="." unique_id=1477790458 groups=["flavor_npc"]]
 
-[node name="SkillSystem" type="Node" parent="."]
+[node name="SkillSystem" type="Node" parent="." unique_id=403953538]
 script = ExtResource("4")
 
-[node name="ObjectiveManager" type="Node" parent="."]
+[node name="ObjectiveManager" type="Node" parent="." unique_id=1150475547]
 script = ExtResource("5")
 
-[node name="ElementSpawner" type="Node2D" parent="."]
+[node name="ElementSpawner" type="Node2D" parent="." unique_id=1604987568]
 script = ExtResource("6")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1191041403]
 layer = 10
 script = ExtResource("7")
 
-[node name="SettlementPanel" parent="HUD" instance=ExtResource("8")]
+[node name="SettlementPanel" parent="HUD" unique_id=1862814138 instance=ExtResource("8")]
 NextScenePath = "res://scenes/game_scene2.tscn"
 
-[node name="FailurePanel" parent="HUD" instance=ExtResource("9")]
+[node name="FailurePanel" parent="HUD" unique_id=1475768227 instance=ExtResource("9")]

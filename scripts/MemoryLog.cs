@@ -21,16 +21,48 @@ public partial class MemoryLog : Node
     private readonly List<string> _codex = new();
     private readonly List<string> _notes = new();
     private readonly HashSet<string> _flags = new();
+    private readonly int[] _pollutionCollected = new int[3];
+    private readonly bool[] _guardiansRestored = new bool[3];
 
     public IReadOnlyList<string> Memories => _memories;
     public IReadOnlyList<string> Conversations => _conversations;
     public IReadOnlyList<string> Codex => _codex;
     public IReadOnlyList<string> Notes => _notes;
+    public int WaterCollected => _pollutionCollected[0];
+    public int IcePollutionCollected => _pollutionCollected[1];
+    public int OilHeatCollected => _pollutionCollected[2];
+    public int TotalPollutionCollected => WaterCollected + IcePollutionCollected + OilHeatCollected;
+    public int GuardiansRestored => System.Array.FindAll(_guardiansRestored, value => value).Length;
 
     public override void _EnterTree()
     {
         Instance = this;
         Load();
+        ReconnectEvents();
+    }
+
+    public void ReconnectEvents()
+    {
+        if (Events.Instance != null)
+        {
+            Events.Instance.ElementPickedUp -= OnElementPickedUp;
+            Events.Instance.BossDefeated -= OnBossDefeated;
+            Events.Instance.ElementPickedUp += OnElementPickedUp;
+            Events.Instance.BossDefeated += OnBossDefeated;
+        }
+    }
+
+    private void OnElementPickedUp(int form)
+    {
+        int index = Mathf.Clamp((int)(ElementForm)form - 1, 0, 2);
+        _pollutionCollected[index]++;
+        Save();
+    }
+
+    private void OnBossDefeated()
+    {
+        _guardiansRestored[Mathf.Clamp(ChapterRuntime.CurrentChapter - 1, 0, 2)] = true;
+        Save();
     }
 
     public bool HasFlag(string flag) => _flags.Contains(flag);
@@ -60,6 +92,8 @@ public partial class MemoryLog : Node
         _codex.Clear();
         _notes.Clear();
         _flags.Clear();
+        System.Array.Clear(_pollutionCollected, 0, _pollutionCollected.Length);
+        System.Array.Clear(_guardiansRestored, 0, _guardiansRestored.Length);
         if (FileAccess.FileExists(LogPath))
             DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(LogPath));
     }
@@ -74,6 +108,14 @@ public partial class MemoryLog : Node
             ["codex"] = new Godot.Collections.Array(_codex.ConvertAll(s => (Variant)s)),
             ["notes"] = new Godot.Collections.Array(_notes.ConvertAll(s => (Variant)s)),
             ["flags"] = new Godot.Collections.Array(new List<string>(_flags).ConvertAll(s => (Variant)s)),
+            ["pollution_collected"] = new Godot.Collections.Array
+            {
+                _pollutionCollected[0], _pollutionCollected[1], _pollutionCollected[2],
+            },
+            ["guardians_restored"] = new Godot.Collections.Array
+            {
+                _guardiansRestored[0], _guardiansRestored[1], _guardiansRestored[2],
+            },
         };
         using var f = FileAccess.Open(LogPath, FileAccess.ModeFlags.Write);
         if (f == null) { GD.PushWarning($"MemoryLog: cannot open {LogPath}"); return; }
@@ -95,6 +137,18 @@ public partial class MemoryLog : Node
         var flags = new List<string>();
         ReadInto(d, "flags", flags);
         foreach (var s in flags) _flags.Add(s);
+        if (d.TryGetValue("pollution_collected", out var collected) && collected.VariantType == Variant.Type.Array)
+        {
+            var values = collected.AsGodotArray();
+            for (int i = 0; i < Mathf.Min(3, values.Count); i++)
+                _pollutionCollected[i] = Mathf.Max(0, (int)values[i].AsDouble());
+        }
+        if (d.TryGetValue("guardians_restored", out var restored) && restored.VariantType == Variant.Type.Array)
+        {
+            var values = restored.AsGodotArray();
+            for (int i = 0; i < Mathf.Min(3, values.Count); i++)
+                _guardiansRestored[i] = values[i].AsBool();
+        }
     }
 
     private static void ReadInto(Godot.Collections.Dictionary d, string key, List<string> target)

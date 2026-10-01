@@ -22,7 +22,7 @@ public static class TranslationTable
         ["STATUS_NEED_TARGET"] = ("附近没有可净化的目标。", "No polluted creature is close enough."),
         ["STATUS_FIRST_WATER"] = ("拾取了第一枚水碎片，按 1 释放水元素。", "Water Shard collected. Press 1 to use Water."),
         ["STATUS_FORM_WATER"] = ("化为水元素水母。", "Water form active."),
-        ["STATUS_BOSS_GATE"] = ("需要 8 枚水碎片才能净化巢母。", "Collect 8 Water Shards before you approach the Brood Mother."),
+        ["STATUS_BOSS_GATE"] = ("需要 8 枚水碎片才能净化塑料怪物。", "Collect 8 Water Shards before you approach the Plastic Monster."),
 
         // Skill feedback templates ({0} = form label / amount)
         ["SKILL_RELEASED_TEMPLATE"] = ("{0}已释放，净化生效。", "{0} released. Purification worked."),
@@ -40,13 +40,13 @@ public static class TranslationTable
         ["OBJ_TALK_STARFISH"] = ("与海星交谈", "Talk to the Starfish"),
         ["OBJ_TALK_SEAWEED"] = ("与海草交谈", "Talk to the Seaweed"),
         ["OBJ_COLLECT_SHARDS"] = ("收集 8 枚水碎片", "Collect 8 water shards"),
-        ["OBJ_DEFEAT_BOSS"] = ("净化潮涡巢母", "Purify the Brood Mother"),
+        ["OBJ_DEFEAT_BOSS"] = ("清理塑料怪物", "Clean up the Plastic Monster"),
         ["OBJ_EXIT_LEVEL"] = ("抵达出口", "Reach the exit"),
         ["OBJ_COMPLETE"] = ("章节完成", "Chapter complete"),
 
         // Minimap legend
         ["MINIMAP_LEGEND"] = ("🟢微光 🟡岚婆婆 🔵碎片 🔴巢母 🟤汽油桶 ⚪出口",
-                              "🟢Shimmer  🟡Granny Lan  🔵Shard  🔴Guardian  🟤Barrel  ⚪Exit"),
+                              "🟢Shimmer  🟡Granny Lan  🔵Shard  🔴Boss  🟤Barrel  ⚪Exit"),
 
         // Monster codex
         ["MONSTER_TITLE"] = ("怪物图鉴", "Creature Guide"),
@@ -57,8 +57,8 @@ public static class TranslationTable
         ["UI_PAUSE_LABEL"] = ("游戏已暂停", "Paused"),
         ["RESTART_HINT"] = ("按 T 重新开始", "Press T to restart"),
         ["SETTLEMENT_TITLE"] = ("净化完成", "Area Restored"),
-        ["SETTLEMENT_SUMMARY"] = ("潮涡巢母已被净化，潮汐钥匙浮现。\n霜骨海沟与冰元素已经回应微光。",
-                                  "The Brood Mother is free, and the Tidal Key has surfaced.\nA colder current is calling from below."),
+        ["SETTLEMENT_SUMMARY"] = ("塑料怪物已被清理，海之钥浮现。\n更冷的水流正从下方呼唤。",
+                                  "The Plastic Monster has been cleared away, and the Sea Key has surfaced.\nA colder current is calling from below."),
         ["FAILURE_LABEL"] = ("微光暗淡了…", "Shimmer Faded"),
 
         // Resume notice
@@ -70,7 +70,7 @@ public static class TranslationTable
         // Memory log / 图鉴 (item 5)
         ["LOG_TITLE"] = ("记忆日志 · 图鉴", "Memory Journal"),
         ["LOG_HINT"] = ("按 J / Tab 关闭", "Press J / Tab to close"),
-        ["LOG_SEC_MEMORIES"] = ("◆ 微光潮汐记忆  {0}/{1}", "◆ Tidal Memories  {0}/{1}"),
+        ["LOG_SEC_MEMORIES"] = ("◆ 海洋记忆  {0}/{1}", "◆ Ocean Memories  {0}/{1}"),
         ["LOG_SEC_CONVOS"] = ("◆ 对话回忆  {0}", "◆ Conversations  {0}"),
         ["LOG_SEC_CODEX"] = ("◆ 怪物图鉴  {0}/{1}", "◆ Creature Guide  {0}/{1}"),
         ["LOG_SEC_NOTES"] = ("◆ 残片笔记  {0}/{1}", "◆ Lore Fragments  {0}/{1}"),
@@ -83,18 +83,18 @@ public static class TranslationTable
         // Zones (item 7)
         ["ZONE_SHALLOWS"] = ("浅滩", "The Shallows"),
         ["ZONE_SEDIMENT"] = ("沉积带", "Silt Passage"),
-        ["ZONE_DEPTHS"] = ("巢母深处", "The Brood Depths"),
+        ["ZONE_DEPTHS"] = ("缠结深处", "Tangled Depths"),
         ["ZONE_ENTER_TEMPLATE"] = ("进入：{0}", "Entering: {0}"),
 
         // Soft death / rest (item 4)
         ["SOFT_RESPAWN"] = ("微光黯淡了片刻……潮水把你托回安全处。", "Shimmer fades for a moment. The tide carries you back to safety."),
         ["REST_PROMPT"] = ("在此小憩，恢复微光？", "Rest here and restore Shimmer's light?"),
-        ["BOSS_PURIFY_HINT"] = ("靠近巢母最薄的膜，按 1 用水轻轻松开。", "Move close to the thin membrane. Press 1 to release Water."),
-        ["BOSS_PURIFIED"] = ("巢母被净化了，被困的微光回到水里。", "The Brood Mother is free. The trapped lights return to the current."),
+        ["BOSS_PURIFY_HINT"] = ("靠近松散的塑料堆，按 1 释放水流。", "Move close to the loose plastic pile. Press 1 to release Water."),
+        ["BOSS_PURIFIED"] = ("塑料怪物被清理，被困动物回到水流中。", "The Plastic Monster is cleared away. The trapped animals return to the current."),
 
         // Controls sheet (verbatim from brief §5)
         ["CONTROLS_SHEET"] = ("←↑→↓ 移动 / 1·2·3 释放 水·冰·电 / E 互动 / R 收回当前形态 / T 重新开始当前关卡 / Esc 暂停·继续",
-                              "←↑→↓ Move  /  E Interact  /  1·2·3 Use Water·Ice·Electric  /  R Return to base form  /  T Restart  /  Esc Pause"),
+                              "Move / E Interact / 123 Use Water·Ice·Electric / R Return to base form / T Restart / Esc Pause"),
     };
 
     public static string Tr(string key)

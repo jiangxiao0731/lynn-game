@@ -77,8 +77,8 @@ public partial class TitleController : Control
 
         var saved = SaveManager.Instance?.LoadState();
         int savedLevel = saved?.CurrentLevel ?? 1;
-        string chapterText = savedLevel == 2 ? "CHAPTER 2  ·  FROSTBOUND TRENCH"
-            : savedLevel == 3 ? "CHAPTER 3  ·  THE SILENT LIGHTHOUSE" : "CHAPTER 1  ·  TIDEPOOL NURSERY";
+        string chapterText = savedLevel == 2 ? "CHAPTER 2  ·  FROZEN TRENCH"
+            : savedLevel == 3 ? "CHAPTER 3  ·  THE OLD LIGHTHOUSE" : "CHAPTER 1  ·  TIDEPOOL NURSERY";
         var chapter = UiTheme.Role(UiTheme.TypeRole.Eyebrow, chapterText);
         menu.AddChild(chapter);
 
@@ -94,7 +94,7 @@ public partial class TitleController : Control
         menu.AddChild(title);
         StartTitlePulse(title);
 
-        var subtitle = UiTheme.Role(UiTheme.TypeRole.Meta, "An ocean restoration story");
+        var subtitle = UiTheme.Role(UiTheme.TypeRole.Meta, "AN OCEAN RESTORATION STORY");
         subtitle.HorizontalAlignment = HorizontalAlignment.Left;
         menu.AddChild(subtitle);
 
@@ -160,6 +160,7 @@ public partial class TitleController : Control
     private void OnNewGamePressed()
     {
         SaveManager.Instance?.Reset();
+        MemoryLog.Instance?.Reset();
         OnBeginPressed();
     }
 

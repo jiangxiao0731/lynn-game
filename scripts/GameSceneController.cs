@@ -159,7 +159,9 @@ public partial class GameSceneController : Node2D
             case ObjectiveStage.FindNpc: return GetNodeOrNull<Node2D>("GrannyLan");
             case ObjectiveStage.TalkStarfish: return GetNodeOrNull<Node2D>("StarfishNPC");
             case ObjectiveStage.TalkSeaweed: return GetNodeOrNull<Node2D>("SeaweedNPC");
-            case ObjectiveStage.DefeatBoss: return GetNodeOrNull<Node2D>("BroodMother");
+            case ObjectiveStage.DefeatBoss:
+                var boss = GetNodeOrNull<BossController>("BroodMother");
+                return boss?.NextElementDrop ?? boss;
             case ObjectiveStage.ExitLevel: return _exitMarker;
             case ObjectiveStage.CollectShards:
                 Node2D? best = null;
@@ -520,6 +522,7 @@ public partial class GameSceneController : Node2D
             };
             PlaceholderArt.FitSprite(barrelSprite, 120f);
             barrel.AddChild(barrelSprite);
+            InteractionSpacing.AddSolid(barrel, 120f);
             _interactables.Add(new Interactable
             {
                 Node = barrel,
@@ -540,6 +543,7 @@ public partial class GameSceneController : Node2D
         var npcSprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(80, tint) };
         if (portrait != null) PlaceholderArt.FitSprite(npcSprite, displaySize);
         node.AddChild(npcSprite);
+        InteractionSpacing.AddSolid(node, displaySize);
         var prompt = DecorateNpc(node, npcSprite, displayName, tint);
 
         _interactables.Add(new Interactable
@@ -563,6 +567,7 @@ public partial class GameSceneController : Node2D
         var runtimeSprite = new Sprite2D { Texture = portrait ?? PlaceholderArt.RoundBlob(80, tint) };
         if (portrait != null) PlaceholderArt.FitSprite(runtimeSprite, displaySize);
         node.AddChild(runtimeSprite);
+        InteractionSpacing.AddSolid(node, displaySize);
         var prompt = DecorateNpc(node, runtimeSprite, displayName, tint);
         _interactables.Add(new Interactable
         {
@@ -579,30 +584,6 @@ public partial class GameSceneController : Node2D
     private static Control DecorateNpc(Node2D node, Sprite2D sprite, string displayName, Color accent)
     {
         node.ZIndex = 5;
-
-        var points = new Vector2[33];
-        for (int i = 0; i < points.Length; i++)
-        {
-            float angle = Mathf.Tau * i / (points.Length - 1);
-            float inkWobble = Mathf.Sin(angle * 5f + node.GetInstanceId() % 11) * 2.8f
-                            + Mathf.Sin(angle * 9f) * 1.2f;
-            points[i] = Vector2.FromAngle(angle) * (70f + inkWobble);
-        }
-        var halo = new Line2D
-        {
-            Name = "NpcHalo",
-            Points = points,
-            Width = 2.5f,
-            DefaultColor = new Color(accent.R, accent.G, accent.B, 0.58f),
-            Antialiased = true,
-            ZIndex = -1,
-        };
-        node.AddChild(halo);
-        var haloTween = halo.CreateTween().SetLoops();
-        haloTween.TweenProperty(halo, "modulate:a", 0.28f, 1.5f)
-            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-        haloTween.TweenProperty(halo, "modulate:a", 0.92f, 1.5f)
-            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 
         // The same nameplate chapters two and three use: name, then the prompt,
         // under the portrait rather than a bare label floating above it.
@@ -646,7 +627,7 @@ public partial class GameSceneController : Node2D
             ["lore_pipe"] = SX(new Vector2(1620, 880)),
             ["lore_shell"] = SX(new Vector2(2000, 760)),
             ["lore_log"] = SX(new Vector2(2300, 280)),
-            ["lore_membrane"] = SX(new Vector2(2800, 820)),
+            ["lore_plastic_sheet"] = SX(new Vector2(2800, 820)),
             ["lore_lantern"] = SX(new Vector2(3250, 560)),
         };
         foreach (var note in NarrativeData.LoreNotes)
@@ -665,6 +646,7 @@ public partial class GameSceneController : Node2D
                 Scale = Vector2.One * 0.22f,
             });
             AddChild(node);
+            InteractionSpacing.AddSolid(node, 92f);
             var breathe = glint.CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine);
             breathe.TweenProperty(glint, "scale", Vector2.One * 1.15f, 1.4f);
             breathe.TweenProperty(glint, "scale", Vector2.One * 0.8f, 1.4f);
@@ -726,6 +708,9 @@ public partial class GameSceneController : Node2D
         {
             if (it.Node.GlobalPosition.DistanceTo(_player.GlobalPosition) > 150f) continue;
 
+            InteractionSpacing.FrameConversation(_player, it.Node,
+                it.Note != null ? 150f : InteractionSpacing.NpcConversationDistance);
+
             if (it.Note != null)
             {
                 // 残片笔记 lore object — show vignette + record (item 5).
@@ -763,7 +748,7 @@ public partial class GameSceneController : Node2D
     private void CheckExitReached()
     {
         if (_exitReached || _player == null) return;
-        if (_objectives?.Stage != ObjectiveStage.ExitLevel) return;
+        if (_objectives?.Stage != ObjectiveStage.ExitLevel || _unlockedNext == ElementForm.Base) return;
         if (_player.GlobalPosition.DistanceTo(ChapterExitPoint) <= GameConstants.ExitReachDistance)
         {
             _exitReached = true;
@@ -865,12 +850,24 @@ public partial class GameSceneController : Node2D
         {
             // First purification touch — play the pre/求救 beat.
             _bossPrePlayed = true;
-            if (!_dialogue.IsActive) _dialogue.Play(NarrativeData.BossPre);
+            if (!_dialogue.IsActive)
+            {
+                var boss = GetNodeOrNull<BossController>("BroodMother");
+                if (_player != null && boss != null)
+                    InteractionSpacing.FrameConversation(_player, boss, InteractionSpacing.GuardianConversationDistance);
+                _dialogue.Play(NarrativeData.BossPre);
+            }
         }
         if (!_bossMidPlayed && current > 0 && current <= max / 2)
         {
             _bossMidPlayed = true;
-            if (!_dialogue.IsActive) _dialogue.Play(NarrativeData.BossMid);
+            if (!_dialogue.IsActive)
+            {
+                var boss = GetNodeOrNull<BossController>("BroodMother");
+                if (_player != null && boss != null)
+                    InteractionSpacing.FrameConversation(_player, boss, InteractionSpacing.GuardianConversationDistance);
+                _dialogue.Play(NarrativeData.BossMid);
+            }
         }
     }
 
@@ -900,6 +897,9 @@ public partial class GameSceneController : Node2D
     private void OnNextLevelElementUnlocked(int form)
     {
         _unlockedNext = (ElementForm)form;
+        var boss = GetNodeOrNull<BossController>("BroodMother");
+        if (_player != null && boss != null)
+            InteractionSpacing.FrameConversation(_player, boss, InteractionSpacing.GuardianConversationDistance);
         // Post beats: 巢母净化 → 岚婆婆 收尾 → 结章·潮汐钥匙 (item 6).
         _dialogue.Play(DialogueData.BossDefeated,
             () => _dialogue.Play(NarrativeData.GrannyAfter,
