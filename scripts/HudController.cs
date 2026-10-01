@@ -41,6 +41,7 @@ public partial class HudController : CanvasLayer
     private PanelContainer _combatPanel = null!;
     private Label _combatKeyLabel = null!;
     private Label _combatTextLabel = null!;
+    private Vector2 _combatRestPosition;
     private PanelContainer _pausePanel = null!;
     private int _statusRevision;
     private int _combatRevision;
@@ -312,34 +313,34 @@ public partial class HudController : CanvasLayer
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         statusBox.AddChild(_statusLabel);
 
-        // A compact bottom-right counter card stays clear of the objective, boss HP,
-        // player HP, status toast and the centre-bottom cleanup-power dock.
-        _combatPanel = Track(Surface("CombatPrompt", new Vector2(390, 0), 0.78f));
-        Pin(_combatPanel, Control.LayoutPreset.BottomRight);
-        _combatPanel.Position = new Vector2(-(390f + UiTheme.SafeArea), -126f);
+        // Damage feedback is an action cue, not another dialogue card. It sits directly
+        // above the stored-cleanup dock, using the same painted material and one warm
+        // key cap. The player reads the key first and the verb second.
+        _combatPanel = Track(Surface("CombatPrompt", new Vector2(360, 0), 0.86f));
+        Pin(_combatPanel, Control.LayoutPreset.CenterBottom);
+        _combatRestPosition = new Vector2(-180f, -190f);
+        _combatPanel.Position = _combatRestPosition;
         _combatPanel.Visible = false;
         AddChild(_combatPanel);
         _combatPanel.AddThemeStyleboxOverride("panel", CombatPanelStyle());
-        var combatInset = Inset(_combatPanel, 14, 10);
+        var combatInset = Inset(_combatPanel, 22, 12);
         var combatRow = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         combatRow.AddThemeConstantOverride("separation", UiTheme.GapBlock);
         combatInset.AddChild(combatRow);
-        var combatText = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
-        combatText.AddThemeConstantOverride("separation", 4);
-        combatRow.AddChild(combatText);
-        var combatKicker = UiTheme.Role(UiTheme.TypeRole.Hint, "COUNTER NOW");
-        combatKicker.AddThemeColorOverride("font_color", UiTheme.Accent);
-        combatText.AddChild(combatKicker);
-        _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Body, "", wrap: true);
-        _combatTextLabel.AddThemeColorOverride("font_color", UiTheme.Ink);
-        combatText.AddChild(_combatTextLabel);
-        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(46, 42) };
+        var press = UiTheme.Role(UiTheme.TypeRole.Hint, "PRESS");
+        press.VerticalAlignment = VerticalAlignment.Center;
+        combatRow.AddChild(press);
+        var keyFrame = new PanelContainer { CustomMinimumSize = new Vector2(54, 50) };
         keyFrame.AddThemeStyleboxOverride("panel", CombatKeyStyle());
         combatRow.AddChild(keyFrame);
         _combatKeyLabel = UiTheme.Role(UiTheme.TypeRole.Name, "1");
         _combatKeyLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _combatKeyLabel.VerticalAlignment = VerticalAlignment.Center;
         keyFrame.AddChild(_combatKeyLabel);
+        _combatTextLabel = UiTheme.Role(UiTheme.TypeRole.Name, "PURIFY NOW");
+        _combatTextLabel.AddThemeColorOverride("font_color", UiTheme.Accent);
+        _combatTextLabel.VerticalAlignment = VerticalAlignment.Center;
+        combatRow.AddChild(_combatTextLabel);
 
         _pausePanel = Surface("PauseFeedbackPanel", new Vector2(360, 0), 0.94f);
         Pin(_pausePanel, Control.LayoutPreset.Center);
@@ -503,34 +504,20 @@ public partial class HudController : CanvasLayer
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
     }
 
-    private static StyleBoxFlat CombatPanelStyle() => new()
-    {
-        BgColor = new Color(UiTheme.GlassBgDeep, 0.78f),
-        BorderColor = new Color(UiTheme.Accent, 0.44f),
-        BorderWidthLeft = 1,
-        BorderWidthTop = 1,
-        BorderWidthRight = 1,
-        BorderWidthBottom = 1,
-        CornerRadiusTopLeft = 14,
-        CornerRadiusTopRight = 14,
-        CornerRadiusBottomLeft = 14,
-        CornerRadiusBottomRight = 14,
-        ShadowColor = new Color(0f, 0f, 0f, 0.16f),
-        ShadowSize = 4,
-    };
+    private static StyleBox CombatPanelStyle() => UiTheme.GlassPanel(14, 0.82f, 0);
 
     private static StyleBoxFlat CombatKeyStyle() => new()
     {
-        BgColor = new Color(UiTheme.Accent, 0.20f),
-        BorderColor = new Color(UiTheme.Accent, 0.78f),
-        BorderWidthLeft = 1,
-        BorderWidthTop = 1,
-        BorderWidthRight = 1,
-        BorderWidthBottom = 1,
-        CornerRadiusTopLeft = 12,
-        CornerRadiusTopRight = 12,
-        CornerRadiusBottomLeft = 12,
-        CornerRadiusBottomRight = 12,
+        BgColor = UiTheme.Guide,
+        BorderColor = UiTheme.PillEdge,
+        BorderWidthLeft = 2,
+        BorderWidthTop = 2,
+        BorderWidthRight = 2,
+        BorderWidthBottom = 2,
+        CornerRadiusTopLeft = 18,
+        CornerRadiusTopRight = 18,
+        CornerRadiusBottomLeft = 18,
+        CornerRadiusBottomRight = 18,
     };
 
     private async void OnStatusHint(string text)
@@ -565,16 +552,24 @@ public partial class HudController : CanvasLayer
             _ => "1",
         };
         _combatKeyLabel.Text = key;
-        _combatTextLabel.Text = text;
+        _combatKeyLabel.AddThemeColorOverride("font_color", UiTheme.InkOnLight);
+        _combatTextLabel.Text = "PURIFY NOW";
+        // A combat cue replaces a generic toast instead of stacking over it.
+        _statusRevision++;
+        _statusPanel.Visible = false;
         _combatPanel.Visible = true;
         _combatPanel.Modulate = new Color(1f, 1f, 1f, 0f);
+        _combatPanel.Position = _combatRestPosition + new Vector2(0f, 14f);
         var enter = CreateTween();
-        enter.TweenProperty(_combatPanel, "modulate:a", 1f, 0.14f)
-            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-        await ToSignal(GetTree().CreateTimer(2.4), SceneTreeTimer.SignalName.Timeout);
+        enter.SetParallel();
+        enter.TweenProperty(_combatPanel, "modulate:a", 1f, 0.16f)
+            .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+        enter.TweenProperty(_combatPanel, "position", _combatRestPosition, 0.22f)
+            .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+        await ToSignal(GetTree().CreateTimer(1.8), SceneTreeTimer.SignalName.Timeout);
         if (revision != _combatRevision || !IsInstanceValid(_combatPanel)) return;
         var tween = CreateTween();
-        tween.TweenProperty(_combatPanel, "modulate:a", 0f, 0.25f)
+        tween.TweenProperty(_combatPanel, "modulate:a", 0f, 0.22f)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
         await ToSignal(tween, Tween.SignalName.Finished);
         if (revision == _combatRevision) _combatPanel.Visible = false;

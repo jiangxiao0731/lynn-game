@@ -2,21 +2,25 @@ using Godot;
 
 namespace ShallowSeaDream;
 
-/// Campaign epilogue after all three seas are restored. It turns the journal and
-/// collection counters into one visual account of what changed—and what still has to
-/// change on land—before returning the player to the title.
+/// The final campaign coda. This is deliberately a game ending, not a completion
+/// report: one restored sea, one hero, one emotional thought, then a clean exit.
 public partial class EndingController : Control
 {
+    private VBoxContainer _story = null!;
+    private TextureRect _hero = null!;
+    private TextureRect _heroGlow = null!;
+
     public override void _Ready()
     {
         AudioManager.Instance?.PlayMusic("title_theme");
         BuildBackground();
-        BuildStory();
+        BuildEnding();
+        CallDeferred(nameof(AnimateEnding));
     }
 
     private void BuildBackground()
     {
-        var baseFill = new ColorRect { Color = new Color(0.015f, 0.08f, 0.12f, 1f) };
+        var baseFill = new ColorRect { Color = new Color(0.012f, 0.07f, 0.10f, 1f) };
         baseFill.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(baseFill);
 
@@ -24,81 +28,100 @@ public partial class EndingController : Control
         {
             Texture = AssetLoader.Texture(AssetLoader.ChapterBackground(3, 2)),
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
-            Modulate = new Color(0.72f, 0.92f, 0.88f, 0.82f),
+            Modulate = new Color(0.78f, 1f, 0.94f, 0.88f),
             MouseFilter = MouseFilterEnum.Ignore,
         };
         sea.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(sea);
 
+        // Darker behind the words, open water around Shimmer. The composition reads
+        // as one cinematic frame rather than a full-screen modal.
         var wash = new TextureRect
         {
             Texture = PlaceholderArt.HorizontalGradient(
-                new Color(0.01f, 0.05f, 0.08f, 0.94f),
-                new Color(0.02f, 0.15f, 0.16f, 0.46f)),
+                new Color(0.005f, 0.04f, 0.07f, 0.97f),
+                new Color(0.02f, 0.12f, 0.14f, 0.26f)),
             StretchMode = TextureRect.StretchModeEnum.Scale,
             MouseFilter = MouseFilterEnum.Ignore,
         };
         wash.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(wash);
+
+        var floorFade = new ColorRect
+        {
+            Color = new Color(0.01f, 0.05f, 0.07f, 0.24f),
+            AnchorTop = 0.76f,
+            AnchorRight = 1f,
+            AnchorBottom = 1f,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        AddChild(floorFade);
     }
 
-    private void BuildStory()
+    private void BuildEnding()
     {
         var margin = new MarginContainer();
         margin.SetAnchorsPreset(LayoutPreset.FullRect);
-        margin.AddThemeConstantOverride("margin_left", 96);
-        margin.AddThemeConstantOverride("margin_right", 96);
-        margin.AddThemeConstantOverride("margin_top", 36);
-        margin.AddThemeConstantOverride("margin_bottom", 36);
+        margin.AddThemeConstantOverride("margin_left", 112);
+        margin.AddThemeConstantOverride("margin_right", 112);
+        margin.AddThemeConstantOverride("margin_top", 72);
+        margin.AddThemeConstantOverride("margin_bottom", 72);
         AddChild(margin);
 
-        var main = new VBoxContainer();
-        main.AddThemeConstantOverride("separation", UiTheme.GapBlock);
-        margin.AddChild(main);
+        var centre = new CenterContainer();
+        margin.AddChild(centre);
+        var composition = new HBoxContainer { CustomMinimumSize = new Vector2(1500, 760) };
+        composition.AddThemeConstantOverride("separation", 72);
+        centre.AddChild(composition);
 
-        var title = UiTheme.Role(UiTheme.TypeRole.Display, "The Sea Remembers the Light");
-        title.AddThemeFontSizeOverride("font_size", 60);
-        title.HorizontalAlignment = HorizontalAlignment.Center;
-        main.AddChild(title);
-        var lead = UiTheme.Role(UiTheme.TypeRole.Body,
-            "Three damaged waters are moving again. The change is visible—but recovery begins upstream, with the waste and heat we choose not to send into the sea.", wrap: true);
-        lead.HorizontalAlignment = HorizontalAlignment.Center;
-        lead.CustomMinimumSize = new Vector2(0, 60);
-        main.AddChild(lead);
+        _story = new VBoxContainer
+        {
+            Alignment = BoxContainer.AlignmentMode.Center,
+            CustomMinimumSize = new Vector2(760, 700),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        _story.AddThemeConstantOverride("separation", UiTheme.GapSection);
+        composition.AddChild(_story);
 
-        var chapters = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        chapters.AddThemeConstantOverride("separation", UiTheme.GapBlock);
-        main.AddChild(chapters);
-        chapters.AddChild(ChapterCard(1, "TIDEPOOL NURSERY", Count(1), "plastic cleared", "light returned"));
-        chapters.AddChild(ChapterCard(2, "FROZEN TRENCH", Count(2), "chemical waste contained", "clean water moving"));
-        chapters.AddChild(ChapterCard(3, "THE OLD LIGHTHOUSE", Count(3), "oil cleaned", "safe lights returned"));
+        var kicker = UiTheme.Role(UiTheme.TypeRole.Eyebrow, "THE END");
+        kicker.HorizontalAlignment = HorizontalAlignment.Left;
+        _story.AddChild(kicker);
 
-        var total = new PanelContainer();
-        total.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(16, 0.72f, UiTheme.GapBlock));
-        main.AddChild(total);
-        var totalRow = new HBoxContainer();
-        totalRow.AddThemeConstantOverride("separation", UiTheme.GapSection);
-        total.AddChild(totalRow);
-        totalRow.AddChild(BigStat((MemoryLog.Instance?.TotalPollutionCollected ?? 0).ToString(), "POLLUTION OBJECTS CLEANED"));
-        totalRow.AddChild(BigStat((MemoryLog.Instance?.Conversations.Count ?? 0).ToString(), "VOICES HEARD"));
-        totalRow.AddChild(BigStat((MemoryLog.Instance?.Notes.Count ?? 0).ToString(), "STORIES FOUND"));
-        totalRow.AddChild(BigStat((MemoryLog.Instance?.GuardiansRestored ?? 0).ToString(), "MONSTERS CLEANED UP"));
+        var title = UiTheme.Role(UiTheme.TypeRole.Display, "The Sea Glows Again", wrap: true);
+        title.AddThemeFontSizeOverride("font_size", 88);
+        title.HorizontalAlignment = HorizontalAlignment.Left;
+        _story.AddChild(title);
 
-        var closing = UiTheme.Role(UiTheme.TypeRole.Primary,
-            "Protecting the ocean means stopping pollution at its source, not only cleaning it up later.", wrap: true);
-        closing.HorizontalAlignment = HorizontalAlignment.Center;
-        closing.CustomMinimumSize = new Vector2(0, 70);
-        main.AddChild(closing);
+        var lead = UiTheme.Role(UiTheme.TypeRole.Primary,
+            "Shimmer followed every lost light home.\nThe currents are moving again.", wrap: true);
+        lead.AddThemeFontSizeOverride("font_size", 34);
+        lead.HorizontalAlignment = HorizontalAlignment.Left;
+        _story.AddChild(lead);
 
-        var coda = UiTheme.Role(UiTheme.TypeRole.Meta,
-            "Cleanup buys habitats time. Cleaner production, less disposable waste, safer runoff and lower emissions are what let that healing last.", wrap: true);
-        coda.HorizontalAlignment = HorizontalAlignment.Center;
-        main.AddChild(coda);
+        var coda = UiTheme.Role(UiTheme.TypeRole.Body, "The sea has time to heal.", wrap: true);
+        coda.AddThemeColorOverride("font_color", UiTheme.InkDim);
+        coda.HorizontalAlignment = HorizontalAlignment.Left;
+        _story.AddChild(coda);
 
-        var buttons = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        _story.AddChild(new Control { CustomMinimumSize = new Vector2(0, 24) });
+        var buttons = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Begin };
         buttons.AddThemeConstantOverride("separation", UiTheme.GapBlock);
-        main.AddChild(buttons);
-        var replay = new Button { Text = "Begin Again", CustomMinimumSize = new Vector2(300, UiTheme.ButtonHeight) };
+        _story.AddChild(buttons);
+
+        var titleButton = new Button
+        {
+            Text = "Return to Title",
+            CustomMinimumSize = new Vector2(320, UiTheme.ButtonHeight),
+        };
+        UiTheme.StyleButton(titleButton);
+        titleButton.Pressed += () => GetTree().ChangeSceneToFile("res://scenes/title.tscn");
+        buttons.AddChild(titleButton);
+
+        var replay = new Button
+        {
+            Text = "Begin Again",
+            CustomMinimumSize = new Vector2(260, UiTheme.ButtonHeight),
+        };
         UiTheme.StyleButton(replay, primary: false);
         replay.Pressed += () =>
         {
@@ -107,57 +130,82 @@ public partial class EndingController : Control
             GetTree().ChangeSceneToFile("res://scenes/tutorial.tscn");
         };
         buttons.AddChild(replay);
-        var titleButton = new Button { Text = "Return to Title", CustomMinimumSize = new Vector2(360, UiTheme.ButtonHeight) };
-        UiTheme.StyleButton(titleButton);
-        titleButton.Pressed += () => GetTree().ChangeSceneToFile("res://scenes/title.tscn");
-        buttons.AddChild(titleButton);
         titleButton.GrabFocus();
-    }
 
-    private static Control ChapterCard(int chapter, string title, int count, string itemLabel, string outcome)
-    {
-        var card = new PanelContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        card.AddThemeStyleboxOverride("panel", UiTheme.GlassPanel(12, 0.64f, UiTheme.GapBlock));
-        var stack = new VBoxContainer();
-        stack.AddThemeConstantOverride("separation", UiTheme.GapPair);
-        card.AddChild(stack);
-        var eyebrow = UiTheme.Role(UiTheme.TypeRole.Eyebrow, $"CHAPTER {chapter}");
-        eyebrow.HorizontalAlignment = HorizontalAlignment.Center;
-        stack.AddChild(eyebrow);
-        var name = UiTheme.Role(UiTheme.TypeRole.Name, title, wrap: true);
-        name.HorizontalAlignment = HorizontalAlignment.Center;
-        stack.AddChild(name);
-        var image = new TextureRect
+        var heroStage = new Control
         {
-            Texture = AssetLoader.Texture(AssetLoader.ChapterBackground(chapter, 2)),
-            CustomMinimumSize = new Vector2(0, 118),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+            CustomMinimumSize = new Vector2(600, 720),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            MouseFilter = MouseFilterEnum.Ignore,
         };
-        stack.AddChild(image);
-        var transform = UiTheme.Role(UiTheme.TypeRole.Primary, $"{count} {itemLabel}\n→ {outcome}", wrap: true);
-        transform.AddThemeFontSizeOverride("font_size", 24);
-        transform.HorizontalAlignment = HorizontalAlignment.Center;
-        stack.AddChild(transform);
-        return card;
+        composition.AddChild(heroStage);
+
+        _heroGlow = new TextureRect
+        {
+            Texture = PlaceholderArt.SoftGlow(new Color(0.54f, 0.94f, 0.90f, 0.72f), 256),
+            Position = new Vector2(30, 70),
+            Size = new Vector2(560, 560),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.Scale,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        heroStage.AddChild(_heroGlow);
+
+        _hero = new TextureRect
+        {
+            Texture = AssetLoader.Texture(AssetLoader.FormSheet(ElementForm.Water)),
+            Position = new Vector2(54, 72),
+            Size = new Vector2(520, 520),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        heroStage.AddChild(_hero);
+
+        var finalLine = UiTheme.WorldRole(UiTheme.TypeRole.Meta, "SHIMMER · KEEPER OF THE LAST LIGHT");
+        finalLine.Position = new Vector2(70, 610);
+        finalLine.Size = new Vector2(500, 48);
+        heroStage.AddChild(finalLine);
     }
 
-    private static Control BigStat(string value, string label)
+    private void AnimateEnding()
     {
-        var stack = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        var number = UiTheme.Role(UiTheme.TypeRole.Heading, value);
-        number.HorizontalAlignment = HorizontalAlignment.Center;
-        stack.AddChild(number);
-        var caption = UiTheme.Role(UiTheme.TypeRole.Eyebrow, label, wrap: true);
-        caption.HorizontalAlignment = HorizontalAlignment.Center;
-        stack.AddChild(caption);
-        return stack;
+        _story.Modulate = Colors.Transparent;
+        Vector2 storyRest = _story.Position;
+        _story.Position = storyRest + new Vector2(-24f, 0f);
+
+        _hero.Modulate = Colors.Transparent;
+        _heroGlow.Modulate = Colors.Transparent;
+        _hero.PivotOffset = _hero.Size * 0.5f;
+        _hero.Scale = Vector2.One * 0.94f;
+
+        var reveal = CreateTween();
+        reveal.TweenProperty(_story, "modulate", Colors.White, 0.65f)
+            .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+        reveal.Parallel().TweenProperty(_story, "position", storyRest, 0.65f)
+            .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+        reveal.TweenProperty(_heroGlow, "modulate", Colors.White, 0.55f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        reveal.Parallel().TweenProperty(_hero, "modulate", Colors.White, 0.48f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        reveal.Parallel().TweenProperty(_hero, "scale", Vector2.One, 0.68f)
+            .SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.Out);
+        reveal.TweenCallback(Callable.From(StartHeroFloat));
     }
 
-    private static int Count(int chapter) => MemoryLog.Instance == null ? 0 : chapter switch
+    private void StartHeroFloat()
     {
-        2 => MemoryLog.Instance.IcePollutionCollected,
-        3 => MemoryLog.Instance.OilHeatCollected,
-        _ => MemoryLog.Instance.WaterCollected,
-    };
+        Vector2 rest = _hero.Position;
+        var floatTween = _hero.CreateTween().SetLoops();
+        floatTween.TweenProperty(_hero, "position:y", rest.Y - 12f, 2.4f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        floatTween.TweenProperty(_hero, "position:y", rest.Y + 8f, 2.8f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+
+        var glowTween = _heroGlow.CreateTween().SetLoops();
+        glowTween.TweenProperty(_heroGlow, "modulate:a", 0.58f, 2.2f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        glowTween.TweenProperty(_heroGlow, "modulate:a", 0.92f, 2.2f)
+            .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+    }
 }
