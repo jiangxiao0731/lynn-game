@@ -47,6 +47,7 @@ public partial class ChapterLevelController : Node2D
     private bool _guardianAfterPlayed;
     private bool _completed;
     private bool _smokeMode;
+    private bool _nearLockedArenaGate;
     private float _time;
 
     private Node2D _guide = null!;
@@ -289,6 +290,16 @@ public partial class ChapterLevelController : Node2D
         Vector2[] positions = ChapterId == 2
             ? new[] { SX(new Vector2(900, 220)), SX(new Vector2(1680, 880)), SX(new Vector2(2420, 230)) }
             : new[] { SX(new Vector2(980, 850)), SX(new Vector2(1850, 250)), SX(new Vector2(2820, 820)) };
+
+        // Every required switch/relay must be reachable before the guardian gate it
+        // eventually opens. Chapter 3's third relay used to land beyond that gate,
+        // creating a progression deadlock. Clamp all future layouts as well so a
+        // different background aspect ratio cannot put an objective behind its own
+        // lock again.
+        float latestReachableX = ChapterMap.ArenaGateX(ChapterId) - 900f;
+        for (int i = 0; i < positions.Length; i++)
+            positions[i] = new Vector2(Mathf.Min(positions[i].X, latestReachableX), positions[i].Y);
+
         for (int i = 0; i < positions.Length; i++)
         {
             var node = new Node2D { Name = ChapterId == 2 ? $"FlowSwitch{i + 1}" : $"PowerRelay{i + 1}", Position = positions[i] };
@@ -363,6 +374,7 @@ public partial class ChapterLevelController : Node2D
         UpdateZone();
         UpdatePrompts();
         UpdateFragments();
+        UpdateLockedArenaGateHint();
         if (_stage == ObjectiveStage.DefeatBoss && !_guardianBeatPlayed &&
             _player.GlobalPosition.DistanceTo(_boss.GlobalPosition) <= _boss.EffectiveWarningRange)
         {
@@ -374,6 +386,19 @@ public partial class ChapterLevelController : Node2D
         }
         if (_stage == ObjectiveStage.ExitLevel && _player.GlobalPosition.DistanceTo(_exit.GlobalPosition) <= GameConstants.ExitReachDistance + 30f)
             CompleteChapter();
+    }
+
+    private void UpdateLockedArenaGateHint()
+    {
+        bool near = _arenaGate != null && IsInstanceValid(_arenaGate) &&
+                    Mathf.Abs(_player.GlobalPosition.X - ChapterMap.ArenaGateX(ChapterId)) <= 260f;
+        if (near && !_nearLockedArenaGate)
+        {
+            string devices = ChapterId == 2 ? "Flow Switches" : "Power Relays";
+            Events.Instance?.EmitSignal(Events.SignalName.StatusHint,
+                $"The guardian route is still sealed. Restore all three {devices} first; follow the objective arrow back.");
+        }
+        _nearLockedArenaGate = near;
     }
 
     private void UpdateZone()
